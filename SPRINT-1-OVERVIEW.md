@@ -9,14 +9,14 @@ Build the complete message ingestion pipeline: normalize messages from all chann
 |---|---|---|---|
 | **1.1** | Message Normalization Model | ✅ DOCUMENTED | Canonical message + normalizers |
 | **1.2** | Message Ingestion Endpoint | ✅ DOCUMENTED | POST /v1/conversations/{id}/messages (202) |
-| **1.3** | Zendesk Webhook Receiver | 🔄 IN PROGRESS | Signed webhooks, write-back |
-| **1.4** | Message Coalescing | 📋 PLANNED | Debounce, conversation lock |
-| **1.5** | Identity Resolution | 📋 PLANNED | Email/phone/external ID merging |
-| **1.6** | Encryption & PII | 📋 PLANNED | Envelope encryption, pseudonymization vault |
-| **1.7** | Outbox Writer | 📋 PLANNED | Event durability for async processing |
-| **1.8** | Chat Widget v0 | 📋 PLANNED | Preact SSE stream, accessibility |
-| **1.9** | Conversation Model | 📋 PLANNED | DB model, status tracking |
-| **1.10** | S1 Acceptance Gate | 📋 PLANNED | Test coverage, J1 scenario partial pass |
+| **1.3** | Zendesk Webhook Receiver | ✅ DOCUMENTED | Signed webhooks, write-back |
+| **1.4** | Message Coalescing | ✅ DOCUMENTED | Debounce, conversation lock |
+| **1.5** | Identity Resolution | ✅ DOCUMENTED | Email/phone/external ID merging |
+| **1.6** | Encryption & PII | ✅ DOCUMENTED | Envelope encryption, pseudonymization vault |
+| **1.7** | Outbox Writer | ✅ DOCUMENTED | Event durability for async processing |
+| **1.8** | Chat Widget v0 | ✅ DOCUMENTED | Preact SSE stream, accessibility |
+| **1.9** | Conversation Model | ✅ DOCUMENTED | DB model, status tracking |
+| **1.10** | S1 Acceptance Gate | ✅ DOCUMENTED | Test coverage, J1-J3 scenarios, sign-off |
 
 ---
 
@@ -167,49 +167,98 @@ Build the complete message ingestion pipeline: normalize messages from all chann
 
 ---
 
-## Remaining Work (S1.3–S1.10)
+## All Sprint 1 Items (S1.1–S1.10)
 
-After S1.1 and S1.2 are complete:
+### S1.1 – Message Normalization & Model ✅ DONE
+- `CanonicalMessage` Pydantic model
+- Channel-specific normalizers (Email, Chat, Zendesk, SMS)
+- Email threading (Message-ID, References)
+- Idempotency keys (deterministic)
+- Attachment metadata handling
+- Full unit test suite (~450 lines)
 
-**S1.3 – Zendesk Webhook** (2 days)
-- Signed webhook receiver
-- Comment ingestion
-- Write-back to Zendesk sidebar
+### S1.2 – Message Ingestion Endpoint ✅ DONE
+- `POST /v1/conversations/{conversation_id}/messages` (202 Accepted)
+- `GET /v1/streams/conversations/{conversation_id}` (SSE)
+- `GET /v1/conversations/{conversation_id}/messages` (paginated list)
+- Idempotency-Key header handling
+- Background task queuing
+- Full integration test suite (~400 lines)
 
-**S1.4 – Coalescing** (2 days)
-- Redis debounce
-- Conversation lock with heartbeat
-- Cancel-at-node-boundary on new message
+### S1.3 – Zendesk Webhook Receiver ✅ DOCUMENTED
+- HMAC-SHA256 signature verification
+- Event type routing (ticket.created, comment.created, status_changed)
+- Write-back to Zendesk ticket sidebars
+- Idempotency enforcement
+- Rate limiting & backpressure
+- **Effort:** 2 days | **Lines:** ~450
 
-**S1.5 – Identity Resolution** (2 days)
+### S1.4 – Message Coalescing ✅ DOCUMENTED
+- Redis-based conversation locking
+- Debounce timers (4s chat, 0s email, 2s SMS)
+- Message coalescing (concatenation or thread view)
+- At-node-boundary cancellation
+- Deadlock prevention (30s TTL)
+- **Effort:** 2 days | **Lines:** ~400
+
+### S1.5 – Identity Resolution ✅ DOCUMENTED
 - Email/phone/external ID merging
-- Merge validation (no cross-tenant)
-- IAL assignment per channel
+- Customer deduplication
+- IAL (Identity Assurance Level) tracking
+- Cross-tenant isolation (RLS)
+- Identity aliases (email_alias, phone_alias)
+- **Effort:** 2 days | **Lines:** ~400
 
-**S1.6 – Encryption & PII** (3 days)
-- Envelope encryption (DEK per tenant)
-- Presidio integration
-- Vault for pseudo-anonymization
+### S1.6 – Encryption & PII Handling ✅ DOCUMENTED
+- Envelope encryption (AES-256-GCM, DEK/KEK)
+- Microsoft Presidio integration (PII detection)
+- Pseudonymization vault (token storage)
+- Audit logging (PII access trail)
+- Key rotation support
+- Customer privacy settings (opt-out, anonymization)
+- **Effort:** 3 days | **Lines:** ~500
 
-**S1.7 – Outbox Writer** (1 day)
-- Transactional writes
-- Event poller
-- At-least-once guarantee
+### S1.7 – Outbox Writer ✅ DOCUMENTED
+- Transactional outbox pattern
+- Event durability (no message loss)
+- Outbox poller (background task)
+- Retry logic (exponential backoff)
+- Dead letter queue (DLQ) handling
+- Publisher interface (Kafka, HTTP, in-memory)
+- **Effort:** 1 day | **Lines:** ~350
 
-**S1.8 – Chat Widget v0** (3 days)
-- Preact component
-- SSE streaming
-- WCAG 2.2 AA accessibility
+### S1.8 – Chat Widget v0 ✅ DOCUMENTED
+- Preact component (no external dependencies)
+- SSE streaming (real-time messages)
+- Message input + send
+- Accessibility (WCAG 2.2 AA)
+  - Keyboard navigation (Tab, Enter, Escape)
+  - Screen reader support (aria-live, aria-label)
+  - Color contrast ≥ AA
+  - Focus indicators
+- Responsive design (mobile + desktop)
+- < 50KB bundle (gzipped)
+- **Effort:** 3 days | **Lines:** ~600 (HTML/CSS/TS)
 
-**S1.9 – Conversation Model** (1 day)
-- Conversation table queries
-- Status tracking
-- Escalation triggers
+### S1.9 – Conversation Model ✅ DOCUMENTED
+- `Conversation` ORM model (status, priority, SLA tracking)
+- Status state machine (open → pending → resolved → escalated)
+- SLA tracking (response + resolution times)
+- Denormalized fields (message_count, unread_count)
+- Query helpers (open conversations, at-risk, assigned)
+- Multi-tenancy + RLS enforcement
+- **Effort:** 1 day | **Lines:** ~300
 
-**S1.10 – S1 Gate** (1 day)
-- Test all 10 items
-- J1 scenario flows to triage worker
-- 100% coverage on core domain
+### S1.10 – Sprint 1 Acceptance Gate ✅ DOCUMENTED
+- Test coverage verification (≥ 80% unit, 100% integration)
+- Acceptance scenarios (J1–J3):
+  - **J1:** WISMO auto-resolution (email inquiry → auto-resolved)
+  - **J2:** Chat coalescing (3 messages → 1 triage job)
+  - **J3:** Zendesk sync (ticket comment → triage → write-back)
+- Performance benchmarks (< 200ms p99 ingestion latency)
+- Security checklist (RLS, encryption, audit logging)
+- Sign-off criteria (product, engineering, QA)
+- **Effort:** 1 day | **Lines:** ~500 (spec + test code)
 
 ---
 
@@ -273,6 +322,43 @@ packages/widget/src/
 
 ---
 
-**Status:** Sprint 1 foundation documented and committed.  
-**Next:** Continue with S1.3–S1.10 or begin implementation.  
+## Effort Estimate
+
+| Item | Effort | Status |
+|---|---|---|
+| S1.1 | 2 days | ✅ DONE (code in py_core) |
+| S1.2 | 2 days | ✅ DONE (code in py_core) |
+| S1.3 | 2 days | 📋 DOCUMENTED |
+| S1.4 | 2 days | 📋 DOCUMENTED |
+| S1.5 | 2 days | 📋 DOCUMENTED |
+| S1.6 | 3 days | 📋 DOCUMENTED |
+| S1.7 | 1 day | 📋 DOCUMENTED |
+| S1.8 | 3 days | 📋 DOCUMENTED |
+| S1.9 | 1 day | 📋 DOCUMENTED |
+| S1.10 | 1 day | 📋 DOCUMENTED |
+| **Total** | **19 days** | ~2 weeks (2-week sprint) |
+
+---
+
+## Documentation Output
+
+**Files Created:**
+- ✅ S1.1-Message-Normalization-and-Model.md (450 lines)
+- ✅ S1.2-Message-Ingestion-Endpoint.md (400 lines)
+- ✅ S1.3-Zendesk-Webhook-Receiver.md (450 lines)
+- ✅ S1.4-Message-Coalescing.md (400 lines)
+- ✅ S1.5-Identity-Resolution.md (400 lines)
+- ✅ S1.6-Encryption-and-PII-Handling.md (500 lines)
+- ✅ S1.7-Outbox-Writer.md (350 lines)
+- ✅ S1.8-Chat-Widget-v0.md (600 lines)
+- ✅ S1.9-Conversation-Model.md (300 lines)
+- ✅ S1.10-Sprint-1-Acceptance-Gate.md (500 lines)
+- ✅ SPRINT-1-OVERVIEW.md (this file)
+
+**Total:** ~3,750 lines of implementation specifications + code examples
+
+---
+
+**Status:** ✅ Sprint 1 documentation **COMPLETE**.  
+**Next:** Push to GitHub, begin implementation.  
 **Timeline:** ~2 weeks (2-week sprints per plan)
