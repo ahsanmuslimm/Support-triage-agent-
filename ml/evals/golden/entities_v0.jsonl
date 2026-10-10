@@ -1,0 +1,28 @@
+{"message": "I need to reset my password for account john@example.com", "entities": [{"type": "email", "value": "john@example.com", "start": 41, "end": 60}], "tenant_scenario": "saas"}
+{"message": "Order #ORD-12345 was supposed to arrive on January 15th", "entities": [{"type": "order_id", "value": "ORD-12345", "start": 7, "end": 16}, {"type": "date", "value": "January 15th", "start": 42, "end": 54}], "tenant_scenario": "ecommerce"}
+{"message": "My subscription ends on 2024-12-31", "entities": [{"type": "date", "value": "2024-12-31", "start": 23, "end": 33}], "tenant_scenario": "saas"}
+{"message": "Charge my card ending in 4242", "entities": [{"type": "card_last4", "value": "4242", "start": 25, "end": 29}], "tenant_scenario": "payment"}
+{"message": "Contact my manager Alice Smith", "entities": [{"type": "person_name", "value": "Alice Smith", "start": 19, "end": 30}], "tenant_scenario": "crm"}
+{"message": "The invoice INV-2024-001 shows $150.00 in charges", "entities": [{"type": "invoice_id", "value": "INV-2024-001", "start": 12, "end": 24}, {"type": "amount", "value": "$150.00", "start": 30, "end": 37}], "tenant_scenario": "billing"}
+{"message": "I'm located at 123 Main St, New York, NY 10001", "entities": [{"type": "address", "value": "123 Main St, New York, NY 10001", "start": 17, "end": 48}], "tenant_scenario": "delivery"}
+{"message": "Refund for ticket TKT-5678 to my PayPal", "entities": [{"type": "ticket_id", "value": "TKT-5678", "start": 12, "end": 20}, {"type": "payment_method", "value": "PayPal", "start": 32, "end": 38}], "tenant_scenario": "ticketing"}
+{"message": "My phone number is 555-123-4567 for verification", "entities": [{"type": "phone", "value": "555-123-4567", "start": 19, "end": 31}], "tenant_scenario": "verification"}
+{"message": "Transfer $500 to account 987654321", "entities": [{"type": "amount", "value": "$500", "start": 9, "end": 13}, {"type": "account_number", "value": "987654321", "start": 25, "end": 34}], "tenant_scenario": "banking"}
+{"message": "Extend membership for 3 months starting April 1", "entities": [{"type": "duration", "value": "3 months", "start": 30, "end": 38}, {"type": "date", "value": "April 1", "start": 41, "end": 48}], "tenant_scenario": "membership"}
+{"message": "Ship to: 456 Oak Ave, Los Angeles, CA 90001", "entities": [{"type": "address", "value": "456 Oak Ave, Los Angeles, CA 90001", "start": 8, "end": 43}], "tenant_scenario": "shipping"}
+{"message": "Update billing address to 789 Elm Street", "entities": [{"type": "address", "value": "789 Elm Street", "start": 26, "end": 40}], "tenant_scenario": "account"}
+{"message": "Order ORD-99999 total is $299.99", "entities": [{"type": "order_id", "value": "ORD-99999", "start": 6, "end": 15}, {"type": "amount", "value": "$299.99", "start": 26, "end": 33}], "tenant_scenario": "ecommerce"}
+{"message": "Subscription renewal on Dec 15, 2024", "entities": [{"type": "date", "value": "Dec 15, 2024", "start": 23, "end": 35}], "tenant_scenario": "subscription"}
+{"message": "Claim code CLAIM-ABC-123 for warranty", "entities": [{"type": "claim_code", "value": "CLAIM-ABC-123", "start": 11, "end": 24}], "tenant_scenario": "warranty"}
+{"message": "Payment failed for invoice #INV-5001", "entities": [{"type": "invoice_id", "value": "INV-5001", "start": 29, "end": 37}], "tenant_scenario": "billing"}
+{"message": "Reference number: REF-2024-12345", "entities": [{"type": "reference_id", "value": "REF-2024-12345", "start": 18, "end": 32}], "tenant_scenario": "support"}
+{"message": "My email is support+test@domain.com", "entities": [{"type": "email", "value": "support+test@domain.com", "start": 11, "end": 34}], "tenant_scenario": "contact"}
+{"message": "License key: LICENSE-XXXX-YYYY-ZZZZ", "entities": [{"type": "license_key", "value": "LICENSE-XXXX-YYYY-ZZZZ", "start": 13, "end": 36}], "tenant_scenario": "software"}
+{"message": "Flight booking PNR ABC123 for 2 passengers", "entities": [{"type": "booking_reference", "value": "ABC123", "start": 15, "end": 21}, {"type": "count", "value": "2", "start": 26, "end": 27}], "tenant_scenario": "travel"}
+{"message": "Refund amount: $75.50 to original payment", "entities": [{"type": "amount", "value": "$75.50", "start": 15, "end": 21}], "tenant_scenario": "refund"}
+{"message": "Customer ID: CUST-777888 requires urgent follow-up", "entities": [{"type": "customer_id", "value": "CUST-777888", "start": 13, "end": 24}], "tenant_scenario": "crm"}
+{"message": "Connect via Slack at @username or Signal", "entities": [{"type": "username", "value": "@username", "start": 20, "end": 29}], "tenant_scenario": "communication"}
+{"message": "Tracking number TRACK-ZZZ-999 arriving tomorrow", "entities": [{"type": "tracking_number", "value": "TRACK-ZZZ-999", "start": 16, "end": 29}], "tenant_scenario": "logistics"}
+{"message": "Promo code SAVE2024 valid until January 31", "entities": [{"type": "promo_code", "value": "SAVE2024", "start": 11, "end": 19}, {"type": "date", "value": "January 31", "start": 33, "end": 43}], "tenant_scenario": "marketing"}
+{"message": "Quote QT-2024-5555 for $1,250.00 expires in 30 days", "entities": [{"type": "quote_id", "value": "QT-2024-5555", "start": 6, "end": 18}, {"type": "amount", "value": "$1,250.00", "start": 23, "end": 32}, {"type": "duration", "value": "30 days", "start": 45, "end": 52}], "tenant_scenario": "sales"}
+{"message": "Batch ID BATCH-001 processed 500 records", "entities": [{"type": "batch_id", "value": "BATCH-001", "start": 8, "end": 17}, {"type": "count", "value": "500", "start": 28, "end": 31}], "tenant_scenario": "data"}

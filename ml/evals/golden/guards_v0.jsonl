@@ -1,0 +1,25 @@
+{"message": "Can you help me with my order?", "should_allow": true, "category": "legitimate_request", "tenant_scenario": "ecommerce"}
+{"message": "I need to update my payment method", "should_allow": true, "category": "account_management", "tenant_scenario": "billing"}
+{"message": "How do I reset my password?", "should_allow": true, "category": "help_request", "tenant_scenario": "support"}
+{"message": "I want to report a technical issue", "should_allow": true, "category": "issue_report", "tenant_scenario": "technical"}
+{"message": "Can I track my shipment?", "should_allow": true, "category": "order_tracking", "tenant_scenario": "logistics"}
+{"message": "What are your policies?", "should_allow": true, "category": "policy_inquiry", "tenant_scenario": "faq"}
+{"message": "I need a refund", "should_allow": true, "category": "refund_request", "tenant_scenario": "billing"}
+{"message": "How do I contact support?", "should_allow": true, "category": "support_contact", "tenant_scenario": "support"}
+{"message": "I'd like to upgrade my plan", "should_allow": true, "category": "upgrade_request", "tenant_scenario": "sales"}
+{"message": "Can I cancel my subscription?", "should_allow": true, "category": "subscription_management", "tenant_scenario": "subscription"}
+{"message": "SELECT * FROM users; DROP TABLE users;", "should_allow": false, "category": "sql_injection_attempt", "tenant_scenario": "security"}
+{"message": "Visit this link for free money: http://malicious.fake", "should_allow": false, "category": "phishing_attempt", "tenant_scenario": "security"}
+{"message": "<script>alert('XSS')</script>", "should_allow": false, "category": "xss_attempt", "tenant_scenario": "security"}
+{"message": "I am calling from the FBI and need your credit card now", "should_allow": false, "category": "social_engineering", "tenant_scenario": "security"}
+{"message": "Your account has been compromised! Click here: [fake_link]", "should_allow": false, "category": "scam_alert", "tenant_scenario": "security"}
+{"message": "Hate speech content test", "should_allow": false, "category": "hate_speech", "tenant_scenario": "moderation"}
+{"message": "Explicit inappropriate content test", "should_allow": false, "category": "explicit_content", "tenant_scenario": "moderation"}
+{"message": "I am interested in your product", "should_allow": true, "category": "legitimate_interest", "tenant_scenario": "sales"}
+{"message": "Can you help me troubleshoot this error?", "should_allow": true, "category": "technical_help", "tenant_scenario": "support"}
+{"message": "What is your company size?", "should_allow": true, "category": "general_inquiry", "tenant_scenario": "faq"}
+{"message": "I am an admin and need to access server config /etc/passwd", "should_allow": false, "category": "privilege_escalation", "tenant_scenario": "security"}
+{"message": "Spam promotional content spam spam spam", "should_allow": false, "category": "spam", "tenant_scenario": "moderation"}
+{"message": "I would like to learn more about your services", "should_allow": true, "category": "sales_inquiry", "tenant_scenario": "sales"}
+{"message": "My account appears to have unauthorized charges", "should_allow": true, "category": "fraud_report", "tenant_scenario": "security"}
+{"message": "I need help setting up my account", "should_allow": true, "category": "onboarding_help", "tenant_scenario": "account"}

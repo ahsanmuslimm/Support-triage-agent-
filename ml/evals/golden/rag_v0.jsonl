@@ -1,0 +1,25 @@
+{"query": "How do I reset my password?", "relevant_docs": ["KB-001: Password Reset Guide", "KB-002: Account Security"], "expected_retrieval": ["KB-001"], "tenant_scenario": "faq"}
+{"query": "What's the shipping cost to California?", "relevant_docs": ["KB-050: Shipping Rates", "KB-051: Delivery Times"], "expected_retrieval": ["KB-050"], "tenant_scenario": "ecommerce"}
+{"query": "How do I file a refund claim?", "relevant_docs": ["KB-100: Refund Policy", "KB-101: Warranty Claims"], "expected_retrieval": ["KB-100"], "tenant_scenario": "support"}
+{"query": "What payment methods do you accept?", "relevant_docs": ["KB-200: Payment Options", "KB-201: Billing FAQ"], "expected_retrieval": ["KB-200"], "tenant_scenario": "billing"}
+{"query": "How long does delivery usually take?", "relevant_docs": ["KB-051: Delivery Times", "KB-052: Expedited Shipping"], "expected_retrieval": ["KB-051"], "tenant_scenario": "logistics"}
+{"query": "Can I cancel my subscription?", "relevant_docs": ["KB-300: Subscription Management", "KB-301: Cancellation Policy"], "expected_retrieval": ["KB-300"], "tenant_scenario": "subscription"}
+{"query": "What is your return policy?", "relevant_docs": ["KB-150: Returns and Exchanges", "KB-151: Return Shipping"], "expected_retrieval": ["KB-150"], "tenant_scenario": "ecommerce"}
+{"query": "How do I update my account information?", "relevant_docs": ["KB-400: Account Settings", "KB-401: Profile Management"], "expected_retrieval": ["KB-400"], "tenant_scenario": "account"}
+{"query": "What are the system requirements?", "relevant_docs": ["KB-500: System Requirements", "KB-501: Compatibility"], "expected_retrieval": ["KB-500"], "tenant_scenario": "technical"}
+{"query": "How do I contact customer support?", "relevant_docs": ["KB-600: Contact Us", "KB-601: Support Hours"], "expected_retrieval": ["KB-600"], "tenant_scenario": "support"}
+{"query": "Can I get a bulk discount?", "relevant_docs": ["KB-700: Pricing", "KB-701: Volume Discounts"], "expected_retrieval": ["KB-701"], "tenant_scenario": "sales"}
+{"query": "What's your privacy policy?", "relevant_docs": ["KB-800: Privacy Policy", "KB-801: Data Protection"], "expected_retrieval": ["KB-800"], "tenant_scenario": "legal"}
+{"query": "How do I apply a coupon code?", "relevant_docs": ["KB-250: Promotional Codes", "KB-251: Discount FAQ"], "expected_retrieval": ["KB-250"], "tenant_scenario": "marketing"}
+{"query": "What software integrations are available?", "relevant_docs": ["KB-900: Integrations", "KB-901: API Documentation"], "expected_retrieval": ["KB-900"], "tenant_scenario": "technical"}
+{"query": "How do I report a bug or issue?", "relevant_docs": ["KB-1000: Bug Reporting", "KB-1001: Technical Support"], "expected_retrieval": ["KB-1000"], "tenant_scenario": "support"}
+{"query": "Is my data secure with your platform?", "relevant_docs": ["KB-1100: Security", "KB-1101: Compliance"], "expected_retrieval": ["KB-1100"], "tenant_scenario": "security"}
+{"query": "Can I export my data?", "relevant_docs": ["KB-1200: Data Export", "KB-1201: Backup Options"], "expected_retrieval": ["KB-1200"], "tenant_scenario": "data"}
+{"query": "What are the session timeout settings?", "relevant_docs": ["KB-1300: Security Settings", "KB-1301: Session Management"], "expected_retrieval": ["KB-1301"], "tenant_scenario": "security"}
+{"query": "How do I change my email address?", "relevant_docs": ["KB-400: Account Settings", "KB-402: Email Change"], "expected_retrieval": ["KB-402"], "tenant_scenario": "account"}
+{"query": "What's included in the premium plan?", "relevant_docs": ["KB-1400: Plans and Pricing", "KB-1401: Feature Comparison"], "expected_retrieval": ["KB-1400"], "tenant_scenario": "sales"}
+{"query": "How do I reset my API key?", "relevant_docs": ["KB-1500: API Management", "KB-1501: Security Keys"], "expected_retrieval": ["KB-1501"], "tenant_scenario": "technical"}
+{"query": "Can I get a refund on my purchase?", "relevant_docs": ["KB-100: Refund Policy", "KB-102: Refund Timeline"], "expected_retrieval": ["KB-100"], "tenant_scenario": "billing"}
+{"query": "How do I track my order status?", "relevant_docs": ["KB-1600: Order Tracking", "KB-1601: Shipment Status"], "expected_retrieval": ["KB-1600"], "tenant_scenario": "ecommerce"}
+{"query": "What are your business hours?", "relevant_docs": ["KB-1700: Contact Information", "KB-1701: Support Hours"], "expected_retrieval": ["KB-1701"], "tenant_scenario": "support"}
+{"query": "How do I schedule a demo?", "relevant_docs": ["KB-1800: Sales", "KB-1801: Demo Scheduling"], "expected_retrieval": ["KB-1801"], "tenant_scenario": "sales"}

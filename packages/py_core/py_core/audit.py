@@ -28,5 +28,21 @@ async def verify_audit_chain(session, tenant_id: UUID) -> list[AuditBreak]:
     Returns:
         list[AuditBreak]: List of chain breaks; empty if chain is intact.
     """
-    # Placeholder: actual implementation requires database access
-    return []
+    from sqlalchemy import text
+
+    result = await session.execute(
+        text("SELECT * FROM triage.verify_audit_chain(:tenant_id)"),
+        {"tenant_id": str(tenant_id)},
+    )
+
+    breaks = []
+    for row in result:
+        breaks.append(
+            AuditBreak(
+                broken_at=row[0],
+                expected_hash=row[1],
+                found_hash=row[2],
+            )
+        )
+
+    return breaks
