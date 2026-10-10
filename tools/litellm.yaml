@@ -1,0 +1,22 @@
+model_list:
+  - model_name: "gpt-4"
+    litellm_params:
+      model: "mock_llm"
+      mock_response: "This is a mock response from GPT-4"
+  - model_name: "gpt-3.5-turbo"
+    litellm_params:
+      model: "mock_llm"
+      mock_response: "This is a mock response from GPT-3.5-turbo"
+  - model_name: "claude-3-sonnet"
+    litellm_params:
+      model: "mock_llm"
+      mock_response: "This is a mock response from Claude 3 Sonnet"
+
+general_settings:
+  log: true
+  proxy_budget_limit_in_dollars: 100.0
+  disable_cost_tracking: false
+
+keys:
+  - api_key: "sk_dev_test_key"
+    team_alias: "dev"

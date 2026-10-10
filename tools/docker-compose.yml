@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: triage-postgres
+    environment:
+      POSTGRES_DB: ${PG_DB:-triage}
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres_dev}
+      POSTGRES_INITDB_ARGS: "-c max_connections=200"
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: triage-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: triage-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: triage-mailpit
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_WEB_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8025/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    container_name: triage-langfuse
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://${PG_USER:-postgres}:${PG_PASSWORD:-postgres_dev}@postgres:5432/${PG_DB:-triage}"
+      NEXTAUTH_SECRET: ${LANGFUSE_SECRET:-dev_secret_key_do_not_use_in_prod}
+      NEXTAUTH_URL: "http://localhost:3000"
+    ports:
+      - "${LANGFUSE_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main
+    container_name: triage-litellm
+    environment:
+      LITELLM_LOG: "DEBUG"
+    command: --config /app/config.yaml --port 8000
+    ports:
+      - "${LITELLM_PORT:-8000}:8000"
+    volumes:
+      - ./litellm.yaml:/app/config.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - triage-net
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+
+networks:
+  triage-net:
+    driver: bridge
