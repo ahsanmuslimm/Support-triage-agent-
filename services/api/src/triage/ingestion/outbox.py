@@ -28,6 +28,15 @@ class OutboxWriter:
     ) -> OutboxEvent:
         """Write event to outbox (atomically with domain transaction).
 
+        In production, this method would:
+        1. Begin a database transaction
+        2. INSERT message into messages table
+        3. INSERT outbox event into outbox_events table in the SAME transaction
+        4. Commit both atomically
+        5. Return OutboxEvent
+
+        This ensures durability and prevents message loss on server crash.
+
         Args:
             tenant_id: Tenant ID
             aggregate_type: Type of aggregate (message, conversation, etc.)
@@ -47,7 +56,18 @@ class OutboxWriter:
         )
 
         # TODO: Write to database in same transaction as domain object
-        # For now, store in-memory
+        # In production:
+        # async with db_session.begin() as transaction:
+        #     # INSERT message first
+        #     stmt = insert(messages_table).values(...)
+        #     await transaction.execute(stmt)
+        #     
+        #     # INSERT outbox event in same transaction
+        #     stmt = insert(outbox_events_table).values(...)
+        #     await transaction.execute(stmt)
+        #     # transaction.commit() happens automatically on context exit
+        #
+        # For now, store in-memory (will be lost on restart)
         self._in_memory_events.append(event)
 
         return event
