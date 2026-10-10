@@ -1,0 +1,45 @@
+{"message": "Where's my order?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Can you track my package?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Has my shipment been sent?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "When will I receive my order?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My package didn't arrive", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "I haven't received my items yet", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Where is my delivery?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Track my shipment", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "How long until delivery?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My order is late", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "I need to return this item", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I send this back?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "What's your return policy?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "How do I return an item?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Do you accept returns?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "I want my money back", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Please refund my purchase", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get a refund?", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Issue me a refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "I was overcharged", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my invoice?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I download my receipt?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "How much am I being charged?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "I was charged twice", "intents": ["billing.invoice_question", "refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Why am I paying tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I'm tax-exempt", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Can I remove sales tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I can't log in", "intents": ["auth.sso_failure", "auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Reset my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I forgot my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "How do I set up SSO?", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "SSO isn't working", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can I upgrade my plan?", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "I need more seats", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "How do I upgrade?", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I want to cancel", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Delete my account", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "How do I use this feature?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Can you show me a tutorial?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I can't find the settings", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I integrate with Slack?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Does this work with Zapier?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Can I use the API?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "There's a bug in the app", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Something isn't working", "intents": ["bug_report"], "tenant_scenario": "saas"}
