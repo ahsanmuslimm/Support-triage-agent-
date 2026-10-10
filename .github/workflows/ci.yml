@@ -1,0 +1,217 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, "feat/**", "fix/**" ]
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Cache uv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'packages/py_core/pyproject.toml') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Ruff check
+        run: ruff check packages/ services/ apps/ ml/ --fix
+
+      - name: Run mypy typecheck
+        run: mypy packages/py_core --strict
+
+      - name: Run tsc typecheck
+        run: npx tsc --noEmit
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Cache uv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'packages/py_core/pyproject.toml') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Start Docker services
+        run: |
+          docker-compose -f tools/docker-compose.yml up -d
+          sleep 5
+
+      - name: Run pytest unit tests
+        run: pytest packages/py_core/tests -m unit -v --cov=packages/py_core --cov-report=term-missing
+
+      - name: Check coverage threshold
+        run: |
+          coverage report --fail-under=90
+
+      - name: Stop Docker services
+        if: always()
+        run: docker-compose -f tools/docker-compose.yml down
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Cache uv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'packages/py_core/pyproject.toml') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Start Docker services
+        run: |
+          docker-compose -f tools/docker-compose.yml up -d
+          sleep 5
+
+      - name: Run pytest integration tests
+        run: pytest packages/py_core/tests -m integration -v
+
+      - name: Stop Docker services
+        if: always()
+        run: docker-compose -f tools/docker-compose.yml down
+
+  eval-smoke:
+    name: Eval Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Cache uv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run eval harness
+        run: pytest ml/evals/tests -m eval -v --cassettes-mode=none
+
+  gitleaks:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+  semgrep:
+    name: SAST Scan (Semgrep)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/typescript
+
+  trivy:
+    name: Vulnerability Scan (Trivy)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
