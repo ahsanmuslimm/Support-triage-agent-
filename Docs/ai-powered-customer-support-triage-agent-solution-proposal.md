@@ -301,9 +301,7 @@ Email  │  Live Chat  │  WhatsApp  │  In-App  │  Voice (IVR)  │  Social
 
 This proposal is a starting framework. Every engagement is scoped to the client's specific support stack, ticket mix, and business goals. We welcome the opportunity to refine this together.
 
-**Contact:** [Your Name] | [Your Email] | [Your Phone]
-**Company:** [Your Company]
-**Website:** [Your Website]
+**Contact:** Muhammad Ahsan | ahsanmuslim31@gmail.com | +923180014603
 
 ---
 
