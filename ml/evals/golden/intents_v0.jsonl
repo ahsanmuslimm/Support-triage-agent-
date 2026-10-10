@@ -1,45 +1,300 @@
-{"message": "Where's my order?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my order?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
 {"message": "Can you track my package?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
 {"message": "Has my shipment been sent?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
-{"message": "When will I receive my order?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
-{"message": "My package didn't arrive", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
-{"message": "I haven't received my items yet", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
-{"message": "Where is my delivery?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
-{"message": "Track my shipment", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "What's the status of order #12345?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Is my order on its way?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Can you give me an order update?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Has my order shipped?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Where is my order #ABC123?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Track my order", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "What's the current status?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "How long until my order arrives?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "When will I get my package?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Can I check my order status?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My order status shows pending", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Is my order being processed?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my order?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Can you track my package?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Has my shipment been sent?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "What's the status of order #12345?", "intents": ["order.status", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Is my order on its way?", "intents": ["order.status"], "tenant_scenario": "ecommerce"}
+{"message": "Why hasn't my order shipped?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "It's been 5 days and no shipping", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "My order says 'in preparation'", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "When will you ship my order?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Order not shipped yet", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "How long does shipping take?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "My order is stuck in processing", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Why is my order delayed?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Shipment not sent yet", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "It's been a week with no shipping", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "My order is still pending", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Why is my order on hold?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "When will processing complete?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Order hasn't moved in days", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Still waiting for shipping", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Why hasn't my order shipped?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "It's been 5 days and no shipping", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "My order says 'in preparation'", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "When will you ship my order?", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "Order not shipped yet", "intents": ["order.not_shipped"], "tenant_scenario": "ecommerce"}
+{"message": "My package is late", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Where is my delivery?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
 {"message": "How long until delivery?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
-{"message": "My order is late", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My shipment is delayed", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Package should have arrived", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Why is my delivery late?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "It's past the delivery date", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My package didn't arrive on time", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Shipping took too long", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "I'm still waiting for my package", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "The delivery date passed", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my delayed package?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "When will my late delivery arrive?", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Shipment is overdue", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Package arrival delayed", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My package is late", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Where is my delivery?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "How long until delivery?", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "My shipment is delayed", "intents": ["shipping.delay", "shipping.delay"], "tenant_scenario": "ecommerce"}
+{"message": "Package should have arrived", "intents": ["shipping.delay"], "tenant_scenario": "ecommerce"}
 {"message": "I need to return this item", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
 {"message": "Can I send this back?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "How do I return?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I want to return my order", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get a replacement?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "This item is defective", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I'd like to send this back", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Return request for order #123", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I want an exchange", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "The product is damaged", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "This doesn't fit", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Wrong item was sent", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Initiate a return", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I return this?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I need to exchange this", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I need to return this item", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I send this back?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "How do I return?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "I want to return my order", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get a replacement?", "intents": ["returns.request"], "tenant_scenario": "ecommerce"}
 {"message": "What's your return policy?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
 {"message": "How do I return an item?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
 {"message": "Do you accept returns?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
-{"message": "I want my money back", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "What's the return window?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "How long do I have to return?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Are returns free?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Do you cover return shipping?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I return used items?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "What are your return conditions?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "How do returns work?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Return policy details", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I return after 30 days?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "What items can be returned?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Do you offer exchanges?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Tell me about your return policy", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "What's your return policy?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "How do I return an item?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "Do you accept returns?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "What's the return window?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "How long do I have to return?", "intents": ["returns.policy_question"], "tenant_scenario": "ecommerce"}
+{"message": "I want my money back", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
 {"message": "Please refund my purchase", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
 {"message": "Can I get a refund?", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
 {"message": "Issue me a refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
-{"message": "I was overcharged", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Refund my order", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "I need a refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Process my refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "When will I get my refund?", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Refund order #123", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "I paid too much", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Give me my money back", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "I want a full refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Refund my payment", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "How do I get a refund?", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Initiate refund for #789", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "I want my money back", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Please refund my purchase", "intents": ["refund.request", "billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get a refund?", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Issue me a refund", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Refund my order", "intents": ["refund.request"], "tenant_scenario": "ecommerce"}
 {"message": "Where's my invoice?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
 {"message": "Can I download my receipt?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
 {"message": "How much am I being charged?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
-{"message": "I was charged twice", "intents": ["billing.invoice_question", "refund.request"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my billing statement?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get an invoice?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Show me my invoice", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "I need a receipt", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "What was I charged for?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Invoice details please", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Where is my receipt?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I view my bill?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "How much did I pay?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Give me my invoice", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "I need the billing info", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Show my transaction", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my invoice?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I download my receipt?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "How much am I being charged?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Where's my billing statement?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
+{"message": "Can I get an invoice?", "intents": ["billing.invoice_question"], "tenant_scenario": "ecommerce"}
 {"message": "Why am I paying tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
 {"message": "I'm tax-exempt", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
 {"message": "Can I remove sales tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
-{"message": "I can't log in", "intents": ["auth.sso_failure", "auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Apply tax exemption", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I have a tax ID", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Remove tax from my order", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Tax exemption code: ABC123", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "How do I claim tax-exempt?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I shouldn't pay tax", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Tax-free purchase", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Exempt me from tax", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Apply my tax exemption", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I'm a non-profit", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Remove the sales tax", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Tax exemption request", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Why am I paying tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I'm tax-exempt", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Can I remove sales tax?", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "Apply tax exemption", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
+{"message": "I have a tax ID", "intents": ["billing.tax_exemption"], "tenant_scenario": "ecommerce"}
 {"message": "Reset my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
 {"message": "I forgot my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
-{"message": "How do I set up SSO?", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
-{"message": "SSO isn't working", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
-{"message": "Can I upgrade my plan?", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "Send me a reset link", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I can't log in", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Password reset please", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Forgot password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "How do I reset my password?", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Send password reset email", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I need to reset", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Create a new password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Resend reset link", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Reset my credentials", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Forgot login password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Password change needed", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I need a new password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Reset my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I forgot my password", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Send me a reset link", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "I can't log in", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "Password reset please", "intents": ["auth.password_reset"], "tenant_scenario": "saas"}
+{"message": "SSO isn't working", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I can't log in with SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Single sign-on is broken", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO authentication failed", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can't access via SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO error", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "My SSO login doesn't work", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can't use company SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO login failed", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SAML authentication issue", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can't authenticate with SSO", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Fix my SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO not working for me", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can't sign in with SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO error message", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO isn't working", "intents": ["auth.sso_failure", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I can't log in with SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Single sign-on is broken", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "SSO authentication failed", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can't access via SSO", "intents": ["auth.sso_failure"], "tenant_scenario": "saas"}
+{"message": "Can I upgrade my plan?", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
 {"message": "I need more seats", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
 {"message": "How do I upgrade?", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Upgrade to premium", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "I want a higher tier", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Add more users", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "Get enterprise plan", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Upgrade my subscription", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "Add licensing", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I need more features", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "Can I add team members?", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Upgrade plan options", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "What plans are available?", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How much is the upgrade?", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "I want to scale up", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Can I upgrade my plan?", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "I need more seats", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I upgrade?", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
+{"message": "Upgrade to premium", "intents": ["account.plan_upgrade", "how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I want a higher tier", "intents": ["account.plan_upgrade"], "tenant_scenario": "saas"}
 {"message": "I want to cancel", "intents": ["account.cancel"], "tenant_scenario": "saas"}
 {"message": "Delete my account", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my subscription", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "How do I leave?", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my plan", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Unsubscribe me", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "I want to quit", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel service", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Remove my account", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "How do I cancel?", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "End my subscription", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Stop billing me", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my membership", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Leave the platform", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my contract", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "I want to cancel", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Delete my account", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my subscription", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "How do I leave?", "intents": ["account.cancel"], "tenant_scenario": "saas"}
+{"message": "Cancel my plan", "intents": ["account.cancel"], "tenant_scenario": "saas"}
 {"message": "How do I use this feature?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
 {"message": "Can you show me a tutorial?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
 {"message": "I can't find the settings", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I get started?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Explain this feature", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Guide me through setup", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "What does this button do?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I enable X?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "User guide please", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Step-by-step instructions", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Where are the options?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I configure this?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Can you walk me through?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Feature documentation", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How does this work?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I use this feature?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Can you show me a tutorial?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "I can't find the settings", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "How do I get started?", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
+{"message": "Explain this feature", "intents": ["how_to.feature_usage"], "tenant_scenario": "saas"}
 {"message": "How do I integrate with Slack?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
 {"message": "Does this work with Zapier?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
 {"message": "Can I use the API?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "How do I connect to X?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Integration setup guide", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Can I hook this up to Y?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Is there an API?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "How do I import data?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Can I export to Salesforce?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Connect to third-party", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Integration documentation", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "How do webhooks work?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Can I sync with Google Drive?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "API documentation", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Which integrations exist?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "How do I integrate with Slack?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Does this work with Zapier?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Can I use the API?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "How do I connect to X?", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
+{"message": "Integration setup guide", "intents": ["how_to.integration"], "tenant_scenario": "saas"}
 {"message": "There's a bug in the app", "intents": ["bug_report"], "tenant_scenario": "saas"}
 {"message": "Something isn't working", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "This feature is broken", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "I found an error", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "The app crashed", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "This isn't working right", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "I'm getting an error", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Bug report: X is broken", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "System error occurred", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Feature malfunction", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "The app won't work", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Something's wrong", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Please fix this bug", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Error when I try X", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "The app is broken", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "There's a bug in the app", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "Something isn't working", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "This feature is broken", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "I found an error", "intents": ["bug_report"], "tenant_scenario": "saas"}
+{"message": "The app crashed", "intents": ["bug_report"], "tenant_scenario": "saas"}

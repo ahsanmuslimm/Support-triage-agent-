@@ -184,7 +184,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
         sa.Column("intent_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("embedding", postgresql.UUID(as_uuid=True), nullable=True),  # Placeholder for halfvec type
+        sa.Column("embedding", sa.text(), nullable=True),  # pgvector halfvec type
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
         sa.ForeignKeyConstraint(["tenant_id", "intent_id"], ["triage.intents.tenant_id", "triage.intents.id"]),
@@ -365,7 +365,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
         sa.Column("document_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("embedding", postgresql.UUID(as_uuid=True), nullable=True),  # Placeholder for halfvec type
+        sa.Column("embedding", sa.text(), nullable=True),  # pgvector halfvec type
         sa.Column("audience", sa.String(50), nullable=False, server_default="public"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
@@ -487,6 +487,24 @@ def upgrade() -> None:
     op.create_index("idx_kb_chunks_document", "kb_chunks", ["tenant_id", "document_id"], schema="triage")
     op.create_index("idx_audit_log_tenant_created", "audit_log", ["tenant_id", "created_at"], schema="triage")
 
+    # HNSW indexes for vector similarity search
+    op.execute(
+        """
+        CREATE INDEX idx_intent_examples_embedding 
+        ON triage.intent_examples 
+        USING hnsw (embedding vector_ip_ops)
+        WHERE embedding IS NOT NULL
+        """
+    )
+    op.execute(
+        """
+        CREATE INDEX idx_kb_chunks_embedding 
+        ON triage.kb_chunks 
+        USING hnsw (embedding vector_ip_ops)
+        WHERE embedding IS NOT NULL
+        """
+    )
+
     # Enable RLS on multi-tenant tables
     multi_tenant_tables = [
         "customers",
@@ -520,8 +538,8 @@ def upgrade() -> None:
         op.execute(
             f"""
             CREATE POLICY rls_tenant_policy ON triage.{table_name}
-            USING (tenant_id = current_setting('app.tenant_id')::uuid)
-            WITH CHECK (tenant_id = current_setting('app.tenant_id')::uuid)
+            USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
+            WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid)
             """
         )
 

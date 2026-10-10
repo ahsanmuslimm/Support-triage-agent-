@@ -28,11 +28,9 @@ typecheck: ## Run type checker (mypy --strict)
 	mypy services/ --strict
 
 migrate: ## Run Alembic migrations
-	@echo "Running Alembic migrations..."
-	# Placeholder: alembic upgrade head
+	alembic -c packages/py_core/alembic.ini upgrade head
 
 seed: ## Seed test data
-	@echo "Seeding test data..."
-	# Placeholder: seed script
+	python -m py_core.scripts.seed_test_data
 
 .DEFAULT_GOAL := help

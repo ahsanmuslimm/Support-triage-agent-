@@ -1,0 +1,36 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocking",
+      "description": "RLS policies use unqualified current_setting('app.tenant_id') which throws an exception when tenant context is unset, inverting the fail-closed guarantee. Change to current_setting('app.tenant_id', true) in 0001_baseline_mvp_schema.py line 523 to make unset context return NULL silently."
+    },
+    {
+      "id": "F2",
+      "severity": "blocking",
+      "description": "Intents golden dataset (intents_v0.jsonl) contains only 45 rows instead of 300 required by plan. This prevents eval gates from serving as meaningful acceptance criteria in Sprint 2. Expand to 300 rows with full intent class coverage and ≥15 examples per intent."
+    },
+    {
+      "id": "F3",
+      "severity": "blocking",
+      "description": "Embedding columns (intent_examples.embedding, kb_chunks.embedding) are typed as postgresql.UUID but should be pgvector halfvec or vector type to support HNSW indexing. Migration 0001 does not create the planned indexes. Update column types and add explicit index creation with pgvector ops."
+    },
+    {
+      "id": "F4",
+      "severity": "blocking",
+      "description": "Integration tests in test_audit.py (5 tests) and test_migrations.py are placeholders with assert True bodies. These tests are marked @pytest.mark.integration and will be skipped in normal runs. Implement with actual database assertions once Testcontainers fixtures are wired into conftest.py."
+    },
+    {
+      "id": "F5",
+      "severity": "blocking",
+      "description": "Makefile targets 'migrate' and 'seed' are incomplete placeholders that only echo messages. Wire them to actual commands: 'alembic -c packages/py_core/alembic.ini upgrade head' for migrate and a seed script for seed."
+    },
+    {
+      "id": "F6",
+      "severity": "non-blocking",
+      "description": "Migration 0002 audit hash-chain trigger is well-designed but the audit_hash_chain() function queries for previous hash using ORDER BY id DESC without a LIMIT on the WHERE clause. The query should specify 'WHERE tenant_id = NEW.tenant_id ORDER BY id DESC LIMIT 1' to ensure correctness (currently correct in implementation but worth noting the tenant filter is present)."
+    }
+  ],
+  "reviewDoc": "d:\\WORKING\\PORTFOLIO\\FEATURED PROJECTS\\Support-triage-agent-\\.agents\\tasks\\sprint0-review.md"
+}
