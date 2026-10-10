@@ -1,0 +1,26 @@
+{
+  "globalDependencies": ["ruff.toml", "mypy.ini", "tsconfig.base.json"],
+  "pipeline": {
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": [],
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "outputs": [".coverage", "coverage/"],
+      "dependsOn": ["^typecheck"]
+    },
+    "build": {
+      "outputs": ["dist/", "build/"]
+    }
+  },
+  "remoteCache": {
+    "enabled": false
+  },
+  "caching": {
+    "outputMode": "full",
+    "workspaceLayout": "internal"
+  }
+}

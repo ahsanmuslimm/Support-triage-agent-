@@ -1,0 +1,22 @@
+{
+  "name": "widget",
+  "version": "0.1.0",
+  "description": "Preact web chat widget for Triage Agent",
+  "type": "module",
+  "scripts": {
+    "build": "preact build",
+    "dev": "preact watch",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^10.18.0",
+    "preact-router": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/preact": "^10.16.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "preact-cli": "^3.4.0"
+  }
+}

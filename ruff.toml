@@ -1,0 +1,29 @@
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "SIM",    # flake8-simplify
+    "PIE",    # flake8-pie
+    "PERF",   # Perflint
+    "C4",     # flake8-comprehensions
+    "RUF",    # Ruff-specific
+    "B",      # flake8-bugbear
+    "N",      # pep8-naming
+]
+ignore = [
+    "D",      # docstrings (enforce at review gate)
+    "E501",   # line-length (handled separately)
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "B101"]  # Allow assert, pytest.raises in tests
+"**/test_*.py" = ["S101", "B101"]
+
+[lint.isort]
+known-first-party = ["py_core", "services", "ml"]

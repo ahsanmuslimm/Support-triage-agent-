@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "knowledge-worker"
+version = "0.1.0"
+description = "Knowledge indexing and retrieval service"
+requires-python = "^3.12"
+authors = [{ name = "Support Triage Team" }]
+dependencies = [
+    "py-core @ file:///../py_core",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+]

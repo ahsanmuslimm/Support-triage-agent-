@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ml-evals"
+version = "0.1.0"
+description = "Evaluation harness and golden datasets"
+requires-python = "^3.12"
+authors = [{ name = "Support Triage Team" }]
+dependencies = [
+    "py-core @ file:///../packages/py_core",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = [
+    "unit: unit tests",
+    "eval: evaluation tests",
+]

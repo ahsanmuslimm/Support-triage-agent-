@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "py-core"
+version = "0.1.0"
+description = "Shared Python core library for Triage Agent"
+requires-python = "^3.12"
+authors = [{ name = "Support Triage Team" }]
+dependencies = [
+    "sqlalchemy[asyncio]>=2.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "structlog>=24.0",
+    "opentelemetry-api>=1.21",
+    "opentelemetry-sdk>=1.21",
+    "opentelemetry-exporter-otlp>=0.42b0",
+    "python-json-logger>=2.0",
+    "python-multipart>=0.0.6",
+]
+
+[tool.uv.sources]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "eval: evaluation tests",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["py_core"]
+omit = ["*/tests/*", "*/__main__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

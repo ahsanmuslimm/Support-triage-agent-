@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "triage-agent"
+version = "0.1.0"
+description = "AI-Powered Customer Support Triage Agent"
+requires-python = "^3.12"
+authors = [{ name = "Support Triage Team" }]
+
+[tool.uv]
+workspace = { members = [
+    "packages/py_core",
+    "services/api",
+    "services/triage_worker",
+    "services/knowledge_worker",
+    "ml/evals",
+] }
+
+[tool.uv.sources]
+# Add any git dependencies here if needed
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.1",
+    "pytest-bdd>=6.1",
+    "mypy>=1.7",
+    "ruff>=0.1",
+    "black>=23.0",
+    "factory-boy>=3.3",
+    "testcontainers[postgres,redis]>=3.7",
+]
+test = [
+    "testcontainers[postgres,redis]>=3.7",
+    "pytest-asyncio>=0.21",
+    "pytest-recording>=0.13",
+    "vcrpy>=4.4",
+]
