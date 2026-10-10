@@ -2,8 +2,9 @@
 
 import structlog
 import re
-from typing import Tuple
-from services.api.src.triage.models.decision import (
+from typing import Tuple, Dict, Optional
+
+from triage.models.decision import (
     PolicyInput,
     DecisionResult,
     AutonomyLevel,
@@ -18,6 +19,8 @@ class DecisionMatrix:
 
     All rules are deterministic functions of PolicyInput.
     No I/O, no randomness. Rules are applied in order; first match wins.
+    
+    Supports per-tenant autonomy policy overrides loaded from database.
     """
 
     # Injection patterns (OWASP LLM Top 10)
@@ -27,6 +30,35 @@ class DecisionMatrix:
         r"(?i)(\.\.\/|\.\.\\|/etc/|c:\\windows|cmd\.exe|bash -i)",
         r"(?i)(script.*>|iframe|javascript:|onerror=|onload=)",
     ]
+
+    def __init__(self, autonomy_policies: Optional[Dict[str, int]] = None):
+        """Initialize DecisionMatrix with optional per-tenant autonomy policies.
+        
+        Args:
+            autonomy_policies: Dict mapping intent_name to AutonomyLevel override.
+                              e.g., {"refund": 0, "order_status": 2}
+        """
+        self.autonomy_policies = autonomy_policies or {}
+
+    def _check_autonomy_policy_override(self, policy: PolicyInput) -> Tuple[bool, Optional[AutonomyLevel], str]:
+        """Check for per-tenant autonomy policy override (pre-rule gate).
+        
+        Returns:
+            (policy_found, autonomy_level, reason)
+        """
+        if policy.intent_name in self.autonomy_policies:
+            level_value = self.autonomy_policies[policy.intent_name]
+            # Map int to AutonomyLevel
+            level_map = {
+                0: AutonomyLevel.L0_READ_ONLY,
+                1: AutonomyLevel.L1_SUGGEST,
+                2: AutonomyLevel.L2_CONFIRM,
+                3: AutonomyLevel.L3_AUTO,
+            }
+            level = level_map.get(level_value, AutonomyLevel.L0_READ_ONLY)
+            reason = f"Per-tenant autonomy policy override: {policy.intent_name} → {level.name}"
+            return True, level, reason
+        return False, None, ""
 
     @staticmethod
     def _check_safety_flags(policy: PolicyInput) -> Tuple[bool, str]:
@@ -153,11 +185,11 @@ class DecisionMatrix:
             return True, f"Enterprise customer, {policy.intent_name}, very high confidence {policy.intent_confidence:.2f}"
         return False, ""
 
-    @staticmethod
-    def decide(policy: PolicyInput) -> DecisionResult:
-        """Apply decision matrix rules in order.
+    def decide(self, policy: PolicyInput) -> DecisionResult:
+        """Apply decision matrix rules in order with policy override pre-gate.
 
-        First match wins. Returns autonomy level and reasoning.
+        Per-tenant autonomy policy override takes precedence over rules.
+        If no policy override, first rule match wins. Returns autonomy level and reasoning.
 
         Args:
             policy: Policy input with context.
@@ -166,6 +198,16 @@ class DecisionMatrix:
             DecisionResult with autonomy level.
         """
         log.info("decision_matrix_evaluate", intent=policy.intent_name, confidence=policy.intent_confidence)
+
+        # Pre-gate: Check for per-tenant autonomy policy override
+        has_policy, override_level, override_reason = self._check_autonomy_policy_override(policy)
+        if has_policy:
+            return DecisionResult(
+                autonomy_level=override_level,
+                reason=override_reason,
+                rule_triggered="policy_override",
+                recommended_action="use_policy_level",
+            )
 
         # Rule 1: Safety flags → L0 (escalate)
         triggered, reason = DecisionMatrix._check_safety_flags(policy)

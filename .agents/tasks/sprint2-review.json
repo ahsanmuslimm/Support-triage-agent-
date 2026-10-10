@@ -1,0 +1,56 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "label": "Test suite import path mismatch",
+      "description": "conftest.py imports from `triage.api.main` which fails because package is not installed; test modules import from `triage.classification.classifier` but code uses mixed import styles. Blocks verification of all 48 unit tests."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Autonomy policies table not loaded",
+      "description": "autonomy_policies table exists in migration but DecisionMatrix never queries it; all autonomy decisions are hard-coded rules with no per-tenant override mechanism. Per-tenant customization is impossible."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Entity verification not implemented",
+      "description": "EntityValidationResult model exists but validation logic is absent. Unverified entities cannot be blocked from tool binding. Entity extraction phase cannot gate tool binding to verified entities only, breaking entity-to-tool binding safety contract."
+    },
+    {
+      "severity": "MEDIUM",
+      "label": "Temperature scaler approximation formula undocumented",
+      "description": "scale_confidence() uses tanh approximation `0.5 + 0.5 * tanh((2p - 1) / (2T))` instead of standard logit-space temperature scaling. Formula should be documented or cited; add unit test verifying calibration on validation set."
+    },
+    {
+      "severity": "MEDIUM",
+      "label": "TriageState Postgres serialization untested",
+      "description": "model_dump_json() override is designed for checkpointer but LangGraph orchestration not yet implemented (Phase 7). Cannot verify checkpoint round-trip or resumption across workers. Defer verification to Phase 7."
+    },
+    {
+      "severity": "LOW",
+      "label": "Classification test coverage gaps",
+      "description": "Tests cover happy path and basic error cases but miss negative cases (malformed input, extreme length, high intent cardinality). No test of fallback classifier activation when embedding model unavailable. Add before production."
+    },
+    {
+      "severity": "LOW",
+      "label": "Decision matrix test coverage gaps",
+      "description": "No tests for multi-rule interaction edge cases or malformed PolicyInput (negative IAL, confidence > 1, negative amount). First-match semantics should handle these but explicit tests would confirm."
+    },
+    {
+      "severity": "LOW",
+      "label": "PII pseudonymization logic deferred",
+      "description": "ExtractedEntity has is_pii and pseudonym fields but tokenization logic is missing (Phase 3 scope). Once entity extraction implemented, all PII must be pseudonymized before downstream use."
+    },
+    {
+      "severity": "LOW",
+      "label": "IntentClassifier embedding caching",
+      "description": "Classifier recomputes embeddings on each classify() call. Fine for Phase 2 but will hit latency at scale. Consider caching embeddings in database for production deployments."
+    },
+    {
+      "severity": "LOW",
+      "label": "RLS context setting not enforced",
+      "description": "RLS policies require application to set `app.tenant_id` context variable. Policy syntax is correct but contract enforcement should be verified in integration tests once API routes are added."
+    }
+  ],
+  "reviewDoc": "d:\\WORKING\\PORTFOLIO\\FEATURED PROJECTS\\Support-triage-agent-\\.agents\\tasks\\sprint2-review.md"
+}

@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 import numpy as np
+
 from triage.classification.classifier import IntentClassifier, IntentClassifierError
 from triage.classification.fallback import FallbackIntentClassifier
 from triage.classification.temperature_scaler import TemperatureScaler

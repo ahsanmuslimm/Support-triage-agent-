@@ -1,7 +1,7 @@
 """Decision matrix and autonomy models for Sprint 2."""
 
 from pydantic import BaseModel, Field
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import Optional, List
 
 
@@ -21,7 +21,7 @@ class AutonomyLevel(IntEnum):
     """Auto-execute (highest autonomy)."""
 
 
-class SafetyFlag(str):
+class SafetyFlag(str, Enum):
     """Safety triggers that mandate L0 routing."""
 
     CHARGEBACK = "chargeback"

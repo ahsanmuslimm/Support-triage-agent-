@@ -3,7 +3,8 @@
 from difflib import SequenceMatcher
 from typing import List, Dict, Optional
 import structlog
-from services.api.src.triage.models.intent import IntentPrediction, IntentClassifierResult
+
+from triage.models.intent import IntentPrediction, IntentClassifierResult
 
 log = structlog.get_logger()
 

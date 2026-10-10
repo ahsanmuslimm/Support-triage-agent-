@@ -1,13 +1,17 @@
 """Intent classifier using embeddings + k-NN + temperature scaling."""
 
-import asyncio
 import numpy as np
 from typing import Optional, List, Dict, Any
 import structlog
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sklearn.neighbors import NearestNeighbors  # type: ignore
-from packages.py_core.py_core.errors import TriageBaseError
-from services.api.src.triage.models.intent import IntentPrediction, IntentClassifierResult
+
+try:
+    from py_core.errors import TriageBaseError
+except ImportError:
+    from packages.py_core.py_core.errors import TriageBaseError
+
+from triage.models.intent import IntentPrediction, IntentClassifierResult
 
 log = structlog.get_logger()
 

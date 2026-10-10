@@ -1,3 +1,5 @@
 """Entity extraction and validation module."""
 
-__all__ = []
+from .validator import EntityValidator
+
+__all__ = ["EntityValidator"]

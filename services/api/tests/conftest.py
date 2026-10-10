@@ -1,8 +1,13 @@
 """Pytest fixtures for API tests."""
 
+import sys
 import pytest
+from pathlib import Path
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from triage.api.main import create_app
 
