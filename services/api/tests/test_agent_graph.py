@@ -1,6 +1,7 @@
 """Tests for LangGraph agent (Phase 7)."""
 
 import pytest
+from unittest.mock import patch, AsyncMock
 from triage.agent.nodes import (
     classify_intent_node,
     extract_entities_node,
@@ -9,6 +10,7 @@ from triage.agent.nodes import (
     generate_response_node,
 )
 from triage.models.triage_state import TriageState
+from triage.models.intent import IntentPrediction, IntentClassifierResult
 
 
 class TestTriageAgentNodes:
@@ -25,9 +27,26 @@ class TestTriageAgentNodes:
             conversation_id="conv-1",
         )
 
-        result = await classify_intent_node(state)
-        assert result.primary_intent is not None
-        assert result.intent_confidence > 0
+        # Mock the classifier to avoid needing to load embedding models
+        mock_result = IntentClassifierResult(
+            message_id="msg-1",
+            top_intent="order.status",
+            top_confidence=0.92,
+            all_intents=[
+                IntentPrediction(intent_name="order.status", confidence=0.92, temperature_scaled=True),
+                IntentPrediction(intent_name="refund", confidence=0.08, temperature_scaled=True),
+            ],
+            fallback_used=False,
+        )
+        
+        with patch('triage.agent.nodes.IntentClassifier') as MockClassifier:
+            mock_classifier = AsyncMock()
+            mock_classifier.classify = AsyncMock(return_value=mock_result)
+            MockClassifier.return_value = mock_classifier
+
+            result = await classify_intent_node(state)
+            assert result.primary_intent == "order.status"
+            assert result.intent_confidence == 0.92
 
     @pytest.mark.asyncio
     async def test_extract_entities_node(self):

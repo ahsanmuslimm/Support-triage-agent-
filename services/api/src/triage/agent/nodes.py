@@ -24,14 +24,14 @@ async def classify_intent_node(state: TriageState) -> TriageState:
     log.info("node_classify_intent", message_id=state.message_id)
 
     classifier = IntentClassifier()
-    result = classifier.classify(state.message_text)
+    result = await classifier.classify(state.message_text)
 
     state.intents = [
         {"intent": r.intent_name, "confidence": r.confidence}
-        for r in result.ranked_intents
+        for r in result.all_intents
     ]
-    state.primary_intent = result.top_intent.intent_name if result.top_intent else None
-    state.intent_confidence = result.top_intent.confidence if result.top_intent else 0.0
+    state.primary_intent = result.top_intent if result.top_intent else None
+    state.intent_confidence = result.top_confidence if result.top_confidence else 0.0
     state.phase = "CLASSIFY"
 
     return state
