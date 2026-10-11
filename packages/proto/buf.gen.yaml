@@ -1,0 +1,20 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/ahsanmuslimm/support-triage-agent/gen/go
+  python_package_prefix:
+    default: gen.python
+outputs:
+  - target: go-grpc
+    out: gen/go
+
+  # Python implementation files (_pb2.py)
+  - target: python
+    out: gen/python
+    opt:
+      - "package_root=gen"
+
+  # Python type stub files (_pb2.pyi)
+  - target: pyi
+    out: gen/python

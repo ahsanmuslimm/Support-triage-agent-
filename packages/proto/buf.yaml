@@ -1,0 +1,15 @@
+version: v1
+deps:
+  - buf.build/googleapis/googleapis
+
+lint:
+  use:
+    - STANDARD
+  except:
+    - PACKAGE_VERSION_SUFFIX
+
+breaking:
+  use:
+    - FILE
+  except:
+    - WIRE_COMPATIBLE_ENUM

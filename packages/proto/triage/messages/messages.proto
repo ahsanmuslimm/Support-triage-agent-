@@ -1,0 +1,40 @@
+syntax = "proto3";
+package triage.messages.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Message {
+    string id = 1;                                   // UUID
+    string tenant_id = 2;                            // Multi-tenancy
+    string conversation_id = 3;                      // UUID
+    string customer_id = 4;                          // UUID
+    string channel = 5;                              // "email", "chat", etc.
+    string body = 6;                                 // Message text
+    string sentiment = 7;                            // "negative", "neutral", "positive"
+    string intent = 8;                               // Primary intent
+    float intent_confidence = 9;                     // 0.0–1.0
+    
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp processed_at = 11;    // When triage completed
+    
+    MessageStatus status = 12;                       // INGESTED, CLASSIFIED, ROUTED, RESOLVED
+    
+    string resolution_type = 13;                     // "autonomous", "agent", "escalated"
+    repeated Action actions = 14;                    // Actions taken
+    
+    enum MessageStatus {
+        UNSPECIFIED = 0;
+        INGESTED = 1;
+        CLASSIFIED = 2;
+        ROUTED = 3;
+        RESOLVED = 4;
+        FAILED = 5;
+    }
+}
+
+message Action {
+    string name = 1;                                 // "issue_refund", "lookup_order"
+    string result_status = 2;                        // "success", "failed", "pending"
+    string result_detail = 3;                        // Result or error message
+    int32 latency_ms = 4;                            // Execution time
+}

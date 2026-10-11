@@ -1,0 +1,43 @@
+syntax = "proto3";
+package triage.events.v1;
+
+import "google/protobuf/timestamp.proto";
+import "triage/events/events.proto";
+
+message MessageIngested {
+    BaseEvent base = 1;                              // Inherited base
+    string message_id = 2;                           // UUID
+    string conversation_id = 3;                      // UUID
+    string customer_id = 4;                          // UUID
+    string channel = 5;                              // "email", "chat", "web"
+    string body = 6;                                 // Message text
+    map<string, string> metadata = 7;                // channel-specific fields
+    int32 estimated_response_time_secs = 8;          // SLA context
+}
+
+message MessageClassified {
+    BaseEvent base = 1;
+    string message_id = 2;
+    string intent = 3;                               // "refund_request", "order_lookup", etc.
+    float confidence = 4;                            // 0.0–1.0
+    repeated string entities = 5;                    // ["order_123", "sku_456"]
+    string sentiment = 6;                            // "negative", "neutral", "positive"
+    bool autonomous_resolution = 7;                  // Can bot handle?
+}
+
+message ActionExecuted {
+    BaseEvent base = 1;
+    string message_id = 2;
+    string action_name = 3;                          // "issue_refund", "lookup_order"
+    repeated string inputs = 4;                      // Tool arguments
+    string result = 5;                               // Result JSON (string for compatibility)
+    int32 latency_ms = 6;                            // Execution time
+}
+
+message MessageEscalated {
+    BaseEvent base = 1;
+    string message_id = 2;
+    string escalation_reason = 3;                    // "policy_required", "human_judgment"
+    string assigned_agent_id = 4;                    // UUID (nullable)
+    int32 priority = 5;                              // 1–5 (5 = urgent)
+}

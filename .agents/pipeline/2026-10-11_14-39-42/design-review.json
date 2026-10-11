@@ -1,0 +1,117 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "summary": "Design is comprehensive but has 3 HIGH and 6 MEDIUM findings that must be resolved before implementation. Key issues: missing pre-implementation directory verification, unverified outbox table schema, incomplete port contracts.",
+  "high_findings": 3,
+  "medium_findings": 6,
+  "nit_findings": 3,
+  "findings": [
+    {
+      "id": "HIGH-1",
+      "severity": "HIGH",
+      "title": "Missing Directory Structure Verification",
+      "location": "Section: S6 Directory Structure & Setup",
+      "issue": "Design requires directory structure to be created and verified via pre-commit check before implementation begins, but no verification is present in document. Investigation shows 8 required directories do not exist.",
+      "impact": "Implementation cannot begin without confirmed directory structure.",
+      "fix": "Add section 'Verified Directory Structure (Pre-Implementation Gate)' to design with: (1) timestamp, (2) output of pre-commit directory check, (3) commit ID confirming all directories created. This is a blocking gate."
+    },
+    {
+      "id": "HIGH-2",
+      "severity": "HIGH",
+      "title": "Unverified Outbox Table Schema",
+      "location": "Section: Debezium CDC Relay > Outbox Table Verification",
+      "issue": "Design requires verification of Postgres outbox table schema before Debezium configuration, but no verification provided. Investigation shows the table is not yet implemented (only Python OutboxEvent model exists with TODO comments). Debezium SMT is configured to extract from outbox.body, but if table structure differs or doesn't exist, connector will fail.",
+      "impact": "Debezium configuration is incorrect and will fail at runtime.",
+      "fix": "Before Debezium implementation: (1) Execute SQL to verify current table schema, (2) Compare against design expectations, (3) If table doesn't exist, defer Debezium until S6.2, (4) Add 'Verified Outbox Schema' section to design with query results and timestamp."
+    },
+    {
+      "id": "HIGH-3",
+      "severity": "HIGH",
+      "title": "Incomplete EventBus and WorkflowEngine Port Contracts",
+      "location": "Sections: EventBus Port Definition, WorkflowEngine Port Definition",
+      "issue": "Port definitions lack full error contracts. Missing: (1) Complete exception type list (EventPublishError, MissingTenantContextError, ValidationError, etc.), (2) Full Protocol method stubs with signatures, (3) Idempotency contract for EventBus, (4) Error handling semantics for WorkflowEngine. Acceptance criteria #1, #9, #46 require conformance to 'same contract suite' but no such suite is provided.",
+      "impact": "Cannot verify that adapters conform to contract. Implementation cannot be tested against undefined contract.",
+      "fix": "Expand port definitions: (1) List all exception types with when they are raised, (2) Show complete Python Protocol with all methods, (3) Define idempotency contract (if any), (4) Clarify OutboxPoller as concrete EventBus adapter (not just 'wrapped'), (5) Add statement: 'Both MVP and S6 adapters must conform identically to these contracts.'"
+    },
+    {
+      "id": "MEDIUM-1",
+      "severity": "MEDIUM",
+      "title": "Ambiguous Correlation ID Derivation and Uniqueness Boundary",
+      "location": "Sections: FR-KAFKA-IDEMPOTENCY-01, Idempotency Keys",
+      "issue": "Design uses correlation_id as idempotency key but doesn't specify: (1) Who generates correlation_id? (2) Is it guaranteed globally unique across all tenants and time? (3) What is uniqueness boundary (per-tenant, per-service, global)? Acceptance criterion #27 extracts correlation_id but doesn't define what it is or guarantee its uniqueness.",
+      "impact": "If two events arrive with same correlation_id, design provides no guidance. Idempotency guarantees become undefined.",
+      "fix": "Add subsection 'Correlation ID Generation Contract' to FR-KAFKA-IDEMPOTENCY-01: (1) Definition: 'EventBus.publish() assigns correlation_id at publish time', (2) Uniqueness: 'Must be globally unique UUID v4 generated client-side before publish', (3) Stability: 'Does not change across retries/timeouts/replays', (4) Example UUID, (5) Property test: 1000 distinct events verify 0 duplicate correlation_ids."
+    },
+    {
+      "id": "MEDIUM-2",
+      "severity": "MEDIUM",
+      "title": "Parity Comparison Semantics Undefined",
+      "location": "Section: FR-CUTOVER-PLAN-01 > Parity Checker Logic",
+      "issue": "Design requires 'byte-identical (after canonicalization)' comparison but 'canonicalization' is never defined. What fields can differ? By how much? Design mentions 'critical' vs. 'non-critical' but these categories are never specified. Acceptance criterion #59 says 'track latency delta' but doesn't define acceptable delta (2×? 10×?).",
+      "impact": "Parity checker code cannot be written without specification. Test criteria #58-60 are too vague to verify.",
+      "fix": "Add subsection 'Parity Comparison Rules (Detailed)' specifying: (1) Byte-identical fields (tenant_id, event_type, correlation_id, Protobuf payload), (2) Canonicalized fields with tolerance (timestamp ±1s, source may differ), (3) Non-critical fields (latency measurements), (4) Acceptance test with 100 events and clear parity score calculation."
+    },
+    {
+      "id": "MEDIUM-3",
+      "severity": "MEDIUM",
+      "title": "Activity Timeout Documentation Missing Concrete Tuning Process",
+      "location": "Section: Temporal Adapter > Activity Definitions, Acceptance Criterion #51",
+      "issue": "Design includes timeout table with hypothetical values (30s, 45s, 60s) but: (1) No profiling data or rationale provided, (2) Only example docstring shown, not actual implementations, (3) Tuning deferred to 'S6 profiling' without stage gate, (4) No guidance on what to do if profiling shows timeout is too short. Criterion #51 is unverifiable against estimates.",
+      "impact": "S6 implementation will use guessed timeouts. Production deployment risks repeated activity timeouts if actual latency exceeds estimates.",
+      "fix": "Add section 'Activity Timeout Tuning (Stage Gate)' to FR-WORKFLOW-ENGINE-01: (1) Statement that values are ESTIMATES requiring load testing, (2) k6 load test procedure (100 concurrent requests, measure p50/p95/p99), (3) Tuning rule: schedule_to_close = p99×1.25, start_to_close = p99×1.1, (4) Acceptance: load test required before production, (5) Escalation: if activity exceeds timeout during test, review with tech lead."
+    },
+    {
+      "id": "MEDIUM-4",
+      "severity": "MEDIUM",
+      "title": "DLQ Replay Rate Limiting Backpressure Semantics Undefined",
+      "location": "Section: Dead Letter Queue & Replay Tooling > Rate limiting, Acceptance Criterion #35",
+      "issue": "Design specifies 10 events/sec rate limit but doesn't define backpressure behavior: (1) Does it mean rejection, queueing, or throttling? (2) No timeout/overflow behavior for 1M event replay, (3) Criterion #35 'triggers backpressure' is never defined; how is it measured/tested?",
+      "impact": "Criterion #35 cannot be verified. Property test with concurrent replay calls is undefined (how many concurrent? do they contend for shared rate limit?).",
+      "fix": "Add subsection 'Replay Rate-Limiting & Backpressure Semantics': (1) Backpressure = inline throttling (sleep), not rejection, (2) Replay of N events takes ≥ N/10 seconds, (3) If cancelled, audit records partial completion, (4) Acceptance test: replay 20 events concurrently, verify ≥ 2 sec duration and no events dropped."
+    },
+    {
+      "id": "MEDIUM-5",
+      "severity": "MEDIUM",
+      "title": "Consumer Idempotency Postgres Downtime Handling Incomplete",
+      "location": "Section: Consumer Idempotency Layer > Timeout & Retry Semantics",
+      "issue": "Design fail-closes on Postgres timeout (send to DLQ) but: (1) No SLA for Postgres downtime, (2) No mention of DLQ overflow/alerting if Postgres down > X minutes, (3) No automated recovery probe to detect Postgres is back, (4) If Redis AND Postgres both down, no safe fallback (Criterion #25 only covers Redis down). Cascading failure risk.",
+      "impact": "Single point of failure. If Postgres down > 5 min, all events go to DLQ without clear recovery path. Manual replay required.",
+      "fix": "Add subsection 'Postgres Unavailability Handling': (1) SLA: page on-call if Postgres down > 5 min, (2) Alert: if DLQ event rate > 10/sec for > 1 min, escalate, (3) Recovery: on-call restores Postgres, runs replay CLI with --postgres-recovered flag, (4) Contingency: if Redis AND Postgres both unavailable, drain queues and manual intervention required (document outside S6 scope)."
+    },
+    {
+      "id": "MEDIUM-6",
+      "severity": "MEDIUM",
+      "title": "Outbox Table Verification Section Contradicts Port Definition",
+      "location": "Sections: Debezium CDC Relay, EventBus Port Definition",
+      "issue": "Design states 'EventBus is a NEW port introduced in S6' with 'no existing EventBus interface from Sprint 1' BUT Section 'Debezium CDC Relay' refers to 'OutboxPoller adapter' as implementing EventBus, and Section 'Architecture & Integration' states adapters include 'OutboxPoller (MVP fallback)'. These are contradictory: if EventBus is new, there's no MVP EventBus to fall back to. If OutboxPoller is an EventBus adapter, then EventBus existed (or must be retrofitted to OutboxPoller). This contradiction undermines the design's clarity on what is new vs. legacy.",
+      "impact": "Implementers will be confused about whether EventBus is truly new or an adaptation. Commitment to 'same contract as S1' (criteria #1, #9) cannot be verified if S1 contract doesn't exist.",
+      "fix": "Clarify in EventBus Port Definition: (1) Statement: 'EventBus is a NEW port introduced in S6. There is no EventBus interface in S1. We are retrofitting OutboxPoller to conform to this new EventBus protocol for compatibility.' (2) Show OutboxPoller as concrete implementation with full code, (3) Clarify that OutboxPoller behavior is NOT changing; we're defining the interface after the fact. (4) Remove phrase 'existing EventBus interface from MVP' if it didn't exist."
+    },
+    {
+      "id": "NIT-1",
+      "severity": "NIT",
+      "title": "Proto Comment Format Inconsistency",
+      "location": "Section: Protobuf Field Validation",
+      "issue": "Proto comment examples show mixed formats: some use '// required:', others '// optional:', some 'pattern:', inconsistent spacing and capitalization.",
+      "impact": "Minor; inconsistency may confuse developers writing proto files.",
+      "fix": "Standardize all proto comments to single format, e.g. '// @required: ...', '// @pattern: ...', '// @example: ...'."
+    },
+    {
+      "id": "NIT-2",
+      "severity": "NIT",
+      "title": "Temporal Workflow Example Code Incomplete",
+      "location": "Section: Temporal Adapter > Workflow Orchestration",
+      "issue": "Workflow example cuts off mid-code: '... workflow_id=workflow.info().workflow_id)\\n            r' — error handling for ActivityFailureException is incomplete.",
+      "impact": "Minor; confusing but doesn't affect design correctness.",
+      "fix": "Complete the error handling block showing workflow return value for failed case."
+    },
+    {
+      "id": "NIT-3",
+      "severity": "NIT",
+      "title": "Feature Flag State Machine Diagram Missing",
+      "location": "Section: FR-CUTOVER-PLAN-01",
+      "issue": "Design references 'dual-adapter mode' and mixed flag states but no state diagram or table showing valid combinations (e.g., EVENT_BACKBONE_KAFKA=true, WORKFLOW_ENGINE_TEMPORAL=false).",
+      "impact": "Minor; helpful for clarity but not blocking.",
+      "fix": "Add state table showing all 4 combinations and resulting adapter usage."
+    }
+  ]
+}

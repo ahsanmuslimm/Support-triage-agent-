@@ -1,0 +1,140 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "reviewerNotes": "Design is architecturally sound but contains 2 HIGH + 4 MEDIUM findings requiring resolution before implementation. HIGH findings concern operational safety (Debezium snapshot replay risk, field mapping validation). MEDIUM findings address test coverage gaps and clarity issues.",
+  "findings": [
+    {
+      "id": "H1",
+      "severity": "HIGH",
+      "title": "Debezium Snapshot Re-Emission Risk — Incomplete Pre-Migration Mitigation",
+      "section": "3.2 (Debezium PostgreSQL Connector) + 3.2.1",
+      "problem": "Pre-migration checklist is procedural-only and relies on manual SQL cleanup. If human skips Step 3 or miscalculates grace period, connector will re-emit old events, causing duplicate processing.",
+      "concreteFixRequired": "Provide automated pre-migration check script that queries for unpublished events >1 hour old and fails deployment if found. Embed in CI/CD pre-flight task. Alternative: Configure Debezium to filter unpublished events during snapshot.",
+      "impact": "Silent duplicate processing; data consistency issues; idempotency store collisions"
+    },
+    {
+      "id": "H2",
+      "severity": "HIGH",
+      "title": "Debezium Connector Configuration Incomplete — Field Mapping Unvalidated",
+      "section": "3.2 (Debezium PostgreSQL Connector — connector-config.json)",
+      "problem": "Design claims field mappings are validated but provides no schema definition. Connector config assumes columns like 'published_at' exist without verification. If schema differs, connector fails silently.",
+      "concreteFixRequired": "Explicitly document outbox_events table schema in design (DDL provided in review). Add validation step to pre-migration checklist to verify schema matches. Link connector config to schema definition.",
+      "impact": "Silent connector failure if schema mismatch; events not published to Kafka; SLA violations"
+    },
+    {
+      "id": "M1",
+      "severity": "MEDIUM",
+      "title": "S6.1 Code Generation Pipeline — buf.gen.yaml pyi Target Misconfiguration",
+      "section": "2.3 (buf Configuration) — buf.gen.yaml",
+      "problem": "Configuration specifies both 'target: python' and 'target: pyi' writing to same directory with unclear semantics. Typical approach has both outputs side-by-side but not documented.",
+      "concreteFixRequired": "Clarify buf.gen.yaml with comment explaining pyi + python outputs write to same directory side-by-side. Verify GitHub Actions workflow commits both .py and .pyi files without overwrite.",
+      "impact": "CI/CD confusion; potential build breakage if outputs collide; unclear output structure"
+    },
+    {
+      "id": "M2",
+      "severity": "MEDIUM",
+      "title": "S6.3 Idempotency Slow-Path Race Condition — Insert-First Atomicity Assumption",
+      "section": "4.1 — _check_or_record_slow_path() method",
+      "problem": "Insert-first pattern relies on catching 'duplicate key' exception, which is fragile. No explicit conflict handling via ON CONFLICT clause. Database session state after exception not documented.",
+      "concreteFixRequired": "Use PostgreSQL ON CONFLICT clause for truly atomic insert-or-fetch. Provide code example showing two-phase approach (SELECT then INSERT with retry). Document session state guarantees.",
+      "impact": "Race condition edge case; unlikely but creates technical debt; difficult to debug"
+    },
+    {
+      "id": "M3",
+      "severity": "MEDIUM",
+      "title": "S6.4 Worker Pool — Async Loop Exit Condition Inefficient",
+      "section": "5.2 — WorkerPool._worker_loop() method",
+      "problem": "Tight polling loop with fixed 0.1s sleep on empty queue. No backoff escalation. Shutdown race condition if dequeue_message() is slow.",
+      "concreteFixRequired": "Add exponential backoff (100ms → max 5s) for empty queue sleeps. Alternative: use asyncio.Condition to avoid polling. Document shutdown timeout guarantees.",
+      "impact": "CPU waste on empty queues; inefficient resource usage; subtle shutdown hangs possible"
+    },
+    {
+      "id": "M4",
+      "severity": "MEDIUM",
+      "title": "S6.5 Activities — Per-Activity Timeout Not Consistent Across All Activities",
+      "section": "6.2 (Activities — classify_intent_activity through escalate_activity)",
+      "problem": "Different timeouts specified (60s, 30s, 10s) for each activity without documented justification. Fallback behavior varies (escalate vs graceful degradation) without system. On-call team won't know if timeout is too aggressive.",
+      "concreteFixRequired": "Add table documenting timeout rationale for each activity (LLM inference needs 60s buffer, pure logic needs 10s, etc.). Explain fallback strategy per activity. Link workflow definition to activity timeouts.",
+      "impact": "Operational confusion; risk of overly aggressive timeouts causing unnecessary escalations"
+    },
+    {
+      "id": "M5",
+      "severity": "MEDIUM",
+      "title": "S6.6 Feature Flags — Mutual Exclusion Enforcement Not Testable",
+      "section": "7.1 — EventAdapterSelector.select_adapter() and integration in messages.py",
+      "problem": "Design claims mutual exclusion enforcement but only exists in application code. No test explicitly verifies 'if MVP, then NOT Kafka'. Both adapters running concurrently with no infrastructure-level enforcement.",
+      "concreteFixRequired": "Add integration test that verifies message goes to exactly ONE adapter. Add metrics (event_published_kafka, event_published_mvp) to alert if mutual exclusion violated.",
+      "impact": "Subtle bug potential; duplicate processing if adapter selection logic breaks; hard to detect"
+    },
+    {
+      "id": "M6",
+      "severity": "MEDIUM",
+      "title": "S6.6 Parity Checker — Threshold Justification Missing",
+      "section": "7.2 — ParityChecker class",
+      "problem": "Threshold constants (2% intent divergence, 5% confidence difference, 10% entity count) specified without justification. On-call team won't know if 1.5% divergence is OK or a problem.",
+      "concreteFixRequired": "Add design rationale section explaining: why 2% intent (model equivalence), why 5% confidence (autonomy decision threshold), why 10% entities (deterministic extractor). Explain action for each threshold breach.",
+      "impact": "Operational clarity gap; poor on-call decision-making; risk of false alerts or missed issues"
+    }
+  ],
+  "verifiedAssumptions": [
+    {
+      "claim": "triage.ingestion.outbox.OutboxWriter class exists",
+      "source": "services/api/src/triage/ingestion/outbox.py:9",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.ingestion.outbox.OutboxPoller class exists",
+      "source": "services/api/src/triage/ingestion/outbox.py:96",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.agent.graph.TriageAgentGraph class exists",
+      "source": "services/api/src/triage/agent/graph.py:29",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.classification.classifier.IntentClassifier exists",
+      "source": "services/api/src/triage/classification/classifier.py:27",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.entity.extractor.RuleBasedEntityExtractor exists",
+      "source": "services/api/src/triage/entity/extractor.py:13",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.decision.matrix.DecisionMatrix exists",
+      "source": "services/api/src/triage/decision/matrix.py:17",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.retrieval.hybrid.HybridRetriever exists",
+      "source": "services/api/src/triage/retrieval/hybrid.py:23",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.generation.generator.ResponseGenerator exists",
+      "source": "services/api/src/triage/generation/generator.py:24",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.generation.output_validator.OutputValidator exists",
+      "source": "services/api/src/triage/generation/output_validator.py:23",
+      "status": "VERIFIED"
+    },
+    {
+      "claim": "triage.tools.executor.ToolExecutor exists",
+      "source": "services/api/src/triage/tools/executor.py:26",
+      "status": "VERIFIED"
+    }
+  ],
+  "unverifiedAssumptions": [
+    {
+      "claim": "triage.escalation.router.EscalationRouter exists",
+      "section": "6.2 (activities.py — escalate_activity)",
+      "status": "NOT_VERIFIED",
+      "note": "This class is referenced but could not be located in the codebase. Verify it exists or is planned for Sprint 5/6. This is a blocking dependency for S6.5.",
+      "severity": "BLOCKER"
+    }
+  ],
+  "reviewDoc": "d:\\WORKING\\PORTFOLIO\\FEATURED PROJECTS\\Support-triage-agent-\\.agents\\tasks\\sprint6-design-review.md"
+}

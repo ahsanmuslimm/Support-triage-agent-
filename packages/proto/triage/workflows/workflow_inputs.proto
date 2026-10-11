@@ -1,0 +1,37 @@
+syntax = "proto3";
+package triage.workflows.v1;
+
+import "google/protobuf/timestamp.proto";
+import "triage/messages/messages.proto";
+
+// Input to Temporal workflow
+message ProcessMessageWorkflowInput {
+    string message_id = 1;                           // UUID
+    string tenant_id = 2;
+    string conversation_id = 3;
+    triage.messages.Message message = 4;             // Full message domain object
+    google.protobuf.Timestamp workflow_started_at = 5;
+    int32 idempotency_key_version = 6;              // For deduplication
+}
+
+// Workflow state (stored in Temporal history DB)
+message WorkflowCheckpoint {
+    string workflow_id = 1;                          // (tenant_id, aggregate_id, idempotency_key)
+    string run_id = 2;                               // Temporal run ID
+    ProcessMessageWorkflowInput input = 3;
+    
+    CheckpointPhase phase = 4;                       // Current phase
+    
+    google.protobuf.Timestamp checkpoint_at = 5;
+    string state_json = 6;                           // Current execution state (JSON string)
+    
+    enum CheckpointPhase {
+        UNSPECIFIED = 0;
+        CLASSIFY = 1;
+        ENRICH = 2;
+        DECIDE = 3;
+        RESOLVE = 4;
+        ESCALATE = 5;
+        COMPLETE = 6;
+    }
+}

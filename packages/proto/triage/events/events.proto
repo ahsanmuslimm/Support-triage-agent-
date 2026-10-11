@@ -1,0 +1,29 @@
+syntax = "proto3";
+package triage.events.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// CloudEvents envelope for Kafka (RFC 7807 compatible)
+message CloudEvent {
+    string id = 1;                                    // UUID
+    string source = 2;                               // "triage/messages" (reverse DNS)
+    string type = 3;                                 // "message.ingested"
+    google.protobuf.Timestamp occurred_at = 4;       // Event time (not wall-clock)
+    string content_type = 5;                         // "application/protobuf"
+    string data_content_type = 6;                    // "application/protobuf"
+    string subject = 7;                              // "tenant/{tenant_id}/message/{message_id}"
+    map<string, string> attributes = 8;              // Custom headers
+    bytes data = 9;                                  // Serialized payload (e.g., MessageIngested)
+    
+    // Extensions for multi-tenancy + ordering
+    string tenant_id = 100;                          // Partition key
+    int32 idempotency_version = 101;                 // For exactly-once
+}
+
+// Base event message (all events inherit this pattern)
+message BaseEvent {
+    string id = 1;                                   // Event ID (UUID)
+    string tenant_id = 2;                            // Multi-tenancy
+    google.protobuf.Timestamp occurred_at = 3;       // When it happened
+    int32 version = 4;                               // Schema version (for evolution)
+}

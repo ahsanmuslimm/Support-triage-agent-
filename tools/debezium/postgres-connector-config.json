@@ -1,0 +1,55 @@
+{
+  "name": "postgres-cdc-outbox",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": 5432,
+    "database.user": "triage_app",
+    "database.password": "${DB_PASSWORD}",
+    "database.dbname": "triage",
+    "database.server.name": "triage_db",
+    
+    "plugin.name": "pgoutput",
+    "publication.name": "dbz_publication",
+    "slot.name": "dbz_slot",
+    "slot.drop.on.stop": false,
+    
+    "table.include.list": "triage.outbox_events",
+    "database.history.kafka.bootstrap.servers": "kafka-broker-1:9092,kafka-broker-2:9092,kafka-broker-3:9092",
+    "database.history.kafka.topic": "dbhistory.triage",
+    
+    "transforms": "outbox,filter",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.route.topic.replacement": "${routedByValue}",
+    "transforms.outbox.route.by.field": "event_type",
+    "transforms.outbox.table.field.event.key": "tenant_id",
+    "transforms.outbox.table.field.event.id": "id",
+    "transforms.outbox.table.excluded.columns": "published_at",
+    "transforms.outbox.table.field.event.timestamp": "created_at",
+    
+    "transforms.filter.type": "org.apache.kafka.connect.transforms.Filter",
+    "transforms.filter.predicate": "is_unpublished",
+    "predicates": "is_unpublished",
+    "predicates.is_unpublished.type": "org.apache.kafka.connect.transforms.predicates.ValueMatches",
+    "predicates.is_unpublished.field": "after.published_at",
+    "predicates.is_unpublished.contains": "null",
+    
+    "snapshot.mode": "initial",
+    "snapshot.isolation.mode": "read_committed",
+    "errors.deadletterqueue.topic": "triage.dlq.postgres",
+    "errors.deadletterqueue.topic.replication.factor": 3,
+    "errors.log.enable": true,
+    
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": false,
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": false,
+    
+    "batch.size": 2048,
+    "poll.interval.ms": 1000,
+    "max.queue.size": 8192,
+    "lsn.commit.timeout.ms": 10000,
+    "connection.timeout.ms": 30000,
+    "heartbeat.interval.ms": 10000
+  }
+}
