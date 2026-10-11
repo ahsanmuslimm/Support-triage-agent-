@@ -1,0 +1,33 @@
+{"id": "1", "customer_id": "cust_001", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["billing", "payment_issues"]}
+{"id": "2", "customer_id": "cust_002", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "3", "customer_id": "cust_003", "tenant_id": 1, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["features"]}
+{"id": "4", "customer_id": "cust_004", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["shipping", "returns"]}
+{"id": "5", "customer_id": "cust_005", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "6", "customer_id": "cust_006", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["technical_issues"]}
+{"id": "7", "customer_id": "cust_007", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "8", "customer_id": "cust_008", "tenant_id": 1, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["account_management"]}
+{"id": "9", "customer_id": "cust_009", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["subscription"]}
+{"id": "10", "customer_id": "cust_010", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "11", "customer_id": "cust_011", "tenant_id": 2, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["refunds"]}
+{"id": "12", "customer_id": "cust_012", "tenant_id": 2, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "13", "customer_id": "cust_013", "tenant_id": 2, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["faq"]}
+{"id": "14", "customer_id": "cust_014", "tenant_id": 2, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["billing_inquiry"]}
+{"id": "15", "customer_id": "cust_015", "tenant_id": 2, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "16", "customer_id": "cust_016", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["order_tracking"]}
+{"id": "17", "customer_id": "cust_017", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "18", "customer_id": "cust_018", "tenant_id": 1, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["product_info"]}
+{"id": "19", "customer_id": "cust_019", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["cancellation"]}
+{"id": "20", "customer_id": "cust_020", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "21", "customer_id": "cust_021", "tenant_id": 3, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["fraud_prevention"]}
+{"id": "22", "customer_id": "cust_022", "tenant_id": 3, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "23", "customer_id": "cust_023", "tenant_id": 3, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["security"]}
+{"id": "24", "customer_id": "cust_024", "tenant_id": 3, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["compliance"]}
+{"id": "25", "customer_id": "cust_025", "tenant_id": 3, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "26", "customer_id": "cust_026", "tenant_id": 2, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["discount_codes"]}
+{"id": "27", "customer_id": "cust_027", "tenant_id": 2, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "28", "customer_id": "cust_028", "tenant_id": 2, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["loyalty_program"]}
+{"id": "29", "customer_id": "cust_029", "tenant_id": 1, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["payment_methods"]}
+{"id": "30", "customer_id": "cust_030", "tenant_id": 1, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "formal", "expected_gap_topics": []}
+{"id": "31", "customer_id": "cust_031", "tenant_id": 3, "expected_health_score_bucket": "low", "expected_sentiment": "negative", "expected_tone": "empathy", "expected_gap_topics": ["subscription_management"]}
+{"id": "32", "customer_id": "cust_032", "tenant_id": 3, "expected_health_score_bucket": "high", "expected_sentiment": "positive", "expected_tone": "urgency", "expected_gap_topics": []}
+{"id": "33", "customer_id": "cust_033", "tenant_id": 3, "expected_health_score_bucket": "medium", "expected_sentiment": "neutral", "expected_tone": "default", "expected_gap_topics": ["integration"]}

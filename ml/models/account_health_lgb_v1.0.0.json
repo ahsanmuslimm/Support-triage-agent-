@@ -1,0 +1,25 @@
+{
+  "version": "v1.0.0",
+  "timestamp": "2026-10-11T03:26:00.674122",
+  "training_samples": 1000,
+  "num_features": 15,
+  "feature_names": [
+    "recency_days",
+    "frequency",
+    "monetary_value",
+    "support_contact_count",
+    "avg_resolution_days",
+    "failed_payments_90d",
+    "chargeback_count",
+    "subscription_age_days",
+    "subscription_status_active",
+    "plan_value_usd",
+    "account_age_days",
+    "total_order_count",
+    "high_value_order_count",
+    "return_rate",
+    "sentiment_negative_ratio"
+  ],
+  "model_type": "LightGBM",
+  "threshold": 0.65
+}
