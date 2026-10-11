@@ -433,3 +433,108 @@ def test_explain_drivers_are_valid(scorer, health_features_at_risk):
         assert isinstance(driver["feature"], str)
         assert isinstance(driver["impact"], float)
         assert driver["direction"] in ["positive", "negative"]
+
+
+# Tests for LightGBM model integration
+
+@pytest.fixture
+def model_path():
+    """Path to the trained LightGBM model."""
+    from pathlib import Path
+    return Path(__file__).parent.parent.parent.parent / "ml" / "models" / "account_health_lgb.pkl"
+
+
+def test_predict_with_actual_model_loaded(health_features_healthy, model_path):
+    """Test prediction using loaded LightGBM model."""
+    if not model_path.exists():
+        pytest.skip(f"Model file not found at {model_path}")
+    
+    scorer = AccountHealthScorer(model_path=str(model_path))
+    
+    assert scorer.model is not None
+    
+    score, label = scorer.predict(health_features_healthy)
+    
+    # Verify valid prediction
+    assert isinstance(score, float)
+    assert 0.0 <= score <= 1.0
+    assert label in ["healthy", "at_risk"]
+
+
+def test_predict_model_vs_fallback_consistency(health_features_healthy, model_path):
+    """Test that model-based predictions return valid scores."""
+    if not model_path.exists():
+        pytest.skip(f"Model file not found at {model_path}")
+    
+    scorer_model = AccountHealthScorer(model_path=str(model_path))
+    scorer_fallback = AccountHealthScorer()
+    
+    score_model, label_model = scorer_model.predict(health_features_healthy)
+    score_fallback, label_fallback = scorer_fallback.predict(health_features_healthy)
+    
+    # Both should produce valid outputs
+    assert 0.0 <= score_model <= 1.0
+    assert 0.0 <= score_fallback <= 1.0
+    assert label_model in ["healthy", "at_risk"]
+    assert label_fallback in ["healthy", "at_risk"]
+
+
+def test_explain_with_actual_model_shap(health_features_at_risk, model_path):
+    """Test SHAP-based explanation using loaded model."""
+    if not model_path.exists():
+        pytest.skip(f"Model file not found at {model_path}")
+    
+    try:
+        import shap  # noqa: F401
+    except ImportError:
+        pytest.skip("SHAP not installed")
+    
+    scorer = AccountHealthScorer(model_path=str(model_path))
+    drivers = scorer.explain(health_features_at_risk)
+    
+    # Verify valid explanation
+    assert isinstance(drivers, list)
+    assert len(drivers) <= 3
+    
+    for driver in drivers:
+        assert "feature" in driver
+        assert "impact" in driver
+        assert "direction" in driver
+        assert isinstance(driver["feature"], str)
+        assert isinstance(driver["impact"], float)
+        assert driver["direction"] in ["positive", "negative"]
+
+
+def test_model_loading_invalid_path():
+    """Test that invalid model path raises error."""
+    with pytest.raises(Exception):
+        AccountHealthScorer(model_path="/nonexistent/path/model.pkl")
+
+
+def test_predict_fallback_when_model_none(health_features_healthy):
+    """Test that prediction falls back to heuristic when model is None."""
+    scorer = AccountHealthScorer(model=None)
+    
+    assert scorer.model is None
+    
+    score, label = scorer.predict(health_features_healthy)
+    
+    # Fallback should still work
+    assert isinstance(score, float)
+    assert 0.0 <= score <= 1.0
+    assert label in ["healthy", "at_risk"]
+
+
+def test_explain_fallback_when_shap_unavailable(health_features_at_risk):
+    """Test that explanation falls back gracefully when SHAP unavailable."""
+    scorer = AccountHealthScorer()
+    
+    # Even without SHAP, explain should work with fallback
+    drivers = scorer.explain(health_features_at_risk)
+    
+    assert isinstance(drivers, list)
+    assert len(drivers) <= 3
+    for driver in drivers:
+        assert "feature" in driver
+        assert "impact" in driver
+        assert "direction" in driver

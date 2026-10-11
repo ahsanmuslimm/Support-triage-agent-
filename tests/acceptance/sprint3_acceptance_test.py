@@ -20,10 +20,13 @@ from services.api.src.triage.prompting.tone_selector import ToneSelector
 
 def load_golden_dataset():
     """Load golden test dataset from JSONL file."""
+    from pathlib import Path
+    import json
+    
     golden_path = Path(__file__).parent.parent.parent / "ml" / "evals" / "golden" / "enrichment_v0.jsonl"
     
     if not golden_path.exists():
-        pytest.skip(f"Golden dataset not found at {golden_path}")
+        raise FileNotFoundError(f"Golden dataset not found at {golden_path}")
     
     records = []
     with open(golden_path, 'r') as f:

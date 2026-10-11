@@ -78,11 +78,26 @@ class AccountHealthScorer:
         try:
             import numpy as np
 
+            # Convert features to 2D array for model inference
             X = np.array([features.to_array()])
-            prediction = self.model.predict(X)[0]
+            
+            # Use predict_proba if available (for binary classifiers), otherwise predict
+            try:
+                # Try predict_proba first (returns probabilities for each class)
+                predictions = self.model.predict_proba(X)
+                # For binary classifier, take probability of positive class (index 1)
+                if predictions.shape[1] == 2:
+                    churn_risk_score = float(predictions[0][1])
+                else:
+                    # Single output - assume it's the risk score
+                    churn_risk_score = float(predictions[0])
+            except (AttributeError, TypeError):
+                # Fallback to predict if predict_proba not available
+                prediction = self.model.predict(X)[0]
+                churn_risk_score = float(prediction)
 
             # Ensure score is in [0, 1]
-            churn_risk_score = float(max(0.0, min(1.0, prediction)))
+            churn_risk_score = max(0.0, min(1.0, churn_risk_score))
 
             # Apply threshold
             health_label = "at_risk" if churn_risk_score >= self.threshold else "healthy"
@@ -107,29 +122,66 @@ class AccountHealthScorer:
             import numpy as np
 
             X = np.array([features.to_array()])
-            explainer = shap.TreeExplainer(self.model)
-            shap_values = explainer.shap_values(X)
+            
+            try:
+                # Try to create SHAP explainer for tree models
+                explainer = shap.TreeExplainer(self.model)
+                shap_values = explainer.shap_values(X)
 
-            # Get SHAP values for the prediction
-            if isinstance(shap_values, list):
-                sv = shap_values[1][0]  # Positive class
-            else:
-                sv = shap_values[0]
+                # Handle different SHAP value formats
+                if isinstance(shap_values, list):
+                    # List of arrays for binary/multiclass - take positive class
+                    sv = shap_values[1][0] if len(shap_values) > 1 else shap_values[0][0]
+                else:
+                    # Single array
+                    sv = shap_values[0]
 
-            # Get top 3 drivers
-            feature_names = HealthFeatures.feature_names()
-            drivers = []
+                # Get top 3 drivers by absolute SHAP value
+                feature_names = HealthFeatures.feature_names()
+                top_indices = np.argsort(np.abs(sv))[::-1][:3]
+                
+                drivers = []
+                for idx in top_indices:
+                    drivers.append(
+                        {
+                            "feature": feature_names[idx],
+                            "impact": float(sv[idx]),
+                            "direction": "positive" if sv[idx] > 0 else "negative",
+                        }
+                    )
 
-            for idx in np.argsort(np.abs(sv))[::-1][:3]:
-                drivers.append(
-                    {
-                        "feature": feature_names[idx],
-                        "impact": float(sv[idx]),
-                        "direction": "positive" if sv[idx] > 0 else "negative",
-                    }
-                )
-
-            return drivers
+                return drivers
+            except Exception as shap_error:
+                logger.warning(f"TreeExplainer failed, trying KernelExplainer: {shap_error}")
+                # Fallback to KernelExplainer if TreeExplainer fails
+                explainer = shap.KernelExplainer(self.model.predict, X)
+                shap_values = explainer.shap_values(X)
+                
+                if isinstance(shap_values, list):
+                    sv = shap_values[1] if len(shap_values) > 1 else shap_values[0]
+                else:
+                    sv = shap_values
+                
+                if isinstance(sv, np.ndarray) and len(sv.shape) > 1:
+                    sv = sv[0]
+                
+                feature_names = HealthFeatures.feature_names()
+                top_indices = np.argsort(np.abs(sv))[::-1][:3]
+                
+                drivers = []
+                for idx in top_indices:
+                    drivers.append(
+                        {
+                            "feature": feature_names[idx],
+                            "impact": float(sv[idx]),
+                            "direction": "positive" if sv[idx] > 0 else "negative",
+                        }
+                    )
+                return drivers
+                
+        except ImportError:
+            logger.warning("SHAP not installed, using fallback explanation")
+            return self._fallback_explain(features)
         except Exception as e:
             logger.warning(f"SHAP explanation failed: {e}")
             return self._fallback_explain(features)
