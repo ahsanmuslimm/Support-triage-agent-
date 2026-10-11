@@ -167,26 +167,27 @@ class TestTriageState:
             message_text="Where is my order?",
             customer_id="cust-456",
             tenant_id="tenant-789",
-            channel="email",
+            conversation_id="conv-001",
         )
         assert state.message_id == "msg-123"
-        assert state.top_intent is None
-        assert len(state.reasoning) == 0
+        assert state.primary_intent is None
+        assert len(state.intents) == 0
 
     def test_triage_state_add_reasoning(self):
-        """Test adding reasoning steps."""
+        """Test entity and intent tracking."""
         state = TriageState(
             message_id="msg-123",
             message_text="Test",
             customer_id="cust-123",
             tenant_id="tenant-123",
+            conversation_id="conv-001",
         )
-        state.add_reasoning("classification", {"intent": "order_status", "confidence": 0.92})
-        state.add_reasoning("validation", {"valid": True})
+        state.intents = [{"intent": "order_status", "confidence": 0.92}]
+        state.entities = [{"type": "ORDER_ID", "value": "12345"}]
 
-        assert len(state.reasoning) == 2
-        assert state.reasoning[0]["step"] == "classification"
-        assert state.reasoning[1]["step"] == "validation"
+        assert len(state.intents) == 1
+        assert state.intents[0]["intent"] == "order_status"
+        assert len(state.entities) == 1
 
     def test_triage_state_serialization(self):
         """Test TriageState serialization."""
@@ -195,17 +196,18 @@ class TestTriageState:
             message_text="Test message",
             customer_id="cust-123",
             tenant_id="tenant-123",
-            top_intent="order_status",
+            conversation_id="conv-001",
+            primary_intent="order_status",
             intent_confidence=0.87,
         )
         data = state.model_dump()
         assert data["message_id"] == "msg-123"
-        assert data["top_intent"] == "order_status"
+        assert data["primary_intent"] == "order_status"
         assert data["intent_confidence"] == 0.87
 
         # Round-trip
         state2 = TriageState(**data)
-        assert state2.top_intent == "order_status"
+        assert state2.primary_intent == "order_status"
 
     def test_triage_state_autonomy_level(self):
         """Test autonomy level in state."""
@@ -214,6 +216,7 @@ class TestTriageState:
             message_text="Test",
             customer_id="cust-123",
             tenant_id="tenant-123",
-            autonomy_level=AutonomyLevel.L2_CONFIRM,
+            conversation_id="conv-001",
+            autonomy_level=2,
         )
-        assert state.autonomy_level == AutonomyLevel.L2_CONFIRM
+        assert state.autonomy_level == 2
