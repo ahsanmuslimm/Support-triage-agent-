@@ -1,6 +1,7 @@
 """Rule-based entity extraction using regex patterns."""
 
 import re
+import asyncio
 from typing import List, Optional
 import structlog
 
@@ -58,10 +59,44 @@ class RuleBasedEntityExtractor:
     # PII entity types
     PII_TYPES = {EntityType.EMAIL, EntityType.PHONE, EntityType.CREDIT_CARD, EntityType.SSN}
 
-    def __init__(self):
-        """Initialize extractor."""
+    def __init__(self, linker=None):
+        """Initialize extractor.
+        
+        Args:
+            linker: Optional EntityLinker instance for entity linking
+        """
         self.pii_vault: dict[str, str] = {}
         self.vault_counter = 0
+        self.linker = linker
+
+    async def extract_with_linking(self, text: str, message_id: str, tenant_id: str) -> EntityExtractionResult:
+        """Extract entities from text and link them to database records.
+
+        Args:
+            text: Message text to extract from
+            message_id: ID of the message being processed
+            tenant_id: Tenant ID for cross-tenant isolation
+
+        Returns:
+            EntityExtractionResult with extracted and linked entities
+        """
+        result = self.extract(text, message_id)
+        
+        # Link entities if linker is available
+        if self.linker:
+            linked_entities = []
+            for entity in result.entities:
+                try:
+                    link_result = await self.linker.link(entity)
+                    if link_result.success:
+                        entity.linked_id = link_result.linked_id
+                        entity.linked_tenant_id = link_result.tenant_id
+                except Exception as e:
+                    log.warning("entity_linking_failed", entity_type=entity.entity_type, error=str(e))
+                linked_entities.append(entity)
+            result.entities = linked_entities
+        
+        return result
 
     def extract(self, text: str, message_id: str) -> EntityExtractionResult:
         """Extract all entities from text using regex patterns.

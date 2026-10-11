@@ -16,10 +16,9 @@ class TestJ2LowConfidenceEscalation:
         except RuntimeError:
             pytest.skip("LangGraph not installed")
 
-    @pytest.mark.asyncio
-    async def test_j2_ambiguous_message_escalation(self, graph):
+    def test_j2_ambiguous_message_escalation(self, graph):
         """Test J2: Ambiguous message escalates."""
-        state = await graph.run(
+        state = graph.run(
             message_text="I have a problem",
             customer_id="cust-200",
             tenant_id="tenant-001",
@@ -28,10 +27,9 @@ class TestJ2LowConfidenceEscalation:
         # Low confidence or L0 autonomy triggers escalation
         assert state.autonomy_level == 0 or state.intent_confidence < 0.7
 
-    @pytest.mark.asyncio
-    async def test_j2_escalation_has_reason(self, graph):
+    def test_j2_escalation_has_reason(self, graph):
         """Test J2: Escalation includes reason."""
-        state = await graph.run(
+        state = graph.run(
             message_text="Something is wrong with my account",
             customer_id="cust-201",
             tenant_id="tenant-001",

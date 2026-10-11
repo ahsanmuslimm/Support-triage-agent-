@@ -18,12 +18,11 @@ class TestJ1WISMOAutoResolve:
             # LangGraph not installed; skip
             pytest.skip("LangGraph not installed")
 
-    @pytest.mark.asyncio
-    async def test_j1_order_status_high_confidence(self, graph):
+    def test_j1_order_status_high_confidence(self, graph):
         """Test J1: High-confidence WISMO query."""
         start = time.perf_counter()
 
-        state = await graph.run(
+        state = graph.run(
             message_text="Where is order #654321?",
             customer_id="cust-123",
             tenant_id="tenant-001",
@@ -38,10 +37,9 @@ class TestJ1WISMOAutoResolve:
         assert state.response_text is not None
         assert latency_ms < 2000  # < 2 seconds
 
-    @pytest.mark.asyncio
-    async def test_j1_no_escalation(self, graph):
+    def test_j1_no_escalation(self, graph):
         """Test J1: No escalation for confident order status."""
-        state = await graph.run(
+        state = graph.run(
             message_text="Can you track my order?",
             customer_id="cust-124",
             tenant_id="tenant-001",

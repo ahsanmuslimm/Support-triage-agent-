@@ -102,7 +102,7 @@ class TriageAgentGraph:
             log.warning("checkpointer_init_failed", error=str(e))
         return None
 
-    async def run(
+    def run(
         self,
         message_text: str,
         customer_id: str,
@@ -134,7 +134,7 @@ class TriageAgentGraph:
             conversation_id=conversation_id,
         )
 
-        # Run graph (simplified for non-async)
+        # Run graph synchronously
         try:
             result = self.graph.invoke(initial_state)
             log.info("triage_run_complete", phase=result.phase)

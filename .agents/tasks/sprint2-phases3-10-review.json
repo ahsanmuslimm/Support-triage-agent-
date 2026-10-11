@@ -1,0 +1,31 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "label": "Acceptance tests require graph mocking",
+      "description": "J1–J3 tests call graph.run() as async but the graph invocation is synchronous. Tests will fail with 'coroutine never awaited' or similar errors without refactoring or mocking."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Eval harness missing",
+      "description": "eval_harness_s2.py referenced in the plan does not exist. Phase 9 evaluation cannot proceed without it."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Golden evaluation set missing",
+      "description": "No unified jsonl file with 50+ evaluation records meeting Phase 9 schema requirements exists. Scattered v0 jsonl files predate Phase 9 requirements."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Entity extraction skips linker integration",
+      "description": "RuleBasedEntityExtractor does not call EntityLinker during extraction, leaving linked_id null on all entities. EntityValidator will reject every entity at the cross-tenant check, blocking all tool binding."
+    },
+    {
+      "severity": "HIGH",
+      "label": "Graph run() mixes async/sync paradigms",
+      "description": "TriageAgentGraph.run() is declared async but calls self.graph.invoke() (synchronous). This causes paradigm mismatch and acceptance test failures."
+    }
+  ],
+  "reviewDoc": "d:\\WORKING\\PORTFOLIO\\FEATURED PROJECTS\\Support-triage-agent-\\.agents\\tasks\\sprint2-phases3-10-review.md"
+}
