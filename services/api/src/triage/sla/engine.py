@@ -27,9 +27,6 @@ class SLAEventType(str, Enum):
 class SLAEvent:
     """SLA event emitted for tracking."""
 
-    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    """Unique event ID."""
-
     event_type: SLAEventType
     """Event type."""
 
@@ -38,6 +35,9 @@ class SLAEvent:
 
     timer_id: str
     """Associated timer ID."""
+
+    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    """Unique event ID."""
 
     timestamp: datetime = field(default_factory=datetime.utcnow)
     """Event timestamp."""
@@ -76,23 +76,23 @@ class SLAPolicy:
 class SLATimer:
     """Timer tracking SLA deadline for a ticket."""
 
-    timer_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    """Unique timer ID."""
-
     ticket_id: str
     """Associated ticket ID."""
 
     policy: SLAPolicy
     """SLA policy."""
 
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    """Timer creation time."""
-
     deadline: datetime
     """Calculated deadline."""
 
     warning_threshold: datetime
     """Warning threshold (75% of deadline)."""
+
+    timer_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    """Unique timer ID."""
+
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    """Timer creation time."""
 
     paused_at: Optional[datetime] = None
     """Time when timer was paused (None if running)."""

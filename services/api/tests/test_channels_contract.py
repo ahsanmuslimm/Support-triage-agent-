@@ -247,6 +247,12 @@ class TestPostReply:
 
     async def test_whatsapp_post_reply(self, whatsapp_adapter):
         """Test WhatsApp reply posting."""
+        from triage.channels.whatsapp import WhatsAppWindow
+        from datetime import datetime
+        
+        # Register active 24h window for this phone
+        whatsapp_adapter.windows["+14155555555"] = WhatsAppWindow(datetime.utcnow())
+        
         result = await whatsapp_adapter.post_reply("+14155555555", "Hi there!")
 
         assert result.success
