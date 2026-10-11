@@ -1,84 +1,73 @@
-"""LangGraph state model for Sprint 2 triage agent."""
+"""Triage agent state for LangGraph."""
 
+from typing import List, Optional, Any
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from .intent import IntentPrediction
-from .entity import ExtractedEntity
-from .decision import AutonomyLevel, DecisionResult
 
 
 class TriageState(BaseModel):
-    """Mutable state passed through LangGraph nodes."""
+    """Complete state for triage agent execution."""
 
-    # ========== INPUT ==========
+    # Input
     message_id: str
     message_text: str
     customer_id: str
     tenant_id: str
-    channel: str = Field(default="email")
-    conversation_id: Optional[str] = Field(default=None)
+    conversation_id: str
 
-    # ========== CLASSIFICATION PHASE ==========
-    intents: List[IntentPrediction] = Field(default_factory=list, description="All intents above threshold")
-    top_intent: Optional[str] = Field(default=None, description="Primary intent")
-    intent_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    # Classification
+    intents: List[dict] = Field(default_factory=list)  # [{intent: str, confidence: float}]
+    primary_intent: Optional[str] = None
+    intent_confidence: float = 0.0
 
-    # ========== ENTITY PHASE ==========
-    entities: List[ExtractedEntity] = Field(default_factory=list)
-    redacted_text: Optional[str] = Field(default=None, description="Text with PII replaced")
+    # Entity extraction
+    entities: List[dict] = Field(default_factory=list)
+    extracted_amount: Optional[float] = None
 
-    # ========== POLICY & AUTONOMY PHASE ==========
-    customer_ial: int = Field(default=0, ge=0, le=3, description="Identity Assurance Level")
-    customer_tier: str = Field(default="standard")  # standard, premium, enterprise
-    autonomy_level: Optional[AutonomyLevel] = Field(default=None)
+    # Decision
+    autonomy_level: Optional[int] = None  # 0-3
+    autonomy_reason: Optional[str] = None
+    decision_rule: Optional[str] = None
+
+    # Retrieval
+    retrieved_docs: List[dict] = Field(default_factory=list)
+    retrieval_query: Optional[str] = None
+
+    # Response generation
+    response_text: Optional[str] = None
+    response_valid: bool = False
+    grounding_score: Optional[float] = None
+    generation_error: Optional[str] = None
+
+    # Tool execution
+    tool_name: Optional[str] = None
+    tool_args: Optional[dict] = None
+    tool_executed: bool = False
+    tool_result: Optional[dict] = None
+    tool_error: Optional[str] = None
+
+    # Escalation
+    escalate: bool = False
+    escalation_reason: Optional[str] = None
+    escalation_route: Optional[str] = None
+
+    # Metadata
     safety_flags: List[str] = Field(default_factory=list)
-
-    # ========== RETRIEVAL PHASE (STUB) ==========
-    retrieved_chunks: List[str] = Field(default_factory=list, description="Retrieved knowledge base chunks")
-
-    # ========== RESPONSE GENERATION PHASE (STUB) ==========
-    response_text: Optional[str] = Field(default=None)
-    response_valid: bool = Field(default=False)
-    response_error: Optional[str] = Field(default=None)
-
-    # ========== DECISION PHASE ==========
-    decision_result: Optional[DecisionResult] = Field(default=None)
-    action: Optional[str] = Field(default=None)  # escalate, compose_draft, execute_tools, hold_for_agent
-
-    # ========== EXECUTION PHASE (STUB) ==========
-    tool_to_execute: Optional[str] = Field(default=None)
-    tool_args: Dict[str, Any] = Field(default_factory=dict)
-    tool_result: Optional[Dict[str, Any]] = Field(default=None)
-    tool_error: Optional[str] = Field(default=None)
-
-    # ========== AUDIT & TIMING ==========
-    reasoning: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Reasoning trail for audit and debugging"
-    )
-    latency_ms: Optional[float] = Field(default=None)
-    started_at: Optional[datetime] = Field(default=None)
-    completed_at: Optional[datetime] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    latency_ms: float = 0.0
+    phase: str = "START"  # Track current phase
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None,
+        json_schema_extra = {
+            "example": {
+                "message_id": "msg-123",
+                "message_text": "Where is my order?",
+                "customer_id": "cust-456",
+                "tenant_id": "tenant-789",
+                "conversation_id": "conv-001",
+                "intents": [{"intent": "order_status", "confidence": 0.92}],
+                "primary_intent": "order_status",
+                "autonomy_level": 1,
+                "response_text": "Your order 123 is on the way.",
+            }
         }
-
-    def add_reasoning(self, step: str, details: Dict[str, Any] | None = None) -> None:
-        """Log a reasoning step to the trail."""
-        entry = {"step": step, "timestamp": datetime.utcnow().isoformat()}
-        if details:
-            entry.update(details)
-        self.reasoning.append(entry)
-
-    def model_dump_json(self, **kwargs) -> str:
-        """Override to ensure JSON serializable for Postgres checkpointer."""
-        # Ensure all datetime fields are ISO strings
-        data = self.model_dump(**kwargs)
-        if self.started_at:
-            data["started_at"] = self.started_at.isoformat()
-        if self.completed_at:
-            data["completed_at"] = self.completed_at.isoformat()
-        import json
-        return json.dumps(data, default=str)
