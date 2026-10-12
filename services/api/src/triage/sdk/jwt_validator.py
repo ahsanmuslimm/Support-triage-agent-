@@ -144,7 +144,7 @@ class JWTValidator:
             log.error("jwt_validation_failed", error=str(e), tenant_id=self.tenant_id)
             if isinstance(e, JWTError):
                 raise
-            raise JWTError(f"Validation failed: {e}")
+            raise JWTError(f"Validation failed: {e}") from e
 
     def _decode_base64(self, data: str) -> dict[str, Any]:
         """Decode base64url-encoded JSON.
@@ -167,7 +167,7 @@ class JWTValidator:
             decoded = base64.urlsafe_b64decode(data)
             return json.loads(decoded)
         except Exception as e:
-            raise JWTError(f"Failed to decode base64url: {e}")
+            raise JWTError(f"Failed to decode base64url: {e}") from e
 
     def _verify_es256_signature(
         self,
@@ -206,7 +206,7 @@ class JWTValidator:
 
             log.debug("es256_signature_verified")
         except Exception as e:
-            raise JWTError(f"ES256 signature verification failed: {e}")
+            raise JWTError(f"ES256 signature verification failed: {e}") from e
 
 
 class KeyRotationManager:
@@ -275,7 +275,7 @@ class KeyRotationManager:
 
         except Exception as e:
             log.error("key_refresh_failed", error=str(e))
-            raise KeyRotationError(f"Failed to refresh keys: {e}")
+            raise KeyRotationError(f"Failed to refresh keys: {e}") from e
 
     def add_key(self, kid: str, public_key: str) -> None:
         """Manually add a public key.

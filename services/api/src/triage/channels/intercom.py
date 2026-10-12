@@ -265,4 +265,4 @@ class IntercomAdapter(HelpdeskConnector):
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e

@@ -378,7 +378,7 @@ class WhatsAppAdapter(HelpdeskConnector):
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e
 
     def _normalize_phone(self, phone_number: str) -> str:
         """Normalize phone number to E.164 format.

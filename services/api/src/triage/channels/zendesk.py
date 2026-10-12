@@ -272,7 +272,7 @@ class ZendeskAdapter(HelpdeskConnector):
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e
 
     def get_routing_sidebar_config(self, ticket: TicketNormalization) -> dict[str, Any]:
         """Build sidebar configuration for advanced routing UI.

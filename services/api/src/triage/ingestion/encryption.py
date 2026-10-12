@@ -25,7 +25,7 @@ class EnvelopeEncryption:
         try:
             self.cipher = Fernet(master_key.encode() if isinstance(master_key, str) else master_key)
         except Exception as e:
-            raise ValueError(f"Invalid encryption key: {e}")
+            raise ValueError(f"Invalid encryption key: {e}") from e
 
         self.dek_version = 1  # Data Encryption Key version
 
@@ -50,7 +50,7 @@ class EnvelopeEncryption:
                 "algorithm": "fernet",
             }
         except Exception as e:
-            raise RuntimeError(f"Encryption failed: {e}")
+            raise RuntimeError(f"Encryption failed: {e}") from e
 
     def decrypt(self, ciphertext: str, dek_version: int = 1) -> str:
         """Decrypt ciphertext to plaintext.
@@ -69,6 +69,6 @@ class EnvelopeEncryption:
             plaintext = self.cipher.decrypt(ciphertext.encode("utf-8"))
             return plaintext.decode("utf-8")
         except InvalidToken as e:
-            raise RuntimeError(f"Decryption failed (invalid key or corrupted data): {e}")
+            raise RuntimeError(f"Decryption failed (invalid key or corrupted data): {e}") from e
         except Exception as e:
-            raise RuntimeError(f"Decryption failed: {e}")
+            raise RuntimeError(f"Decryption failed: {e}") from e

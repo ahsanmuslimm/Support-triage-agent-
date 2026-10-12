@@ -65,7 +65,7 @@ class CursorCodec:
             created_at = datetime.fromisoformat(created_at_iso)
             return item_id, created_at
         except (ValueError, IndexError, TypeError) as e:
-            raise ValueError(f"Invalid cursor: {e}")
+            raise ValueError(f"Invalid cursor: {e}") from e
 
 
 class ETagManager:

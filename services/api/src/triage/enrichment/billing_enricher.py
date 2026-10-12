@@ -128,7 +128,7 @@ class BillingEnricher(EnricherBase):
                 return await self._fetch_from_db(customer_id, tenant_id)
             raise EnrichmentError(
                 f"Failed to enrich billing for customer {customer_id}: {e}"
-            )
+            ) from e
 
     async def _fetch_payment_methods(
         self, customer_id: int, tenant_id: int
@@ -172,7 +172,7 @@ class BillingEnricher(EnricherBase):
             return result
         except Exception as e:
             logger.error(f"Failed to fetch payment methods from Stripe: {e}")
-            raise APITimeoutError(f"Stripe API error: {e}")
+            raise APITimeoutError(f"Stripe API error: {e}") from e
 
     async def _fetch_invoices_90d(self, customer_id: int, tenant_id: int) -> list[dict]:
         """Fetch invoices from last 90 days."""
@@ -201,7 +201,7 @@ class BillingEnricher(EnricherBase):
             return result
         except Exception as e:
             logger.error(f"Failed to fetch invoices from Stripe: {e}")
-            raise APITimeoutError(f"Stripe API error: {e}")
+            raise APITimeoutError(f"Stripe API error: {e}") from e
 
     async def _fetch_subscription(self, customer_id: int, tenant_id: int) -> dict:
         """Fetch subscription and dunning info from Stripe."""
@@ -272,4 +272,4 @@ class BillingEnricher(EnricherBase):
             raise EnrichmentError(f"No cached billing context for customer {customer_id}")
         except Exception as e:
             logger.error(f"DB fallback failed: {e}")
-            raise EnrichmentError(f"Could not retrieve cached context: {e}")
+            raise EnrichmentError(f"Could not retrieve cached context: {e}") from e

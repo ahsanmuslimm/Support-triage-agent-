@@ -50,7 +50,7 @@ async def receive_zendesk_webhook(
     try:
         zendesk_handler.parse_payload(raw_body_str)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}") from e
 
     # TODO: Extract message and queue for ingestion
     # message = zendesk_handler.extract_message(payload, tenant_id, conversation_id)

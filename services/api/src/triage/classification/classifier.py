@@ -166,7 +166,7 @@ class IntentClassifier:
 
         except Exception as e:
             log.error("intent_classification_failed", error=str(e))
-            raise IntentClassifierError(f"Classification failed: {e!s}")
+            raise IntentClassifierError(f"Classification failed: {e!s}") from e
 
     def get_intents(self) -> list[str]:
         """Get list of known intents."""
