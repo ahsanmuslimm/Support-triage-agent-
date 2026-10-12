@@ -1,0 +1,57 @@
+# =============================================================================
+# requirements-ci.txt
+# Minimal dependencies for GitHub Actions CI testing only
+# EXCLUDES: Heavy ML packages (transformers, sentence-transformers, etc.)
+# These are not needed for unit/linting tests
+# =============================================================================
+
+# --- Core FastAPI ---
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+httpx==0.24.1
+python-multipart==0.0.6
+
+# --- Async ---
+anyio>=4.0
+sniffio>=1.3
+
+# --- Database (PostgreSQL) ---
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+psycopg[binary]>=3.1
+alembic>=1.12
+
+# --- Caching (Redis) ---
+redis>=5.0
+
+# --- Crypto ---
+cryptography>=41.0
+
+# --- Logging/Observability ---
+structlog>=24.0
+python-json-logger>=2.0
+opentelemetry-api>=1.21
+opentelemetry-sdk>=1.21
+
+# --- Testing ---
+pytest>=7.0
+pytest-asyncio>=0.21
+pytest-cov>=4.1
+coverage>=7.0
+
+# --- Linting/Type Checking ---
+ruff>=0.1
+mypy>=1.7
+black>=23.0
+
+# --- HTTP internals ---
+certifi>=2024.2
+charset-normalizer>=3.3
+idna>=3.6
+urllib3>=2.1
+
+# --- Core utilities ---
+deprecation>=2.1
+packaging>=23.2
