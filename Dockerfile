@@ -48,5 +48,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run FastAPI with correct module path
-CMD ["uvicorn", "triage.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# main.py exposes an app factory (create_app), not a module-level app
+CMD ["uvicorn", "triage.api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
