@@ -1,6 +1,5 @@
-# Support Triage Agent - Production Dockerfile
-# Multi-stage build for Railway deployment
-# Handles uv workspace structure with local package dependencies
+# Support Triage Agent - Production Dockerfile for Railway
+# Lightweight build focused on FastAPI API server (no ML packages)
 
 FROM python:3.12-slim as builder
 
@@ -12,41 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy entire source tree to handle local dependencies
-COPY . /build/
+# Copy requirements file
+COPY requirements-production-lite.txt /build/
 
-# Install dependencies without trying to use uv workspace
-# Pin all versions to avoid resolution issues in Docker
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir \
-    fastapi==0.104.1 \
-    uvicorn[standard]==0.24.0 \
-    pydantic==2.5.0 \
-    pydantic-settings==2.1.0 \
-    sqlalchemy[asyncio]==2.0.23 \
-    cryptography==41.0.7 \
-    langdetect==1.0.9 \
-    httpx==0.24.1 \
-    python-multipart==0.0.6 \
-    redis==5.0.1 \
-    alembic==1.12.1 \
-    "psycopg[binary]>=3.1" \
-    sentence-transformers==2.2.2 \
-    scikit-learn==1.3.2 \
-    numpy==1.24.3 \
-    structlog==24.1.0 \
-    opentelemetry-api==1.21.0 \
-    opentelemetry-sdk==1.21.0 \
-    opentelemetry-exporter-otlp==0.42b0 \
-    python-json-logger==2.0.7 \
-    langgraph==0.2.0 \
-    langchain-core==0.2.0 \
-    litellm==1.30.0 \
-    rank-bm25==0.2.2 \
-    qdrant-client==1.9.0 \
-    tiktoken==0.7.0 \
-    transformers==4.30.0 \
-    asyncpg==0.29.0
+# Install dependencies from requirements file (no wheel building needed)
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements-production-lite.txt
 
 # Final runtime image
 FROM python:3.12-slim
