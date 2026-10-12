@@ -51,11 +51,11 @@ class TestAnomalyDetector:
         signal_type = SignalType.CHURN_SPIKE
 
         # First call - should initialize
-        smoothed1, sigma1 = await detector._compute_ewma(tenant_id, signal_type, 100.0)
+        smoothed1, _sigma1 = await detector._compute_ewma(tenant_id, signal_type, 100.0)
         assert smoothed1 > 0
 
         # Second call with higher value - smoothed should move towards new value
-        smoothed2, sigma2 = await detector._compute_ewma(tenant_id, signal_type, 150.0)
+        smoothed2, _sigma2 = await detector._compute_ewma(tenant_id, signal_type, 150.0)
         assert smoothed2 > smoothed1  # Should increase
 
     @pytest.mark.asyncio
@@ -117,8 +117,8 @@ class TestAnomalyDetector:
         normal_stats["escalation_pct"] = 0.08
 
         signals = await detector.detect_signals(tenant_id, normal_stats, sample_performance_stats)
-        complaint_signals = [s for s in signals if s.signal_type == SignalType.COMPLAINT_SURGE]
-        # May not trigger - depends on EWMA baseline
+        # COMPLAINT_SURGE may not trigger - depends on EWMA baseline
+        assert isinstance(signals, list)
 
     @pytest.mark.asyncio
     async def test_volume_spike_detection(self, detector, sample_daily_stats, sample_performance_stats):
@@ -130,8 +130,8 @@ class TestAnomalyDetector:
         normal_stats["total_triages"] = 105
 
         signals = await detector.detect_signals(tenant_id, normal_stats, sample_performance_stats)
-        volume_signals = [s for s in signals if s.signal_type == SignalType.VOLUME_SPIKE]
-        # May not trigger - depends on EWMA baseline
+        # VOLUME_SPIKE may not trigger - depends on EWMA baseline
+        assert isinstance(signals, list)
 
     @pytest.mark.asyncio
     async def test_api_error_rate_detection(self, detector, sample_daily_stats, sample_performance_stats):

@@ -109,9 +109,8 @@ class TestUrgencyBoost:
         now = datetime.utcnow()
 
         # Create 3 tickets in current window
-        cluster_id = None
         for i in range(3):
-            cluster_id = await clusterer.cluster_ticket(
+            await clusterer.cluster_ticket(
                 f"current_{i}",
                 "Issue",
                 now + timedelta(minutes=i),
@@ -125,10 +124,8 @@ class TestUrgencyBoost:
                 now - timedelta(minutes=15 + i),
             )
 
-        if cluster_id:
-            cluster = clusterer.clusters.get(cluster_id)
-            # Should not be boosted (only 3 recent tickets)
-            # Note: may not work due to lookback window filtering
+        # The cluster should not be boosted (only 3 recent tickets), but this is
+        # not asserted: it may not hold due to lookback window filtering.
 
 
 class TestClusterLinking:
@@ -162,7 +159,7 @@ class TestRelatedTickets:
         now = datetime.utcnow()
 
         # Create cluster
-        cluster_id = await clusterer.cluster_ticket("ticket_1", "Bug X", now)
+        await clusterer.cluster_ticket("ticket_1", "Bug X", now)
         await clusterer.cluster_ticket("ticket_2", "Bug X error", now + timedelta(minutes=1))
 
         related = clusterer.get_related_tickets("ticket_1")

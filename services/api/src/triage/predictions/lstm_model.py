@@ -57,7 +57,6 @@ class LSTMNextIssuePredictor:
         # Mock training: compute simple accuracy metric
         num_train = int(len(training_sequences) * (1 - validation_split))
         train_data = training_sequences[:num_train]
-        val_data = training_sequences[num_train:]
 
         # Simulate training accuracy
         train_accuracy = 0.85 + (len(self.intent_vocab) / 100) * 0.05  # Mock

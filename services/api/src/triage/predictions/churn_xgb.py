@@ -45,7 +45,6 @@ class ChurnXGBoostModel:
 
         # Convert to numpy arrays
         X_train = np.array([list(f.values()) for f in training_features])
-        y_train = np.array(training_labels)
 
         # Mock training: simulate reasonable metrics
         n_samples = len(training_features)

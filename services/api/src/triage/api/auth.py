@@ -64,8 +64,7 @@ class APIKeyManager:
         Returns:
             (full_key, key_id) tuple
         """
-        # Generate 32-byte random value
-        random_bytes = secrets.token_bytes(32)
+        # 32 bytes of URL-safe randomness
         full_key = f"trg_{self.environment}_{secrets.token_urlsafe(32)}"
 
         # Compute prefix (first 16 chars after trg_live_ or trg_test_)

@@ -23,7 +23,7 @@ class TestRateLimiter:
         """Test rate limit headers."""
         limiter = RateLimiter(requests_per_minute=100)
 
-        allowed, headers = limiter.check_limit("key_test")
+        _allowed, headers = limiter.check_limit("key_test")
 
         assert "RateLimit-Limit" in headers
         assert "RateLimit-Remaining" in headers
@@ -35,7 +35,7 @@ class TestRateLimiter:
         limiter = RateLimiter(requests_per_minute=5)
 
         # Make 5 requests (fill bucket)
-        for i in range(5):
+        for _i in range(5):
             allowed, _ = limiter.check_limit("key_exhaust")
             assert allowed
 

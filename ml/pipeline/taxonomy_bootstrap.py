@@ -121,7 +121,6 @@ class TaxonomyBootstrapper:
         clusters = {}
         for i in range(k):
             mask = cluster_labels == i
-            cluster_embeddings = embeddings[mask]
 
             silhouette = silhouette_score(embeddings[mask], np.zeros(np.sum(mask))) if np.sum(mask) > 1 else 0.0
 
@@ -199,9 +198,6 @@ class TaxonomyBootstrapper:
         """Merge two clusters, reclassify historical tickets."""
         if source_cluster_id not in self.clusters or target_cluster_id not in self.clusters:
             raise ValueError("Invalid cluster IDs")
-
-        source = self.clusters[source_cluster_id]
-        target = self.clusters[target_cluster_id]
 
         # Count tickets to migrate
         tickets_affected = sum(
@@ -281,7 +277,7 @@ class TaxonomyBootstrapper:
         # Create new clusters
         new_cluster_ids = list(range(max(self.clusters.keys()) + 1, max(self.clusters.keys()) + 1 + sub_k))
 
-        for new_id, intent_name in zip(new_cluster_ids, new_intent_names):
+        for new_id, intent_name in zip(new_cluster_ids, new_intent_names, strict=True):
             label = ClusterLabel(
                 cluster_id=new_id,
                 intent_name=intent_name,

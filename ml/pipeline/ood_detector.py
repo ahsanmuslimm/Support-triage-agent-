@@ -158,7 +158,6 @@ class OODEnsemble:
 
         # Sort by OOD score
         sorted_idx = np.argsort(-ood_scores)
-        sorted_is_ood = is_ood[sorted_idx]
         sorted_scores = ood_scores[sorted_idx]
 
         # Find threshold that achieves target recall
@@ -196,7 +195,6 @@ class ThresholdCalibrator:
 
         # Sort by OOD score (descending)
         sorted_idx = np.argsort(-ood_scores)
-        sorted_is_novel = is_novel[sorted_idx]
         sorted_scores = ood_scores[sorted_idx]
 
         # Find threshold for target recall

@@ -62,12 +62,8 @@ async def pg_engine():
 
         # Import models and create schema
 
-        # For simplicity, create schema manually via SQL
-        # (Alembic setup would require more configuration)
-        schema_setup = """
-        -- Schema and types already handled by migrations
-        -- For now, we'll use raw SQL to setup minimal tables for tests
-        """
+        # Schema setup is not done here yet: running Alembic migrations
+        # against the container would require more configuration.
 
     yield engine
 

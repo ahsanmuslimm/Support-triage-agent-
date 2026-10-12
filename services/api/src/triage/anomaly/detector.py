@@ -83,7 +83,7 @@ class AnomalyDetector:
             (SignalType.API_ERROR_RATE, self._check_api_error_rate),
         ]
 
-        for signal_type, check_fn in signal_checks:
+        for _signal_type, check_fn in signal_checks:
             signal = await check_fn(tenant_id, daily_stats, performance_stats)
             if signal:
                 signals.append(signal)
@@ -147,7 +147,7 @@ class AnomalyDetector:
 
         # Fraud pattern if: chargebacks >= 2 AND high-value orders spike
         if chargeback_count >= 2 and high_value_orders > 5:
-            smoothed_value, sigma = await self._compute_ewma(
+            _smoothed_value, sigma = await self._compute_ewma(
                 tenant_id, SignalType.FRAUD_PATTERN, chargeback_count
             )
 
@@ -289,7 +289,7 @@ class AnomalyDetector:
         error_rate = error_count / max(total_requests, 1)
 
         if error_rate > 0.05:  # >5% error rate
-            smoothed_value, sigma = await self._compute_ewma(
+            _smoothed_value, sigma = await self._compute_ewma(
                 tenant_id, SignalType.API_ERROR_RATE, error_rate
             )
 

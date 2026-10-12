@@ -46,9 +46,9 @@ async def receive_zendesk_webhook(
     if not zendesk_handler.verify_signature(raw_body_str, signature):
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
-    # Parse payload
+    # Parse payload (validates JSON; the result is unused until ingestion is wired up)
     try:
-        payload = zendesk_handler.parse_payload(raw_body_str)
+        zendesk_handler.parse_payload(raw_body_str)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
 

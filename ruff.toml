@@ -19,11 +19,27 @@ select = [
 ignore = [
     "D",      # docstrings (enforce at review gate)
     "E501",   # line-length (handled separately)
+    # UP042: `class X(str, Enum)` -> `StrEnum` changes str()/format() output
+    # (member value instead of "X.MEMBER"), which leaks into logs, keys and
+    # payloads. Keep the explicit str mixin until each enum is audited.
+    "UP042",
 ]
+# Greek sigma (std-dev) and en dash are used intentionally in docs/messages.
+allowed-confusables = ["σ", "–"]
 
 [lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]  # Allow assert, pytest.raises in tests
 "**/test_*.py" = ["S101"]
+# pydantic 2.5 (pinned in CI/production-lite) predates PEP 695 support for
+# generic models, so keep `Generic[T]` here.
+"services/api/src/triage/api/pagination.py" = ["UP046"]
+# factory_boy factories and their dict-based fallbacks deliberately share names;
+# the second definition wins when factory_boy is not installed.
+"packages/py_core/py_core/testing/factories.py" = ["F811"]
+
+[lint.pep8-naming]
+# Conventional ML/math names: feature matrices (X, X_train) and temperature (T).
+extend-ignore-names = ["X", "X_*", "T"]
 
 [lint.isort]
 known-first-party = ["py_core", "services", "ml"]

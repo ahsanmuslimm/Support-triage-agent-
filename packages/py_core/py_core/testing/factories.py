@@ -5,7 +5,6 @@ from uuid import uuid4
 
 try:
     import factory
-    from factory.fuzzy import FuzzyChoice
 
     FACTORY_BOY_AVAILABLE = True
 except ImportError:

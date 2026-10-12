@@ -48,10 +48,9 @@ class MessageCoalescer:
             Conversation ID
         """
         conversation_id = message.conversation_id
-        coalesce_key = f"coalesce:{message.tenant_id}:{conversation_id}"
-        lock_key = f"lock:{message.tenant_id}:{conversation_id}"
 
-        # TODO: Implement Redis-based lock acquisition
+        # TODO: Implement Redis-based lock acquisition on
+        # f"lock:{tenant_id}:{conversation_id}" / f"coalesce:{tenant_id}:{conversation_id}"
         # For now, return conversation_id as-is
         return conversation_id
 

@@ -104,7 +104,7 @@ class ECEComputer:
         bin_uppers = bin_boundaries[1:]
 
         ece = 0.0
-        for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
+        for bin_lower, bin_upper in zip(bin_lowers, bin_uppers, strict=True):
             in_bin = (confidences >= bin_lower) & (confidences < bin_upper)
 
             if np.sum(in_bin) == 0:
@@ -164,7 +164,7 @@ class ECEComputer:
         bin_uppers = bin_boundaries[1:]
 
         max_error = 0.0
-        for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
+        for bin_lower, bin_upper in zip(bin_lowers, bin_uppers, strict=True):
             in_bin = (confidences >= bin_lower) & (confidences < bin_upper)
 
             if np.sum(in_bin) == 0:

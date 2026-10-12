@@ -32,7 +32,7 @@ class TestAutonomyGate:
 
     def test_can_execute_tool_allowed(self, gate):
         """Test tool execution is allowed when autonomy level sufficient."""
-        allowed, reason = gate.can_execute_tool(
+        allowed, _reason = gate.can_execute_tool(
             intent_name="refund",
             tool_required_level=AutonomyLevel.L2_CONFIRM,
             policy_autonomy_level=AutonomyLevel.L2_CONFIRM,
@@ -52,7 +52,7 @@ class TestAutonomyGate:
     def test_can_execute_tool_uses_minimum(self, gate):
         """Test that effective level is minimum of policy and tool requirement."""
         # Policy says L2, tool requires L1 -> effective is L1 -> allowed
-        allowed, reason = gate.can_execute_tool(
+        allowed, _reason = gate.can_execute_tool(
             intent_name="refund",
             tool_required_level=AutonomyLevel.L1_SUGGEST,
             policy_autonomy_level=AutonomyLevel.L2_CONFIRM,

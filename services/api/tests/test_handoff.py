@@ -91,7 +91,7 @@ class TestHandoffComposer:
     async def test_summary_extraction(self, composer, base_state, enrichment_context):
         """Test summary text extraction."""
         summary = composer._extract_summary(
-            base_state, enrichment_context, sample_job := EscalationJob(
+            base_state, enrichment_context, EscalationJob(
                 id=1, tenant_id=1, ticket_id="TICKET-001", priority=Priority.P1,
                 deadline=datetime.utcnow(), status="pending", created_at=datetime.utcnow()
             )
@@ -200,16 +200,3 @@ class TestHandoffComposer:
 
         assert handoff is not None
         # Should still produce valid handoff with defaults
-
-    @pytest.fixture
-    def sample_job(self):
-        """Sample escalation job."""
-        return EscalationJob(
-            id=1,
-            tenant_id=1,
-            ticket_id="TICKET-001",
-            priority=Priority.P1,
-            deadline=datetime.utcnow() + timedelta(hours=1),
-            status="pending",
-            created_at=datetime.utcnow(),
-        )

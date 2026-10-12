@@ -167,7 +167,7 @@ class TestSCIMProvisioner:
         provisioner = SCIMProvisioner(test_mode=True)
 
         # Create user
-        user = provisioner.create_user(
+        provisioner.create_user(
             tenant_id="tenant_1",
             user_name="jack@example.com",
             given_name="Jack",

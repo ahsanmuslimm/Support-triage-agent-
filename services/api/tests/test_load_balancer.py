@@ -89,7 +89,7 @@ class TestAcknowledgement:
     def test_acknowledge_ticket(self, load_balancer):
         """Test acknowledging a ticket."""
         load_balancer.register_agent("agent_1")
-        agent_id = load_balancer.assign_ticket("ticket_1")
+        assert load_balancer.assign_ticket("ticket_1") == "agent_1"
 
         success = load_balancer.acknowledge_ticket("ticket_1")
 

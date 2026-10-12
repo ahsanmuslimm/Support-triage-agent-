@@ -1,7 +1,6 @@
 """A/B testing framework for campaign effectiveness."""
 
 import logging
-from datetime import datetime
 
 from .models import ABTestResult, CampaignType
 
@@ -42,8 +41,6 @@ class ABTestFramework:
             return False
 
         try:
-            timestamp = datetime.utcnow()
-
             # In a real implementation, update the campaigns table
             # For now, this is a placeholder
             logger.info(f"Recorded {event_type} event for campaign {campaign_id}")

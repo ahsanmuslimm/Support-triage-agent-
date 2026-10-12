@@ -56,7 +56,7 @@ class TextExtractor:
 
             with pdfplumber.open(file_path) as pdf:
                 text_parts = []
-                for page_num, page in enumerate(pdf.pages):
+                for _page_num, page in enumerate(pdf.pages):
                     text = page.extract_text()
                     if text:
                         text_parts.append(text)

@@ -91,7 +91,7 @@ async def ingest_message(
     )
 
     # ========== STEP 4: Redact PII (before any downstream processing) ==========
-    redacted_body, pii_entities, pii_vault = _pii_handler.redact(canonical_message.body)
+    redacted_body, pii_entities, _pii_vault = _pii_handler.redact(canonical_message.body)
     canonical_message.body = redacted_body
 
     # ========== STEP 5: Encrypt message body ==========
@@ -111,7 +111,8 @@ async def ingest_message(
 
     # ========== STEP 7: Store message (in real implementation, write to DB) ==========
     message_id = str(uuid.uuid4())
-    message_record = {
+    # Row shape for the future DB write; not persisted yet.
+    _message_record = {
         "id": message_id,
         "tenant_id": tenant_id,
         "conversation_id": conversation_id,
@@ -129,7 +130,7 @@ async def ingest_message(
     }
 
     # ========== STEP 8: Write outbox event (atomically with message insert) ==========
-    outbox_event = await _outbox_writer.write_event(
+    await _outbox_writer.write_event(
         tenant_id=tenant_id,
         aggregate_type="message",
         aggregate_id=message_id,

@@ -72,7 +72,7 @@ class ResilientEventConsumer:
                     return
 
                 # Execute handler
-                result = await handler_func(event)
+                await handler_func(event)
 
                 log.info(
                     "event_processed",

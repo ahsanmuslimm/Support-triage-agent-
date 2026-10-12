@@ -60,7 +60,7 @@ def test_detect_multiple_pii(handler):
 def test_redact_email(handler):
     """Test email redaction."""
     text = "Contact alice@example.com"
-    redacted, entities, vault = handler.redact(text)
+    redacted, _entities, vault = handler.redact(text)
 
     assert "alice@example.com" not in redacted
     assert "[PII_EMAIL_" in redacted

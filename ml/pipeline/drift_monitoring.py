@@ -278,7 +278,7 @@ class DriftMonitor:
         ood_rate = self.ood_monitor.get_ood_rate()
 
         # Concept drift (update history)
-        for pred, label in zip(predictions, labels):
+        for pred, label in zip(predictions, labels, strict=True):
             self.concept_detector.update(pred, label)
         concept_drift_f1 = self.concept_detector.compute_f1_on_window()
 

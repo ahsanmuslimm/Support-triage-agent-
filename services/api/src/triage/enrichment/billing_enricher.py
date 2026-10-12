@@ -219,7 +219,6 @@ class BillingEnricher(EnricherBase):
                 # Map Stripe dunning status to our stages
                 # Based on subscription status and payment_settings
                 status = sub.get("status")
-                payment_settings = sub.get("payment_settings", {})
 
                 # Determine dunning stage from subscription status
                 if status == "active":

@@ -133,7 +133,7 @@ class PromptfooEvaluator:
         ground_truth: list[str],
     ) -> float:
         """Intent classification accuracy."""
-        correct = sum(1 for p, g in zip(predictions, ground_truth) if p == g)
+        correct = sum(1 for p, g in zip(predictions, ground_truth, strict=True) if p == g)
         accuracy = correct / max(len(predictions), 1)
         return float(accuracy)
 
@@ -146,7 +146,7 @@ class PromptfooEvaluator:
         """Entity extraction F1."""
         tp, fp, fn = 0, 0, 0
 
-        for pred, gt in zip(predictions, ground_truth):
+        for pred, gt in zip(predictions, ground_truth, strict=True):
             pred_entities = set()
             gt_entities = set()
 

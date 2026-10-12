@@ -49,7 +49,7 @@ class VolumeForecaster:
             test_volumes = volumes[-30:]
             # Predict using simple exponential smoothing
             predictions = [mean_volume] * 30
-            errors = [abs(p - a) / a if a > 0 else 0 for p, a in zip(predictions, test_volumes)]
+            errors = [abs(p - a) / a if a > 0 else 0 for p, a in zip(predictions, test_volumes, strict=True)]
             self.mape = sum(errors) / len(errors) if errors else 0.15
         else:
             self.mape = 0.12

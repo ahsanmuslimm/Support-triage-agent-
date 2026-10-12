@@ -9,7 +9,6 @@ import structlog
 
 try:
     from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-    from aiokafka.errors import KafkaError
 except ImportError:
     # aiokafka not installed; graceful fallback
     AIOKafkaProducer = None

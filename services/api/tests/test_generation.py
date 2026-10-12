@@ -166,7 +166,7 @@ class TestPromptBuilder:
 
     def test_build_with_entities(self, builder):
         """Test prompt building with entities."""
-        prompt, tokens = builder.build(
+        prompt, _tokens = builder.build(
             system_prompt="Answer about orders.",
             user_message="Where is my order?",
             entities=["ORDER_ID: 123456", "EMAIL: test@example.com"],
@@ -175,7 +175,7 @@ class TestPromptBuilder:
 
     def test_build_with_intents(self, builder):
         """Test prompt building with intents."""
-        prompt, tokens = builder.build(
+        prompt, _tokens = builder.build(
             system_prompt="Classify and respond.",
             user_message="I want a refund.",
             intents=["refund", "complaint"],
@@ -188,7 +188,7 @@ class TestPromptBuilder:
             "Refund policy: Returns accepted within 30 days",
             "Contact customer service for help",
         ]
-        prompt, tokens = builder.build(
+        prompt, _tokens = builder.build(
             system_prompt="Help customer.",
             user_message="Can I get a refund?",
             retrieved_docs=docs,
@@ -199,7 +199,7 @@ class TestPromptBuilder:
         """Test that token budget is enforced."""
         builder = PromptBuilder(token_budget=200)  # Small budget
         long_docs = ["Document " * 100 for _ in range(10)]
-        prompt, tokens = builder.build(
+        _prompt, tokens = builder.build(
             system_prompt="Help",
             user_message="Question?",
             retrieved_docs=long_docs,
@@ -208,7 +208,7 @@ class TestPromptBuilder:
 
     def test_prompt_structure(self, builder):
         """Test that prompt has good structure."""
-        prompt, tokens = builder.build(
+        prompt, _tokens = builder.build(
             system_prompt="System",
             user_message="Message",
             entities=["E1"],

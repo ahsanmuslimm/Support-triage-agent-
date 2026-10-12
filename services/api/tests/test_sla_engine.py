@@ -182,7 +182,7 @@ class TestSLAEvents:
         timer.deadline = datetime.utcnow() - timedelta(seconds=1)
 
         # Check twice
-        events1 = sla_engine.check_timers()
+        sla_engine.check_timers()
         events2 = sla_engine.check_timers()
 
         # Second check should have no events (already emitted)

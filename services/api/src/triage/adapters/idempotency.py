@@ -12,6 +12,20 @@ except ImportError:
 
 log = structlog.get_logger(__name__)
 
+# Intended slow-path statement (M2 Fix); not executed yet - see
+# IdempotencyStore._check_or_record_slow_path.
+_UPSERT_IDEMPOTENCY_SQL = """
+    INSERT INTO triage.idempotency_records
+      (tenant_id, event_id, event_type, result_json, processed_at, is_first_attempt)
+    VALUES
+      (:tenant_id, :event_id, :event_type, :result_json, :processed_at, true)
+    ON CONFLICT (tenant_id, event_id)
+    DO UPDATE SET
+      result_json = idempotency_records.result_json,
+      is_first_attempt = false
+    RETURNING is_first_attempt;
+"""
+
 
 @dataclass
 class IdempotencyResult:
@@ -143,19 +157,7 @@ class IdempotencyStore:
         try:
             # Atomic insert-or-update using ON CONFLICT (M2 Fix)
             # This always succeeds; PostgreSQL handles the conflict atomically
-            stmt = """
-                INSERT INTO triage.idempotency_records
-                  (tenant_id, event_id, event_type, result_json, processed_at, is_first_attempt)
-                VALUES
-                  (:tenant_id, :event_id, :event_type, :result_json, :processed_at, true)
-                ON CONFLICT (tenant_id, event_id)
-                DO UPDATE SET
-                  result_json = idempotency_records.result_json,
-                  is_first_attempt = false
-                RETURNING is_first_attempt;
-            """
-
-            # Note: Implementation requires SQLAlchemy async session
+            # Note: Executing _UPSERT_IDEMPOTENCY_SQL requires SQLAlchemy async session
             # Placeholder shows intended behavior
 
             log.info(

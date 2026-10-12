@@ -24,7 +24,7 @@ class TestAPIKeyGeneration:
         manager = APIKeyManager(test_mode=True)
         scopes = [APIKeyScope.CONVERSATIONS_WRITE]
 
-        full_key, key_id = manager.generate_key("tenant_456", scopes)
+        full_key, _key_id = manager.generate_key("tenant_456", scopes)
 
         assert full_key.startswith("trg_test_")
         assert len(full_key) > 20
@@ -38,7 +38,7 @@ class TestAPIKeyValidation:
         manager = APIKeyManager(test_mode=True)
         scopes = [APIKeyScope.CONVERSATIONS_READ, APIKeyScope.PREDICTIONS_READ]
 
-        full_key, key_id = manager.generate_key("tenant_789", scopes)
+        full_key, _key_id = manager.generate_key("tenant_789", scopes)
         key_record = manager.validate_key(full_key)
 
         assert key_record is not None
@@ -79,7 +79,7 @@ class TestScopeEnforcement:
         manager = APIKeyManager(test_mode=True)
         scopes = [APIKeyScope.CONVERSATIONS_READ]
 
-        full_key, key_id = manager.generate_key("tenant_scope", scopes)
+        full_key, _key_id = manager.generate_key("tenant_scope", scopes)
         key_record = manager.validate_key(full_key)
 
         assert manager.has_scope(key_record, APIKeyScope.CONVERSATIONS_READ)
@@ -94,7 +94,7 @@ class TestScopeEnforcement:
             APIKeyScope.PREDICTIONS_READ,
         ]
 
-        full_key, key_id = manager.generate_key("tenant_multi", scopes)
+        full_key, _key_id = manager.generate_key("tenant_multi", scopes)
         key_record = manager.validate_key(full_key)
 
         assert len(key_record.scopes) == 3
@@ -131,8 +131,8 @@ class TestKeyRotation:
         manager = APIKeyManager(test_mode=True)
         scopes = [APIKeyScope.CONVERSATIONS_READ]
 
-        key1, key1_id = manager.generate_key("tenant_log", scopes)
-        key2, key2_id = manager.rotate_key(key1_id, "tenant_log", scopes)
+        _key1, key1_id = manager.generate_key("tenant_log", scopes)
+        _key2, _key2_id = manager.rotate_key(key1_id, "tenant_log", scopes)
 
         old_key = manager._keys_store[key1_id]
         assert old_key.rotated_at is not None
