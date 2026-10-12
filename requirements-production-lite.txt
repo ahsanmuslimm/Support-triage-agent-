@@ -44,3 +44,4 @@ urllib3>=2.1
 # --- Core utilities ---
 deprecation>=2.1
 packaging>=23.2
+numpy>=1.26.0
