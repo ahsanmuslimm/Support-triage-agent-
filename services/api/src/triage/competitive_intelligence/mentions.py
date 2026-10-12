@@ -1,6 +1,7 @@
 """Competitive mention detection."""
 
 import logging
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 class MentionTracker:
     """Track competitor mentions."""
 
-    COMPETITORS = ["Zendesk", "Intercom", "Freshdesk", "HubSpot"]
+    COMPETITORS: ClassVar[list[str]] = ["Zendesk", "Intercom", "Freshdesk", "HubSpot"]
 
     def __init__(self):
         """Initialize tracker."""

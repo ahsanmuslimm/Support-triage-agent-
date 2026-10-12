@@ -1,5 +1,6 @@
 """Intent classification and prediction models for Sprint 2."""
 
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -23,7 +24,7 @@ class IntentClassifierResult(BaseModel):
     model_error: str | None = Field(default=None, description="Error message if classification failed")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_id": "msg-123",
                 "top_intent": "order.status",

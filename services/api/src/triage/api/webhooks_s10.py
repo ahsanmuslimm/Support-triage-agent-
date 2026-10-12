@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 import httpx
 
@@ -112,7 +112,7 @@ class WebhookRetryPolicy:
     """Exponential backoff retry policy."""
 
     # Retry intervals: 1s, 10s, 100s, 1000s (max 4 attempts)
-    RETRY_INTERVALS = [1, 10, 100, 1000]
+    RETRY_INTERVALS: ClassVar[list[int]] = [1, 10, 100, 1000]
     MAX_ATTEMPTS = 4
     RETENTION_WINDOW_HOURS = 24
 

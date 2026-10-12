@@ -1,5 +1,6 @@
 """ML-based entity extraction using HuggingFace NER models."""
 
+from typing import ClassVar
 
 import structlog
 
@@ -33,7 +34,7 @@ class MLEntityExtractor:
     """Extract entities using HuggingFace NER model with confidence scores."""
 
     # Map HF NER tags to custom entity types
-    TAG_MAPPING = {
+    TAG_MAPPING: ClassVar[dict[str, EntityType]] = {
         "PER": EntityType.PRODUCT,  # Placeholder for custom mapping
         "ORG": EntityType.PRODUCT,
         "LOC": EntityType.PRODUCT,

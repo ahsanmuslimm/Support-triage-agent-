@@ -1,6 +1,7 @@
 """Entity extraction and linking models for Sprint 2."""
 
 from enum import Enum
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -34,7 +35,7 @@ class ExtractedEntity(BaseModel):
     pseudonym: str | None = Field(default=None, description="PII replacement token (VAULT_xyz...)")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "entity_type": "ORDER_ID",
                 "value": "ORDER-123456",
@@ -60,7 +61,7 @@ class EntityExtractionResult(BaseModel):
     extraction_errors: list[str] = Field(default_factory=list, description="Errors during extraction")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_id": "msg-123",
                 "entities": [
@@ -92,7 +93,7 @@ class EntityValidationResult(BaseModel):
     cross_tenant_risk: bool = Field(default=False, description="Cross-tenant leak risk detected")
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "entity_id": "entity-123",
                 "valid": True,

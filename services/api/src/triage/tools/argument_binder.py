@@ -1,6 +1,6 @@
 """Bind extracted entities to tool arguments."""
 
-from typing import Any
+from typing import Any, ClassVar
 
 import structlog
 
@@ -14,7 +14,7 @@ class ArgumentBinder:
     """Bind extracted entities to tool argument slots."""
 
     # Mapping from EntityType to tool argument names
-    ENTITY_TO_ARG = {
+    ENTITY_TO_ARG: ClassVar[dict[EntityType, str]] = {
         EntityType.ORDER_ID: "order_id",
         EntityType.AMOUNT: "amount",
         EntityType.EMAIL: "to",

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, ClassVar
 
 import structlog
 
@@ -33,7 +34,7 @@ class ToolRegistry:
     """Registry of available tools."""
 
     # Built-in tools
-    BUILTIN_TOOLS = {
+    BUILTIN_TOOLS: ClassVar[dict[str, Any]] = {
         "send_email": ToolSpec(
             name="send_email",
             description="Send email to customer",

@@ -1,6 +1,7 @@
 """Language detection for messages and KB articles."""
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 import structlog
 
@@ -29,7 +30,7 @@ class LanguageDetector:
     """Detect language of text using langdetect or TextBlob."""
 
     # Top 10 languages for per-language eval slices
-    TOP_LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ar"]
+    TOP_LANGUAGES: ClassVar[list[str]] = ["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ar"]
 
     async def detect_language(self, text: str) -> LanguageDetectionResult:
         """Detect language of text.

@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from typing import ClassVar
 
 import structlog
 
@@ -24,7 +25,7 @@ class OutputValidator:
     """Validate generated responses for safety and compliance."""
 
     # PII patterns
-    PII_PATTERNS = {
+    PII_PATTERNS: ClassVar[dict[str, str]] = {
         "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
         "credit_card": r"\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}",
         "ssn": r"\d{3}[-\s]?\d{2}[-\s]?\d{4}",
@@ -32,14 +33,14 @@ class OutputValidator:
     }
 
     # Injection patterns (prompt injection, code injection)
-    INJECTION_PATTERNS = [
+    INJECTION_PATTERNS: ClassVar[list[str]] = [
         r"(?i)(ignore.*prompt|forget.*instruction|you are now|system prompt|developer mode)",
         r"(?i)(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|;--)",
         r"(?i)(script.*>|iframe|javascript:|onerror=|onload=)",
     ]
 
     # Toxicity keywords (basic)
-    TOXICITY_KEYWORDS = [
+    TOXICITY_KEYWORDS: ClassVar[list[str]] = [
         "hate", "kill", "suicide", "racist", "sexist", "asshole", "bastard"
     ]
 

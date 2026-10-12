@@ -12,6 +12,7 @@ Multi-label intent classification using:
 
 import logging
 from dataclasses import dataclass, field
+from typing import Any, ClassVar
 
 import numpy as np
 import torch
@@ -420,7 +421,7 @@ class SetFitTrainer:
 class HyperparameterTuner:
     """Grid search for hyperparameters."""
 
-    PARAM_GRID = {
+    PARAM_GRID: ClassVar[dict[str, Any]] = {
         "learning_rate": [1e-5, 2e-5, 5e-5],
         "batch_size": [8, 16, 32],
         "num_epochs": [2, 3, 4],

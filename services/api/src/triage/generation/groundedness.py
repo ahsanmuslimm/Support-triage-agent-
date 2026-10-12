@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from typing import ClassVar
 
 import structlog
 
@@ -22,7 +23,7 @@ class GroundednessScorer:
     """Score groundedness of generated response against context."""
 
     # Simple patterns for factual claims (contain numbers, names, dates)
-    CLAIM_PATTERNS = [
+    CLAIM_PATTERNS: ClassVar[list[str]] = [
         r"\b\d+\b",  # Numbers
         r"[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*",  # Proper nouns
         r"\d{1,4}[-/]\d{1,2}[-/]\d{1,4}",  # Dates

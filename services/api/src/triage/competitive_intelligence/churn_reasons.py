@@ -1,6 +1,7 @@
 """Churn reason analysis."""
 
 import logging
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 class ChurnReasonAnalyzer:
     """Analyze churn reasons."""
 
-    CATEGORIES = ["price", "competitor", "product_gap", "support_quality", "other"]
+    CATEGORIES: ClassVar[list[str]] = ["price", "competitor", "product_gap", "support_quality", "other"]
 
     def __init__(self):
         """Initialize analyzer."""

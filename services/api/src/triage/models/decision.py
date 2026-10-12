@@ -1,6 +1,7 @@
 """Decision matrix and autonomy models for Sprint 2."""
 
 from enum import Enum, IntEnum
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -47,7 +48,7 @@ class PolicyInput(BaseModel):
     previous_resolution_attempts: int = Field(default=0)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_text": "I want to refund order ORDER-123",
                 "intent_name": "refund",
@@ -73,7 +74,7 @@ class DecisionResult(BaseModel):
     fallback_required: bool = Field(default=False)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "autonomy_level": 2,
                 "reason": "Refund < $500 and customer verified",

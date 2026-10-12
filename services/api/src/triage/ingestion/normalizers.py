@@ -2,7 +2,7 @@
 
 import html
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 from ..models.message import CanonicalMessage, ChannelType, SenderType
 
@@ -164,7 +164,7 @@ class ZendeskNormalizer(MessageNormalizer):
 class NormalizerFactory:
     """Factory to select appropriate normalizer by channel type."""
 
-    _normalizers = {
+    _normalizers: ClassVar[dict[ChannelType, Any]] = {
         ChannelType.EMAIL: EmailNormalizer(),
         ChannelType.WEB_CHAT: WebChatNormalizer(),
         ChannelType.ZENDESK: ZendeskNormalizer(),

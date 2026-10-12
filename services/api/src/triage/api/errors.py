@@ -1,7 +1,7 @@
 """RFC 9457 Problem Details error handling (S10.1)."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
@@ -19,7 +19,7 @@ class ProblemDetail(BaseModel):
     extensions: dict[str, Any] = Field(default_factory=dict)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "type": "https://api.triage.app/problems/invalid-scope",
                 "title": "Invalid Scope",

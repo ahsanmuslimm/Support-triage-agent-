@@ -1,6 +1,7 @@
 """K-means clustering for lifecycle stage assignment."""
 
 import logging
+from typing import ClassVar
 
 import numpy as np
 from sklearn.cluster import KMeans
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 class LifecycleClusterer:
     """K-means clustering (k=5) for lifecycle stage assignment."""
 
-    STAGE_ORDER = [LifecycleStage.NEW, LifecycleStage.GROWTH, LifecycleStage.MATURE, LifecycleStage.CHURNING, LifecycleStage.CHURNED]
+    STAGE_ORDER: ClassVar[list[LifecycleStage]] = [LifecycleStage.NEW, LifecycleStage.GROWTH, LifecycleStage.MATURE, LifecycleStage.CHURNING, LifecycleStage.CHURNED]
 
     def __init__(self):
         """Initialize clusterer."""

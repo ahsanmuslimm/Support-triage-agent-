@@ -1,6 +1,6 @@
 """S6.3: Dead Letter Queue (DLQ) for failed events with retry policy."""
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, ClassVar
 
 import structlog
 
@@ -18,7 +18,7 @@ class DeadLetterQueue:
     """
 
     MAX_RETRIES = 3
-    RETRY_BACKOFF = [1, 10, 60]  # exponential backoff: 1s, 10s, 60s
+    RETRY_BACKOFF: ClassVar[list[int]] = [1, 10, 60]  # exponential backoff: 1s, 10s, 60s
 
     def __init__(self, event_bus: Any):
         self.event_bus = event_bus

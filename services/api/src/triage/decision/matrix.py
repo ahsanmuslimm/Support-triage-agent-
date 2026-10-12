@@ -1,6 +1,7 @@
 """Decision matrix: 10+ rules mapping policy input to autonomy level."""
 
 import re
+from typing import ClassVar
 
 import structlog
 
@@ -23,7 +24,7 @@ class DecisionMatrix:
     """
 
     # Injection patterns (OWASP LLM Top 10)
-    INJECTION_PATTERNS = [
+    INJECTION_PATTERNS: ClassVar[list[str]] = [
         r"(?i)(ignore.*prompt|forget.*instruction|you are now|system prompt|developer mode)",
         r"(?i)(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|;--)",
         r"(?i)(\.\.\/|\.\.\\|/etc/|c:\\windows|cmd\.exe|bash -i)",

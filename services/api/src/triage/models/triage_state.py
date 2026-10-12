@@ -1,6 +1,7 @@
 """Triage agent state for LangGraph."""
 
 from datetime import datetime
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -58,7 +59,7 @@ class TriageState(BaseModel):
     phase: str = "START"  # Track current phase
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_id": "msg-123",
                 "message_text": "Where is my order?",

@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 
@@ -90,7 +91,7 @@ class LabeledExample:
 class PIIScrubber:
     """Basic PII scrubbing using keyword patterns."""
 
-    PII_PATTERNS = {
+    PII_PATTERNS: ClassVar[dict[str, str]] = {
         "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
         "phone": r"\+?1?\d{9,15}",
         "ssn": r"\d{3}-\d{2}-\d{4}",

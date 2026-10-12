@@ -1,6 +1,7 @@
 """Autonomy policy enforcement and promotion workflow."""
 
 from datetime import datetime
+from typing import ClassVar
 
 import structlog
 
@@ -75,14 +76,14 @@ class AutonomyGate:
 class AutonomyPromoter:
     """Manages autonomy level promotion and demotion."""
 
-    PROMOTION_CRITERIA = {
+    PROMOTION_CRITERIA: ClassVar[dict[str, float]] = {
         "accuracy_threshold": 0.95,  # ≥ 95% accuracy required
         "groundedness_threshold": 0.95,  # ≥ 95% groundedness required
         "sample_count_threshold": 200,  # ≥ 200 samples required
         "max_promotion_frequency_days": 7,  # Max 1 promotion per 7 days
     }
 
-    DEMOTION_TRIGGERS = {
+    DEMOTION_TRIGGERS: ClassVar[dict[str, float]] = {
         "false_resolution_threshold": 0.05,  # > 5% false resolution rate
         "groundedness_drop_threshold": 0.85,  # < 85% groundedness
         "injection_attempts_per_day": 10,  # > 10 injection attempts/day

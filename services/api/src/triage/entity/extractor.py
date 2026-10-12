@@ -1,6 +1,7 @@
 """Rule-based entity extraction using regex patterns."""
 
 import re
+from typing import ClassVar
 
 import structlog
 
@@ -13,7 +14,7 @@ class RuleBasedEntityExtractor:
     """Extract entities using regex patterns with high confidence."""
 
     # Regex patterns for each entity type
-    PATTERNS = {
+    PATTERNS: ClassVar[dict[EntityType, list[str]]] = {
         EntityType.ORDER_ID: [
             r"#(\d{6,10})",  # #123456
             r"(ORD-[\w]+)",  # ORD-ABC123
@@ -56,7 +57,7 @@ class RuleBasedEntityExtractor:
     }
 
     # PII entity types
-    PII_TYPES = {EntityType.EMAIL, EntityType.PHONE, EntityType.CREDIT_CARD, EntityType.SSN}
+    PII_TYPES: ClassVar[set[EntityType]] = {EntityType.EMAIL, EntityType.PHONE, EntityType.CREDIT_CARD, EntityType.SSN}
 
     def __init__(self, linker=None):
         """Initialize extractor.

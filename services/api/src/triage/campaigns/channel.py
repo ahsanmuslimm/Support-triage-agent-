@@ -2,6 +2,7 @@
 
 import logging
 from enum import Enum
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class Channel(str, Enum):
 class ChannelSelector:
     """Select optimal channel for customer."""
 
-    CHANNEL_CAPACITY = {
+    CHANNEL_CAPACITY: ClassVar[dict[str, float]] = {
         "email": 0.15,
         "sms": 0.30,
         "push": 0.25,

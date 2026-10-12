@@ -1,6 +1,6 @@
 """Message coalescing for conversation batching."""
 
-from typing import Any
+from typing import Any, ClassVar
 
 from ..models.message import CanonicalMessage, ChannelType
 
@@ -17,7 +17,7 @@ class MessageCoalescer:
     """
 
     # Debounce intervals per channel (in seconds)
-    DEBOUNCE_INTERVALS = {
+    DEBOUNCE_INTERVALS: ClassVar[dict[ChannelType, int]] = {
         ChannelType.EMAIL: 0,
         ChannelType.WEB_CHAT: 4,
         ChannelType.ZENDESK: 0,

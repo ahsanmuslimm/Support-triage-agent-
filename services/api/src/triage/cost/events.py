@@ -1,6 +1,7 @@
 """Cost event tracking."""
 
 import logging
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 class CostEventTracker:
     """Track cost events."""
 
-    COST_MATRIX = {
+    COST_MATRIX: ClassVar[dict[str, float]] = {
         "escalation": 4.50,
         "automation": 0.08,
         "agent": 0.65,
