@@ -1,0 +1,68 @@
+# Git and CI/CD
+.git
+.gitignore
+.github
+.gitlab-ci.yml
+.circleci
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+dist
+build
+*.egg-info
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node
+node_modules
+.npm
+npm-debug.log
+
+# Terraform and IaC
+terraform/
+*.tfstate*
+
+# Documentation
+docs
+Docs
+*.md
+README*
+
+# Testing
+tests/
+.pytest_cache
+
+# Temporary
+*.log
+tmp/
+temp/
+.agents/
+.kiro/
+
+# Build artifacts
+build-docker.py
+build-and-push.ps1
+buildspec.yml
+create-codebuild-project.py
+start-build.py
+DEPLOYMENT-*.md
+RAILWAY-*.md
+FREE-DEPLOYMENT-*.md
+PYTHONANYWHERE-*.md
+HUGGINGFACE-*.md
