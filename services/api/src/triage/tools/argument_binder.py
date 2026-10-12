@@ -1,5 +1,6 @@
 """Bind extracted entities to tool arguments."""
 
+import contextlib
 from typing import Any, ClassVar
 
 import structlog
@@ -48,10 +49,8 @@ class ArgumentBinder:
                 # Type conversion based on required type
                 required_type = tool_spec.required_args[arg_name]
                 if required_type == "float":
-                    try:
+                    with contextlib.suppress(ValueError, AttributeError):
                         value = float(value.replace("$", "").replace(",", ""))
-                    except (ValueError, AttributeError):
-                        pass
 
                 bound_args[arg_name] = value
                 log.debug(

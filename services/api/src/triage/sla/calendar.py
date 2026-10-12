@@ -63,10 +63,7 @@ class BusinessCalendar:
         # Check if time is within business hours
         if dt.time() < self.business_hours.start_time:
             return False
-        if dt.time() >= self.business_hours.end_time:
-            return False
-
-        return True
+        return dt.time() < self.business_hours.end_time
 
     def calculate_business_time_elapsed(self, start: datetime, end: datetime) -> timedelta:
         """Calculate elapsed business time between two datetimes.

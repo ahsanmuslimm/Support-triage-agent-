@@ -138,15 +138,14 @@ class AccountHealthScorer:
                 feature_names = HealthFeatures.feature_names()
                 top_indices = np.argsort(np.abs(sv))[::-1][:3]
 
-                drivers = []
-                for idx in top_indices:
-                    drivers.append(
-                        {
-                            "feature": feature_names[idx],
-                            "impact": float(sv[idx]),
-                            "direction": "positive" if sv[idx] > 0 else "negative",
-                        }
-                    )
+                drivers = [
+                    {
+                        "feature": feature_names[idx],
+                        "impact": float(sv[idx]),
+                        "direction": "positive" if sv[idx] > 0 else "negative",
+                    }
+                    for idx in top_indices
+                ]
 
                 return drivers
             except Exception as shap_error:

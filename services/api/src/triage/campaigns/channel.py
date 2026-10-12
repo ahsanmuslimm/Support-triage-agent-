@@ -6,6 +6,8 @@ from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
+SMS_FREQUENCY_CAP = 2  # max SMS per customer per week
+
 
 class Channel(str, Enum):
     """Communication channels."""
@@ -37,8 +39,6 @@ class ChannelSelector:
         sms_count_this_week: int = 0,
     ) -> str:
         """Select channel based on rates and caps."""
-        SMS_FREQUENCY_CAP = 2
-
         if sms_rate >= 0.30 and sms_count_this_week < SMS_FREQUENCY_CAP:
             return Channel.SMS
         elif email_rate >= 0.15:

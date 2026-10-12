@@ -50,17 +50,16 @@ class ZendeskAdapter(HelpdeskConnector):
         }
 
         # Parse attachments
-        attachments = []
-        for att in provider_message.get("attachments", []):
-            attachments.append(
-                Attachment(
-                    filename=att.get("filename", "attachment"),
-                    content_type=att.get("content_type", "application/octet-stream"),
-                    url=att.get("content_url", ""),
-                    size_bytes=att.get("size", 0),
-                    attachment_type=AttachmentType.DOCUMENT,
-                )
+        attachments = [
+            Attachment(
+                filename=att.get("filename", "attachment"),
+                content_type=att.get("content_type", "application/octet-stream"),
+                url=att.get("content_url", ""),
+                size_bytes=att.get("size", 0),
+                attachment_type=AttachmentType.DOCUMENT,
             )
+            for att in provider_message.get("attachments", [])
+        ]
 
         return MessageNormalization(
             message_id=str(provider_message.get("id", "")),
@@ -254,20 +253,19 @@ class ZendeskAdapter(HelpdeskConnector):
             # In real implementation, GET from Zendesk API
             # GET /tickets/{id}/comments
 
-            thread = []
             # Simulate fetching 5 comments
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"comment_{i}",
-                        sender_id=f"user_{i}",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"Comment {i} body",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"public": True},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"comment_{i}",
+                    sender_id=f"user_{i}",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"Comment {i} body",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"public": True},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:

@@ -1,5 +1,6 @@
 """Tests for in-app SDK JWT validation."""
 
+import contextlib
 from datetime import timedelta
 
 import pytest
@@ -77,12 +78,10 @@ class TestKeyRotationManager:
             keys_endpoint="https://api.example.com/.well-known/keys",
         )
 
-        try:
-            # Request key that doesn't exist yet
+        # Requesting a key that doesn't exist yet is expected to fail,
+        # but refresh should be attempted
+        with contextlib.suppress(Exception):
             await manager.get_public_key("nonexistent")
-        except Exception:
-            # Expected to fail, but refresh should be attempted
-            pass
 
         # Verify refresh was called
         assert manager.last_refresh is not None

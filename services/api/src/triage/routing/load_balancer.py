@@ -336,9 +336,8 @@ class LoadBalancer:
             if not agent.is_online:
                 continue
 
-            if required_skills:
-                if not any(skill in agent.skills for skill in required_skills):
-                    continue
+            if required_skills and not any(skill in agent.skills for skill in required_skills):
+                continue
 
             available.append(agent)
 

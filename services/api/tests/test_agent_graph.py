@@ -40,10 +40,10 @@ class TestTriageAgentNodes:
             fallback_used=False,
         )
 
-        with patch('triage.agent.nodes.IntentClassifier') as MockClassifier:
+        with patch('triage.agent.nodes.IntentClassifier') as mock_classifier_cls:
             mock_classifier = AsyncMock()
             mock_classifier.classify = AsyncMock(return_value=mock_result)
-            MockClassifier.return_value = mock_classifier
+            mock_classifier_cls.return_value = mock_classifier
 
             result = await classify_intent_node(state)
             assert result.primary_intent == "order.status"

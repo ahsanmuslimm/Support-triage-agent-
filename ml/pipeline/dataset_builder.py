@@ -29,22 +29,26 @@ except ImportError:
     def asset(*args, **kwargs):
         def decorator(func):
             return func
-        return decorator if args and callable(args[0]) else decorator
+        # Bare `@op` passes the function itself; `@op(...)` passes options.
+        return args[0] if args and callable(args[0]) else decorator
 
     def op(*args, **kwargs):
         def decorator(func):
             return func
-        return decorator if args and callable(args[0]) else decorator
+        # Bare `@op` passes the function itself; `@op(...)` passes options.
+        return args[0] if args and callable(args[0]) else decorator
 
     def job(*args, **kwargs):
         def decorator(func):
             return func
-        return decorator if args and callable(args[0]) else decorator
+        # Bare `@op` passes the function itself; `@op(...)` passes options.
+        return args[0] if args and callable(args[0]) else decorator
 
     def graph(*args, **kwargs):
         def decorator(func):
             return func
-        return decorator if args and callable(args[0]) else decorator
+        # Bare `@op` passes the function itself; `@op(...)` passes options.
+        return args[0] if args and callable(args[0]) else decorator
 
     class DynamicOut:
         pass

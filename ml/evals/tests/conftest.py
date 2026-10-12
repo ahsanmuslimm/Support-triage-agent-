@@ -56,9 +56,7 @@ def _load_jsonl(path: str) -> list[dict]:
     data = []
     if os.path.exists(full_path):
         with open(full_path) as f:
-            for line in f:
-                if line.strip():
-                    data.append(json.loads(line))
+            data.extend(json.loads(line) for line in f if line.strip())
     return data
 
 

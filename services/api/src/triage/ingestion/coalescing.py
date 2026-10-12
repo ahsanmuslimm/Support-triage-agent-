@@ -67,10 +67,8 @@ class MessageCoalescer:
             message.channel_type, 2
         )
 
-        if debounce_interval == 0:
-            return False  # Process immediately (email, Zendesk)
-
-        return True  # Queue for debounce
+        # 0 means process immediately (email, Zendesk); otherwise queue for debounce
+        return debounce_interval != 0
 
     def get_debounce_interval(self, channel_type: ChannelType) -> int:
         """Get debounce interval for channel type (in seconds)."""

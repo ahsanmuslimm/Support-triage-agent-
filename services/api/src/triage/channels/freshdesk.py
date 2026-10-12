@@ -45,17 +45,16 @@ class FreshdeskAdapter(HelpdeskConnector):
         sender_email = provider_message.get("user_email", "")
 
         # Parse attachments
-        attachments = []
-        for att in provider_message.get("attachments", []):
-            attachments.append(
-                Attachment(
-                    filename=att.get("name", "attachment"),
-                    content_type=att.get("content_type", "application/octet-stream"),
-                    url=att.get("attachment_url", ""),
-                    size_bytes=att.get("size", 0),
-                    attachment_type=AttachmentType.DOCUMENT,
-                )
+        attachments = [
+            Attachment(
+                filename=att.get("name", "attachment"),
+                content_type=att.get("content_type", "application/octet-stream"),
+                url=att.get("attachment_url", ""),
+                size_bytes=att.get("size", 0),
+                attachment_type=AttachmentType.DOCUMENT,
             )
+            for att in provider_message.get("attachments", [])
+        ]
 
         metadata = {
             "note_type": provider_message.get("note_type", ""),
@@ -247,20 +246,19 @@ class FreshdeskAdapter(HelpdeskConnector):
             # In real implementation, GET from Freshdesk API
             # GET /tickets/{id}/notes
 
-            thread = []
             # Simulate fetching 5 notes
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"note_{i}",
-                        sender_id=f"user_{i}",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"Note {i} body",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"note_type": "reply"},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"note_{i}",
+                    sender_id=f"user_{i}",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"Note {i} body",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"note_type": "reply"},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:

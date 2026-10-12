@@ -136,11 +136,8 @@ class TextExtractor:
             log.info("docx_extraction_start", file=file_path)
 
             doc = Document(file_path)
-            text_parts = []
 
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    text_parts.append(para.text)
+            text_parts = [para.text for para in doc.paragraphs if para.text.strip()]
 
             # Extract table text
             for table in doc.tables:

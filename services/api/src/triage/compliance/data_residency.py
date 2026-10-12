@@ -110,11 +110,10 @@ class DataResidencyManager:
                 raise DataResidencyError(
                     f"Tenant {tenant_id} requires EU residency, got {storage_location}"
                 )
-        elif datacenter == Datacenter.US:
-            if "us" not in location_lower:
-                raise DataResidencyError(
-                    f"Tenant {tenant_id} requires US residency, got {storage_location}"
-                )
+        elif datacenter == Datacenter.US and "us" not in location_lower:
+            raise DataResidencyError(
+                f"Tenant {tenant_id} requires US residency, got {storage_location}"
+            )
 
         # Log successful write
         self.audit_log.append(DataResidencyAuditLog(
@@ -156,12 +155,13 @@ class DataResidencyManager:
                 raise DataResidencyError(
                     f"EU tenant cannot call US endpoint: {endpoint_url}"
                 )
-        elif datacenter == Datacenter.US:
+        elif datacenter == Datacenter.US and (
+            "eu" in endpoint_url.lower() or "europe" in endpoint_url.lower()
+        ):
             # US tenant can only call US-region endpoints
-            if "eu" in endpoint_url.lower() or "europe" in endpoint_url.lower():
-                raise DataResidencyError(
-                    f"US tenant cannot call EU endpoint: {endpoint_url}"
-                )
+            raise DataResidencyError(
+                f"US tenant cannot call EU endpoint: {endpoint_url}"
+            )
 
         # Log successful egress
         self.audit_log.append(DataResidencyAuditLog(
@@ -191,10 +191,7 @@ class DataResidencyManager:
     def validate_schema(self) -> bool:
         """Validate data residency configuration schema."""
         # Check that all tenants with configs have valid datacenters
-        for config in self.tenant_config.values():
-            if config.datacenter not in Datacenter:
-                return False
-        return True
+        return all(config.datacenter in Datacenter for config in self.tenant_config.values())
 
 
 class RegionLockManager:

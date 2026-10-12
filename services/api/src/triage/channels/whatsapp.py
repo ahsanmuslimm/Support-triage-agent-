@@ -360,20 +360,19 @@ class WhatsAppAdapter(HelpdeskConnector):
             # In real implementation, GET from Meta Cloud API
             # GET /v18.0/{phone_number_id}/messages
 
-            thread = []
             # Simulate fetching messages
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"msg_{i}",
-                        sender_id=ticket_id if i % 2 == 0 else "agent",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"WhatsApp message {i}",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"type": "text"},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"msg_{i}",
+                    sender_id=ticket_id if i % 2 == 0 else "agent",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"WhatsApp message {i}",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"type": "text"},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:

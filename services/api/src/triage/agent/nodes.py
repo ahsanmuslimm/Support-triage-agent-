@@ -1,6 +1,8 @@
 """LangGraph nodes for triage agent."""
 
 
+import contextlib
+
 import structlog
 
 from triage.classification.classifier import IntentClassifier
@@ -53,12 +55,10 @@ async def extract_entities_node(state: TriageState) -> TriageState:
     # Extract amount if available
     for entity in result.entities:
         if entity.entity_type.name == "AMOUNT":
-            try:
+            with contextlib.suppress(ValueError, AttributeError):
                 state.extracted_amount = float(
                     entity.normalized_value.replace("$", "").replace(",", "")
                 )
-            except (ValueError, AttributeError):
-                pass
 
     state.phase = "EXTRACT_ENTITIES"
     return state

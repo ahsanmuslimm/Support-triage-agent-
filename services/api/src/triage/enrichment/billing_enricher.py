@@ -186,17 +186,16 @@ class BillingEnricher(EnricherBase):
             invoices = await self.stripe.invoices.list(
                 customer_id=customer_id, created={"gte": cutoff}
             )
-            result = []
 
-            for inv in invoices:
-                result.append(
-                    {
-                        "id": inv.get("id"),
-                        "status": inv.get("status"),  # 'paid', 'failed', 'draft', etc.
-                        "amount": inv.get("amount_paid", 0),
-                        "created_at": datetime.fromtimestamp(inv.get("created")),
-                    }
-                )
+            result = [
+                {
+                    "id": inv.get("id"),
+                    "status": inv.get("status"),  # 'paid', 'failed', 'draft', etc.
+                    "amount": inv.get("amount_paid", 0),
+                    "created_at": datetime.fromtimestamp(inv.get("created")),
+                }
+                for inv in invoices
+            ]
 
             return result
         except Exception as e:

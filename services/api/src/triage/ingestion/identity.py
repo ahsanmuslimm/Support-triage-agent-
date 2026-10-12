@@ -115,10 +115,9 @@ class IdentityResolver:
                 candidates.append(self._customers[customer_id])
 
         # Search by Zendesk ID (tenant-scoped)
-        if zendesk_id:
-            if zendesk_id in self._zendesk_index[tenant_id]:
-                customer_id = self._zendesk_index[tenant_id][zendesk_id]
-                candidates.append(self._customers[customer_id])
+        if zendesk_id and zendesk_id in self._zendesk_index[tenant_id]:
+            customer_id = self._zendesk_index[tenant_id][zendesk_id]
+            candidates.append(self._customers[customer_id])
 
         # Deduplicate candidates
         candidates = list({c.customer_id: c for c in candidates}.values())

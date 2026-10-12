@@ -293,13 +293,11 @@ class OPAAdapter:
         arguments = input_data.get("arguments", {})
         new_address = arguments.get("new_address", {})
 
-        guardrails = []
-
         # Validate address fields
         required_fields = ["street", "city", "state", "zip", "country"]
-        for field in required_fields:
-            if not new_address.get(field):
-                guardrails.append(f"missing_field_{field}")
+        guardrails = [
+            f"missing_field_{field}" for field in required_fields if not new_address.get(field)
+        ]
 
         if guardrails:
             return OPADecision(

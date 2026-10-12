@@ -138,10 +138,9 @@ class SCIMProvisioner:
                 if op.path == "/mfa":
                     user.mfa_enabled = True
                     user.mfa_secret = op.value or secrets.token_hex(20)
-            elif op.op == "remove":
-                if op.path == "/mfa":
-                    user.mfa_enabled = False
-                    user.mfa_secret = None
+            elif op.op == "remove" and op.path == "/mfa":
+                user.mfa_enabled = False
+                user.mfa_secret = None
 
         user.updated_at = datetime.utcnow()
         return user

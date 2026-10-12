@@ -147,20 +147,19 @@ class CustomerEnricher(EnricherBase):
 
         try:
             orders = await self.shopify.orders.list(customer_id=customer_id)
-            result = []
-            for o in orders:
-                result.append(
-                    {
-                        "id": o.get("id"),
-                        "total": float(o.get("total_price", 0)),
-                        "date": (
-                            datetime.fromisoformat(o["created_at"].replace("Z", "+00:00"))
-                            if "created_at" in o
-                            else None
-                        ),
-                        "status": o.get("financial_status"),
-                    }
-                )
+            result = [
+                {
+                    "id": o.get("id"),
+                    "total": float(o.get("total_price", 0)),
+                    "date": (
+                        datetime.fromisoformat(o["created_at"].replace("Z", "+00:00"))
+                        if "created_at" in o
+                        else None
+                    ),
+                    "status": o.get("financial_status"),
+                }
+                for o in orders
+            ]
             # Sort by date descending (most recent first)
             result.sort(key=lambda x: x["date"] or datetime.min, reverse=True)
             return result

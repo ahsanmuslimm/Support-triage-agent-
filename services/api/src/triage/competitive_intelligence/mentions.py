@@ -17,14 +17,15 @@ class MentionTracker:
 
     async def extract_mentions(self, text: str) -> list[dict]:
         """Extract competitive mentions from text."""
-        found_mentions = []
-        for competitor in self.COMPETITORS:
-            if competitor.lower() in text.lower():
-                found_mentions.append({
-                    "competitor": competitor,
-                    "sentiment": 0.5,  # Mock sentiment
-                    "context": text[:100],
-                })
+        found_mentions = [
+            {
+                "competitor": competitor,
+                "sentiment": 0.5,  # Mock sentiment
+                "context": text[:100],
+            }
+            for competitor in self.COMPETITORS
+            if competitor.lower() in text.lower()
+        ]
         return found_mentions
 
     async def track_ticket_mentions(

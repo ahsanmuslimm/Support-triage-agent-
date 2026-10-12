@@ -172,10 +172,7 @@ class CampaignEngine:
             return False
         if context.health_score <= 0.8:
             return False
-        if context.is_vip:
-            return False
-
-        return True
+        return not context.is_vip
 
     async def _create_campaign(
         self,
