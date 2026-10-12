@@ -38,7 +38,7 @@ async def ingest_message(
     """Ingest a message into a conversation.
 
     Returns 202 Accepted immediately. Message is processed asynchronously.
-    Implements full pipeline: normalize → validate → check idempotency → encrypt → redact PII → 
+    Implements full pipeline: normalize → validate → check idempotency → encrypt → redact PII →
     resolve identity → store to database → write outbox event → queue for coalescing.
 
     Args:
@@ -182,7 +182,7 @@ async def stream_conversation(
 
     async def event_generator():
         """Generate SSE events for conversation.
-        
+
         Yields:
             SSE-formatted event strings (data: {...}\n\n)
         """

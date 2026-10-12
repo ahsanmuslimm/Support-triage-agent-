@@ -36,14 +36,14 @@ class OPADecision:
 
 class OPAAdapter:
     """Adapter for OPA policy engine.
-    
+
     In production, this calls a real OPA server via HTTP.
     For testing, policies are embedded or mocked.
     """
 
     def __init__(self, opa_url: str = "http://localhost:8181", use_embedded: bool = False):
         """Initialize OPA adapter.
-        
+
         Args:
             opa_url: URL to OPA server
             use_embedded: If True, use embedded policies (for testing)
@@ -61,14 +61,14 @@ class OPAAdapter:
         context: dict[str, Any],
     ) -> dict[str, Any]:
         """Evaluate action against policies.
-        
+
         Args:
             action_type: Type of action (refund, cancel, etc.)
             tenant_id: Tenant ID
             customer_id: Customer ID
             arguments: Action arguments
             context: Customer and order context
-            
+
         Returns:
             Dictionary with approval decision
         """

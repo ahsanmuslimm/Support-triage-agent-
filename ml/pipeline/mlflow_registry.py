@@ -90,7 +90,7 @@ class PromotionGateEvaluator:
     ) -> tuple[bool, list[str]]:
         """
         Evaluate all promotion gates.
-        
+
         Returns:
             (passed, reasons_failed)
         """
@@ -226,7 +226,7 @@ class CanaryDeployment:
     ) -> tuple[dict, bool]:
         """
         Route to canary or production based on traffic split.
-        
+
         Returns:
             (prediction, used_canary)
         """
@@ -253,7 +253,7 @@ class CanaryDeployment:
     def should_rollback(self, window_minutes: int = 10) -> bool:
         """
         Check if canary error rate suggests rollback.
-        
+
         Rollback if: canary_error > baseline + 1σ for 10 min
         """
         if len(self.error_window) < 60:  # Need enough samples

@@ -47,7 +47,7 @@ class PerformanceTracker:
     ) -> list[int]:
         """Identify underperforming articles."""
         underperformers = []
-        for article_id in self.interactions.keys():
+        for article_id in self.interactions:
             metrics = await self.compute_article_metrics(article_id)
             if metrics["ctr"] < threshold_ctr:
                 underperformers.append(article_id)

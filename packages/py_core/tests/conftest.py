@@ -38,7 +38,7 @@ def clear_tenant_context():
 @pytest_asyncio.fixture(scope="session")
 async def pg_engine():
     """Create PostgreSQL engine for integration tests.
-    
+
     Uses testcontainers to spin up a temporary Postgres database.
     """
     try:

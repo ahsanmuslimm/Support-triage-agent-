@@ -15,7 +15,7 @@ class EscalationQueueManager:
     def __init__(self, db_session=None):
         """
         Initialize queue manager.
-        
+
         Args:
             db_session: Database session
         """
@@ -25,10 +25,10 @@ class EscalationQueueManager:
     async def enqueue(self, job: EscalationJob) -> bool:
         """
         Enqueue escalation job.
-        
+
         Args:
             job: EscalationJob to enqueue
-        
+
         Returns:
             Success flag
         """
@@ -55,11 +55,11 @@ class EscalationQueueManager:
     async def assign_to_agent(self, job_id: int, agent_id: str) -> bool:
         """
         Assign escalation job to agent.
-        
+
         Args:
             job_id: Escalation job ID
             agent_id: Agent ID/email
-        
+
         Returns:
             Success flag
         """
@@ -82,10 +82,10 @@ class EscalationQueueManager:
     async def detect_sla_breaches(self, tenant_id: int) -> list[EscalationJob]:
         """
         Detect SLA breaches and auto-escalate.
-        
+
         Args:
             tenant_id: Tenant ID
-        
+
         Returns:
             List of breached jobs
         """
@@ -109,7 +109,7 @@ class EscalationQueueManager:
     async def _handle_sla_breach(self, job: EscalationJob) -> None:
         """
         Handle SLA breach by escalating to manager.
-        
+
         Args:
             job: Breached escalation job
         """
@@ -155,11 +155,11 @@ class EscalationQueueManager:
     async def resolve_job(self, job_id: int, resolution_notes: str) -> bool:
         """
         Mark escalation job as resolved.
-        
+
         Args:
             job_id: Escalation job ID
             resolution_notes: Notes about resolution
-        
+
         Returns:
             Success flag
         """
@@ -187,10 +187,10 @@ class EscalationQueueManager:
     async def get_queue_stats(self, tenant_id: int) -> dict[str, Any]:
         """
         Get queue statistics.
-        
+
         Args:
             tenant_id: Tenant ID
-        
+
         Returns:
             Dictionary with queue stats
         """
@@ -220,13 +220,13 @@ class EscalationQueueManager:
     ) -> bool:
         """
         Log action to escalation audit trail.
-        
+
         Args:
             tenant_id: Tenant ID
             escalation_id: Escalation job ID
             action: Action name
             details: Action details
-        
+
         Returns:
             Success flag
         """
@@ -243,10 +243,10 @@ class EscalationQueueManager:
     async def _emit_alert_webhook(self, job: EscalationJob) -> bool:
         """
         Emit webhook alert for SLA breach.
-        
+
         Args:
             job: Breached escalation job
-        
+
         Returns:
             Success flag
         """

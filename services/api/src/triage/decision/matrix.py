@@ -18,7 +18,7 @@ class DecisionMatrix:
 
     All rules are deterministic functions of PolicyInput.
     No I/O, no randomness. Rules are applied in order; first match wins.
-    
+
     Supports per-tenant autonomy policy overrides loaded from database.
     """
 
@@ -32,7 +32,7 @@ class DecisionMatrix:
 
     def __init__(self, autonomy_policies: dict[str, int] | None = None):
         """Initialize DecisionMatrix with optional per-tenant autonomy policies.
-        
+
         Args:
             autonomy_policies: Dict mapping intent_name to AutonomyLevel override.
                               e.g., {"refund": 0, "order_status": 2}
@@ -41,7 +41,7 @@ class DecisionMatrix:
 
     def _check_autonomy_policy_override(self, policy: PolicyInput) -> tuple[bool, AutonomyLevel | None, str]:
         """Check for per-tenant autonomy policy override (pre-rule gate).
-        
+
         Returns:
             (policy_found, autonomy_level, reason)
         """

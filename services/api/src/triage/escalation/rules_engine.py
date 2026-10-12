@@ -14,7 +14,7 @@ class EscalationRulesEngine:
     def __init__(self, db_session=None):
         """
         Initialize rules engine.
-        
+
         Args:
             db_session: Database session
         """
@@ -32,10 +32,10 @@ class EscalationRulesEngine:
     async def evaluate(self, state: TriageState) -> EscalationJob | None:
         """
         Evaluate triage state and determine if escalation needed.
-        
+
         Args:
             state: TriageState to evaluate
-        
+
         Returns:
             EscalationJob if escalation needed, None otherwise
         """
@@ -69,7 +69,7 @@ class EscalationRulesEngine:
     async def _check_confidence_rule(self, state: TriageState) -> tuple[bool, Priority]:
         """
         PRIMARY RULE: Check if intent_confidence < 0.50.
-        
+
         Returns:
             Tuple of (should_escalate, priority)
         """
@@ -83,7 +83,7 @@ class EscalationRulesEngine:
     async def _check_safety_flags(self, state: TriageState) -> tuple[bool, Priority]:
         """
         SECONDARY RULE: Check for safety flags (chargeback, legal_threat, etc.).
-        
+
         Returns:
             Tuple of (should_escalate, priority)
         """
@@ -106,7 +106,7 @@ class EscalationRulesEngine:
     async def _check_entity_extraction_failure(self, state: TriageState) -> tuple[bool, Priority]:
         """
         SECONDARY RULE: Check if entity extraction failed.
-        
+
         Returns:
             Tuple of (should_escalate, priority)
         """
@@ -119,7 +119,7 @@ class EscalationRulesEngine:
     async def _check_anomaly_signals(self, state: TriageState) -> tuple[bool, Priority]:
         """
         SECONDARY RULE: Check for anomaly signals from detector.
-        
+
         Returns:
             Tuple of (should_escalate, priority)
         """
@@ -136,7 +136,7 @@ class EscalationRulesEngine:
     async def _check_repeat_escalation(self, state: TriageState) -> tuple[bool, Priority]:
         """
         SECONDARY RULE: Check if ticket already escalated 2+ times.
-        
+
         Returns:
             Tuple of (should_escalate, priority)
         """
@@ -154,12 +154,12 @@ class EscalationRulesEngine:
     ) -> EscalationJob:
         """
         Create escalation job with deadline based on priority.
-        
+
         Args:
             state: Triage state
             priority: Escalation priority
             trigger_reason: Human-readable reason
-        
+
         Returns:
             EscalationJob instance
         """

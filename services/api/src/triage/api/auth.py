@@ -108,7 +108,7 @@ class APIKeyManager:
         prefix = full_key[:20]
 
         # Find key by prefix
-        for key_id, key_record in self._keys_store.items():
+        for key_record in self._keys_store.values():
             if key_record.key_prefix == prefix:
                 # Check if active
                 if not key_record.active:

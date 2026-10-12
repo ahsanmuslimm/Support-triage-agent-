@@ -60,7 +60,7 @@ class RuleBasedEntityExtractor:
 
     def __init__(self, linker=None):
         """Initialize extractor.
-        
+
         Args:
             linker: Optional EntityLinker instance for entity linking
         """

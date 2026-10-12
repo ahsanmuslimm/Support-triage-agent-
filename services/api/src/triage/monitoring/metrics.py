@@ -75,7 +75,7 @@ class MetricsCollector:
     async def record_escalation(tenant_id: str, priority: str) -> None:
         """
         Record an escalation event.
-        
+
         Args:
             tenant_id: Tenant ID
             priority: Priority level (p0, p1, p2, p3)
@@ -87,7 +87,7 @@ class MetricsCollector:
     async def record_resolution(resolution_time_sec: float, autonomy_level: int) -> None:
         """
         Record a resolution event.
-        
+
         Args:
             resolution_time_sec: Time to resolution in seconds
             autonomy_level: Autonomy level (0-5)
@@ -99,7 +99,7 @@ class MetricsCollector:
     async def record_cost(tenant_id: str, cost_usd: float) -> None:
         """
         Record cost for resolution.
-        
+
         Args:
             tenant_id: Tenant ID
             cost_usd: Cost in USD
@@ -110,7 +110,7 @@ class MetricsCollector:
     async def record_sla_breach(tenant_id: str, priority: str) -> None:
         """
         Record an SLA breach.
-        
+
         Args:
             tenant_id: Tenant ID
             priority: Priority level
@@ -121,7 +121,7 @@ class MetricsCollector:
     async def record_anomaly_detection(signal_type: str, latency_ms: float) -> None:
         """
         Record anomaly detection latency.
-        
+
         Args:
             signal_type: Type of signal
             latency_ms: Latency in milliseconds
@@ -132,7 +132,7 @@ class MetricsCollector:
     async def record_routing(channel: str, latency_ms: float) -> None:
         """
         Record escalation routing latency.
-        
+
         Args:
             channel: Routing channel (slack, email, pagerduty, webhook)
             latency_ms: Latency in milliseconds
@@ -143,7 +143,7 @@ class MetricsCollector:
     async def record_context_quality(tenant_id: str, quality_score: float) -> None:
         """
         Record context quality score.
-        
+
         Args:
             tenant_id: Tenant ID
             quality_score: Quality score (0-1)

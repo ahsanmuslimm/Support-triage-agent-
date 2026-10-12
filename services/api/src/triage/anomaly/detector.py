@@ -23,7 +23,7 @@ class AnomalyDetector:
     ):
         """
         Initialize anomaly detector.
-        
+
         Args:
             ewma_alpha: Weight for exponential moving average (0.0 - 1.0)
             isolation_forest_contamination: Expected proportion of anomalies
@@ -57,12 +57,12 @@ class AnomalyDetector:
     ) -> list[AnomalySignal]:
         """
         Detect anomalies in 6 dimensions.
-        
+
         Args:
             tenant_id: Tenant ID for multi-tenancy
             daily_stats: Daily summary metrics (from v_triage_daily_summary)
             performance_stats: Agent performance metrics (from v_agent_performance_daily)
-        
+
         Returns:
             List of AnomalySignal objects with confidence scores
         """
@@ -100,7 +100,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect churn spike: health_score trend down + sentiment_negative_ratio up.
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -138,7 +138,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect fraud pattern: multiple chargebacks + high-value order spike.
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -174,7 +174,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect complaint surge: escalation_pct > 3σ above baseline.
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -209,7 +209,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect response delay: avg_resolution_time_sec spike (>2σ).
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -244,7 +244,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect volume spike: total_triages > 2σ above baseline.
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -279,7 +279,7 @@ class AnomalyDetector:
     ) -> AnomalySignal | None:
         """
         Detect API error rate: (error_count / total_requests) > 0.05.
-        
+
         Returns:
             AnomalySignal if anomaly detected, None otherwise
         """
@@ -317,12 +317,12 @@ class AnomalyDetector:
     ) -> tuple[float, float]:
         """
         Compute exponential moving average and deviation from baseline.
-        
+
         Args:
             tenant_id: Tenant ID
             signal_type: Type of signal
             current_value: Current measurement
-        
+
         Returns:
             Tuple of (smoothed_value, deviation_sigma)
         """
@@ -357,10 +357,10 @@ class AnomalyDetector:
     async def publish_webhook(self, signal: AnomalySignal) -> bool:
         """
         Publish anomaly signal to escalation queue via webhook.
-        
+
         Args:
             signal: AnomalySignal to publish
-        
+
         Returns:
             Success flag
         """

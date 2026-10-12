@@ -191,7 +191,7 @@ class DataResidencyManager:
     def validate_schema(self) -> bool:
         """Validate data residency configuration schema."""
         # Check that all tenants with configs have valid datacenters
-        for tenant_id, config in self.tenant_config.items():
+        for config in self.tenant_config.values():
             if config.datacenter not in Datacenter:
                 return False
         return True

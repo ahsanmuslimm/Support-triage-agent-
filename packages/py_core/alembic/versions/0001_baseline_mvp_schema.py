@@ -490,16 +490,16 @@ def upgrade() -> None:
     # HNSW indexes for vector similarity search
     op.execute(
         """
-        CREATE INDEX idx_intent_examples_embedding 
-        ON triage.intent_examples 
+        CREATE INDEX idx_intent_examples_embedding
+        ON triage.intent_examples
         USING hnsw (embedding vector_ip_ops)
         WHERE embedding IS NOT NULL
         """
     )
     op.execute(
         """
-        CREATE INDEX idx_kb_chunks_embedding 
-        ON triage.kb_chunks 
+        CREATE INDEX idx_kb_chunks_embedding
+        ON triage.kb_chunks
         USING hnsw (embedding vector_ip_ops)
         WHERE embedding IS NOT NULL
         """

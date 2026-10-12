@@ -41,9 +41,9 @@ class PSIComputer:
     def compute_psi(baseline_dist: dict, current_dist: dict) -> float:
         """
         Compute PSI between two intent distributions.
-        
+
         PSI = sum((current% - baseline%) * ln(current% / baseline%))
-        
+
         Interpretation:
         - PSI < 0.1: negligible shift
         - PSI 0.1-0.25: small shift
@@ -118,7 +118,7 @@ class CentroidDriftDetector:
     ) -> tuple[float, dict[str, float]]:
         """
         Compute centroid drift.
-        
+
         Returns:
             (overall_drift, per_class_drift)
         """
@@ -209,7 +209,7 @@ class ConceptDriftDetector:
             return 0.0
 
         # Compute per-class F1
-        intents = set(lbl for _, lbl in window_data)
+        intents = {lbl for _, lbl in window_data}
         f1_scores = []
 
         for intent in intents:

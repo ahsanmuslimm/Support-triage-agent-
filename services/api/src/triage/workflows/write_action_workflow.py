@@ -159,10 +159,10 @@ class WriteActionActivity(ABC):
     @abstractmethod
     async def execute(self, context: WriteActionContext) -> dict[str, Any]:
         """Execute the activity.
-        
+
         Args:
             context: Write action context
-            
+
         Returns:
             Dictionary with execution result
         """
@@ -170,10 +170,10 @@ class WriteActionActivity(ABC):
     @abstractmethod
     async def compensate(self, context: WriteActionContext) -> dict[str, Any]:
         """Compensate (rollback) the activity.
-        
+
         Args:
             context: Write action context
-            
+
         Returns:
             Dictionary with compensation result
         """
@@ -184,7 +184,7 @@ class WriteActionWorkflow:
 
     def __init__(self, policy_engine, approval_service, tool_executor):
         """Initialize workflow.
-        
+
         Args:
             policy_engine: OPA policy engine
             approval_service: Approval service for L2/L3 decisions
@@ -196,10 +196,10 @@ class WriteActionWorkflow:
 
     async def execute(self, action_input: WriteActionInput) -> WriteActionResult:
         """Execute write action through full state machine.
-        
+
         Args:
             action_input: Write action input
-            
+
         Returns:
             WriteActionResult
         """

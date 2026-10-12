@@ -28,7 +28,7 @@ class RFMCalculator:
         # Normalize value to 0-1, then map to 0-5
         normalized = (value - min_val) / (max_val - min_val)
         normalized = max(0.0, min(1.0, normalized))  # Clamp to [0, 1]
-        score = int(round(normalized * 5))
+        score = round(normalized * 5)
         return max(0, min(5, score))
 
     async def calculate_rfm(

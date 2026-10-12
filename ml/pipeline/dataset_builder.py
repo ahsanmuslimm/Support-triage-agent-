@@ -183,7 +183,7 @@ class TrainTestSplitter:
             groups[key].append(record)
 
         train, test = [], []
-        for (tenant, intent), group in groups.items():
+        for group in groups.values():
             # Shuffle within group
             np.random.shuffle(group)
             split_idx = max(1, int(len(group) * (1 - test_ratio)))
@@ -261,7 +261,7 @@ class GoldenSetTagger:
             elif edge_score > 0.6:
                 reason = "edge_case"
 
-            record.is_golden = True if combined_score > 0.6 else False
+            record.is_golden = combined_score > 0.6
             record.golden_reason = reason
             tagged.append(record)
 
@@ -320,7 +320,7 @@ def apply_label_precedence(
     for record in records:
         by_id[record.conversation_id].append(record)
 
-    for conv_id, conv_records in by_id.items():
+    for conv_records in by_id.values():
         # Sort by precedence
         sorted_records = sorted(
             conv_records,

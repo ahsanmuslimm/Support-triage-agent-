@@ -20,14 +20,14 @@ log = structlog.get_logger(__name__)
 
 class KafkaEventBus:
     """Production EventBus backed by Apache Kafka with Protobuf serialization.
-    
+
     Design Principles:
     - Event Topic Naming: "triage.{event_type}" (e.g., "message.ingested" → "triage.message.ingested")
     - Partition Key: tenant_id (for tenant isolation + ordering guarantees per tenant)
     - Serialization: Protobuf-serialized CloudEvent envelope (RFC 7807)
     - Idempotency: Event ID propagation to consumers (S6.3)
     - Durability: acks='all' (wait for all in-sync replicas)
-    
+
     Integration with Debezium (S6.2):
     - Debezium PostgreSQL connector captures outbox_events CDC
     - EventRouter transform routes by event_type to appropriate Kafka topic
@@ -86,10 +86,10 @@ class KafkaEventBus:
     @staticmethod
     def _serialize_protobuf(data: Any) -> bytes:
         """Serialize Protobuf message to bytes.
-        
+
         Args:
             data: Protobuf message or dict (fallback for MVP transition)
-        
+
         Returns:
             Serialized bytes
         """

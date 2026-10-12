@@ -18,7 +18,7 @@ class CampaignEngine:
     def __init__(self, template_store: dict[str, CampaignTemplate] | None = None):
         """
         Initialize campaign engine.
-        
+
         Args:
             template_store: Dictionary of campaign templates
         """
@@ -101,12 +101,12 @@ class CampaignEngine:
     ) -> list[Campaign]:
         """
         Trigger campaigns based on customer context.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             context: Customer context with enrichment signals
-        
+
         Returns:
             List of triggered campaigns (ready to send)
         """
@@ -185,12 +185,12 @@ class CampaignEngine:
     ) -> Campaign | None:
         """
         Create a campaign instance with A/B variant.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             campaign_type: Type of campaign
-        
+
         Returns:
             Campaign instance or None if templates not found
         """
@@ -231,7 +231,7 @@ class CampaignEngine:
     def _random_ab_variant(self) -> str:
         """
         Return random A/B variant.
-        
+
         Returns:
             'A' or 'B' with 50/50 probability
         """
@@ -240,11 +240,11 @@ class CampaignEngine:
     def render_template(self, template: CampaignTemplate, context: dict[str, Any]) -> str:
         """
         Render Jinja2 template with context.
-        
+
         Args:
             template: Campaign template
             context: Variables for template
-        
+
         Returns:
             Rendered body text
         """

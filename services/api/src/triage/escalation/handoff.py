@@ -15,7 +15,7 @@ class HandoffComposer:
     def __init__(self, db_session=None):
         """
         Initialize handoff composer.
-        
+
         Args:
             db_session: Database session
         """
@@ -31,13 +31,13 @@ class HandoffComposer:
     ) -> HandoffContext | None:
         """
         Compose escalation handoff context for human agent.
-        
+
         Args:
             escalation_id: Escalation ID
             state: Triage state
             enrichment_context: Enrichment data
             escalation_job: Escalation job details
-        
+
         Returns:
             HandoffContext with summary and quality score
         """
@@ -91,12 +91,12 @@ class HandoffComposer:
     ) -> str:
         """
         Generate 2-3 sentence handoff summary.
-        
+
         Args:
             state: Triage state
             enrichment_context: Enrichment data
             escalation_job: Escalation job
-        
+
         Returns:
             Summary text
         """
@@ -140,11 +140,11 @@ class HandoffComposer:
     ) -> dict[str, Any]:
         """
         Extract customer context fields for handoff.
-        
+
         Args:
             enrichment_context: Enrichment data
             state: Triage state
-        
+
         Returns:
             Dictionary with extracted context
         """
@@ -172,7 +172,7 @@ class HandoffComposer:
     def _compute_quality_score(self, handoff: dict[str, Any]) -> float:
         """
         Compute quality score (0-1) for handoff context.
-        
+
         Checklist (8 items, each worth 0.125):
         - summary not empty
         - summary >= 50 chars
@@ -182,10 +182,10 @@ class HandoffComposer:
         - customer_context includes is_vip
         - escalation_reason present
         - created_at recent
-        
+
         Args:
             handoff: Handoff data dictionary
-        
+
         Returns:
             Quality score 0-1
         """

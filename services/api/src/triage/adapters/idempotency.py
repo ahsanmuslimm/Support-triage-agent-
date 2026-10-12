@@ -144,9 +144,9 @@ class IdempotencyStore:
             # Atomic insert-or-update using ON CONFLICT (M2 Fix)
             # This always succeeds; PostgreSQL handles the conflict atomically
             stmt = """
-                INSERT INTO triage.idempotency_records 
+                INSERT INTO triage.idempotency_records
                   (tenant_id, event_id, event_type, result_json, processed_at, is_first_attempt)
-                VALUES 
+                VALUES
                   (:tenant_id, :event_id, :event_type, :result_json, :processed_at, true)
                 ON CONFLICT (tenant_id, event_id)
                 DO UPDATE SET

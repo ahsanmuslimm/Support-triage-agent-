@@ -21,7 +21,7 @@ class EscalationRouter:
     def __init__(self, slack_client=None, pagerduty_client=None, email_service=None):
         """
         Initialize router.
-        
+
         Args:
             slack_client: Slack client
             pagerduty_client: PagerDuty client
@@ -54,12 +54,12 @@ class EscalationRouter:
     ) -> dict[str, Any]:
         """
         Route escalation across multiple channels with DND checking.
-        
+
         Args:
             job: Escalation job
             handoff_context: Handoff context with summary
             escalation_job_id: Escalation job ID
-        
+
         Returns:
             Routing result dictionary
         """
@@ -118,10 +118,10 @@ class EscalationRouter:
     async def _sync_oncall_rotation(self, tenant_id: int) -> dict[str, Any]:
         """
         Sync on-call rotation from PagerDuty (cached 1 hour).
-        
+
         Args:
             tenant_id: Tenant ID
-        
+
         Returns:
             On-call rotation data
         """
@@ -156,10 +156,10 @@ class EscalationRouter:
     async def _check_dnd_schedule(self, agent_email: str) -> bool:
         """
         Check if agent has DND (Do Not Disturb) active.
-        
+
         Args:
             agent_email: Agent email
-        
+
         Returns:
             True if DND active, False otherwise
         """
@@ -179,12 +179,12 @@ class EscalationRouter:
     ) -> bool:
         """
         Send Slack DM to on-call agent.
-        
+
         Args:
             agent_email: Agent email
             job: Escalation job
             handoff: Handoff context
-        
+
         Returns:
             Success flag
         """
@@ -233,11 +233,11 @@ class EscalationRouter:
     ) -> bool:
         """
         Create PagerDuty incident.
-        
+
         Args:
             job: Escalation job
             handoff: Handoff context
-        
+
         Returns:
             Success flag
         """
@@ -260,11 +260,11 @@ class EscalationRouter:
     ) -> bool:
         """
         Send email to escalation queue.
-        
+
         Args:
             job: Escalation job
             handoff: Handoff context
-        
+
         Returns:
             Success flag
         """
@@ -283,11 +283,11 @@ class EscalationRouter:
     ) -> bool:
         """
         POST escalation to webhook URL with HMAC signature.
-        
+
         Args:
             job: Escalation job
             handoff: Handoff context
-        
+
         Returns:
             Success flag
         """

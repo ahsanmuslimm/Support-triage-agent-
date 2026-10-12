@@ -13,18 +13,15 @@ from .models import (
 from .order_enricher import OrderEnricher
 
 __all__ = [
-    # Models
-    "CustomerContext",
-    "OrderContext",
-    "BillingContext",
-    "SentimentContext",
-    "EnrichmentBundle",
-    # Enrichers
-    "CustomerEnricher",
-    "OrderEnricher",
-    "BillingEnricher",
-    # Exceptions
-    "EnrichmentError",
     "APITimeoutError",
+    "BillingContext",
+    "BillingEnricher",
     "CacheError",
+    "CustomerContext",
+    "CustomerEnricher",
+    "EnrichmentBundle",
+    "EnrichmentError",
+    "OrderContext",
+    "OrderEnricher",
+    "SentimentContext",
 ]

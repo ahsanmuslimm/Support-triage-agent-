@@ -98,7 +98,7 @@ class ApprovalService:
 
     def __init__(self, db_session, slack_client=None):
         """Initialize approval service.
-        
+
         Args:
             db_session: Database session
             slack_client: Optional Slack client for notifications
@@ -118,7 +118,7 @@ class ApprovalService:
         priority: ApprovalPriority = ApprovalPriority.MEDIUM,
     ) -> dict[str, Any]:
         """Create an approval request.
-        
+
         Args:
             action_id: ID of the action needing approval
             tenant_id: Tenant ID
@@ -127,7 +127,7 @@ class ApprovalService:
             context: Additional context
             expires_at: When request expires (default: 4h from now)
             priority: Priority level
-            
+
         Returns:
             Dictionary with approval request details
         """
@@ -172,7 +172,7 @@ class ApprovalService:
 
     async def _notify_slack_approval(self, request: ApprovalRequest) -> None:
         """Send approval request to Slack.
-        
+
         Args:
             request: Approval request
         """
@@ -257,13 +257,13 @@ class ApprovalService:
         reason: str | None = None,
     ) -> dict[str, Any]:
         """Approve or reject an approval request.
-        
+
         Args:
             request_id: ID of the approval request
             approved: True to approve, False to reject
             actor_id: ID of approver
             reason: Optional reason for decision
-            
+
         Returns:
             Updated approval request
         """
@@ -310,14 +310,14 @@ class ApprovalService:
         timeout_seconds: int = 14400,
     ) -> dict[str, Any]:
         """Wait for a decision on an approval request (blocking call).
-        
+
         In a real system with Temporal, this would use signals or conditions.
         For testing, this polls the request status.
-        
+
         Args:
             approval_request_id: ID of approval request
             timeout_seconds: Max time to wait
-            
+
         Returns:
             Dictionary with decision (approved, actor_id, timestamp)
         """
@@ -369,7 +369,7 @@ class ApprovalService:
 
     async def _escalate_request(self, request: ApprovalRequest) -> None:
         """Escalate a request after auto-expiry.
-        
+
         Args:
             request: Approval request
         """
@@ -400,10 +400,10 @@ class ApprovalService:
 
     async def get_request(self, request_id: str) -> dict[str, Any] | None:
         """Get approval request by ID.
-        
+
         Args:
             request_id: ID of approval request
-            
+
         Returns:
             Approval request dictionary or None
         """
@@ -412,10 +412,10 @@ class ApprovalService:
 
     async def list_pending(self, tenant_id: str) -> list[dict[str, Any]]:
         """List all pending approval requests for a tenant.
-        
+
         Args:
             tenant_id: Tenant ID
-            
+
         Returns:
             List of approval requests
         """
@@ -431,10 +431,10 @@ class ApprovalService:
         interaction_payload: dict[str, Any],
     ) -> dict[str, Any]:
         """Handle Slack interactive button action.
-        
+
         Args:
             interaction_payload: Slack interaction payload
-            
+
         Returns:
             Response dictionary
         """

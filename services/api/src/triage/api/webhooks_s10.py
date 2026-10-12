@@ -117,7 +117,7 @@ class WebhookRetryPolicy:
     RETENTION_WINDOW_HOURS = 24
 
     @staticmethod
-    def get_next_retry_time(attempt: int, base_time: datetime = None) -> datetime | None:
+    def get_next_retry_time(attempt: int, base_time: datetime | None = None) -> datetime | None:
         """Get next retry time for attempt.
 
         Args:

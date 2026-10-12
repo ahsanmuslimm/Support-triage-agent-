@@ -84,7 +84,7 @@ class LoadBalancer:
     def register_agent(
         self,
         agent_id: str,
-        skills: list[str] = None,
+        skills: list[str] | None = None,
         max_capacity: int = 10,
     ) -> None:
         """Register agent in load balancer.
@@ -126,7 +126,7 @@ class LoadBalancer:
         self,
         ticket_id: str,
         priority: str = "p2",
-        required_skills: list[str] = None,
+        required_skills: list[str] | None = None,
     ) -> str | None:
         """Assign ticket to available agent.
 
@@ -321,7 +321,7 @@ class LoadBalancer:
 
         return reassignments
 
-    def _get_available_agents(self, required_skills: list[str] = None) -> list[AgentLoad]:
+    def _get_available_agents(self, required_skills: list[str] | None = None) -> list[AgentLoad]:
         """Get online agents with required skills.
 
         Args:

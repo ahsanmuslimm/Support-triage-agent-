@@ -266,7 +266,7 @@ class ONNXInference:
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict using ONNX model.
-        
+
         Returns:
             (class_probs, confidence_scores)
         """

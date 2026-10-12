@@ -20,7 +20,7 @@ async def test_migration_baseline_schema_created(pg_session: AsyncSession) -> No
     # Get list of tables in triage schema
     result = await pg_session.execute(
         text("""
-            SELECT table_name FROM information_schema.tables 
+            SELECT table_name FROM information_schema.tables
             WHERE table_schema = 'triage'
         """)
     )
@@ -47,8 +47,8 @@ async def test_rls_enabled_on_tenant_tables(pg_session: AsyncSession) -> None:
     for table_name in multi_tenant_tables:
         result = await pg_session.execute(
             text("""
-                SELECT relrowsecurity FROM pg_class 
-                WHERE relname = :table_name 
+                SELECT relrowsecurity FROM pg_class
+                WHERE relname = :table_name
                 AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'triage')
             """),
             {"table_name": table_name}

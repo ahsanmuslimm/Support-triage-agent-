@@ -14,7 +14,7 @@ class OverrideHandler:
     def __init__(self, db_session=None, feedback_router=None):
         """
         Initialize override handler.
-        
+
         Args:
             db_session: Database session
             feedback_router: Feedback loop router (S4.7)
@@ -32,14 +32,14 @@ class OverrideHandler:
     ) -> OverrideReason | None:
         """
         Record human override with reason.
-        
+
         Args:
             escalation_id: Escalation ID being overridden
             override_by: Agent email
             reason_text: Reason for override
             override_decision: 'accept' or 'reject'
             tenant_id: Tenant ID
-        
+
         Returns:
             OverrideReason record if successful, None otherwise
         """
@@ -79,11 +79,11 @@ class OverrideHandler:
     ) -> list[OverrideReason]:
         """
         Get recent override reasons for feedback analysis.
-        
+
         Args:
             tenant_id: Tenant ID
             limit: Maximum number of records
-        
+
         Returns:
             List of OverrideReason records
         """

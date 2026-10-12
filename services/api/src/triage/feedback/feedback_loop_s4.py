@@ -12,7 +12,7 @@ class FeedbackLoopS4:
     def __init__(self, db_session=None):
         """
         Initialize feedback loop.
-        
+
         Args:
             db_session: Database session
         """
@@ -21,10 +21,10 @@ class FeedbackLoopS4:
     async def ingest_override_reason(self, override_reason) -> bool:
         """
         Ingest human override reason.
-        
+
         Args:
             override_reason: OverrideReason object
-        
+
         Returns:
             Success flag
         """
@@ -60,14 +60,14 @@ class FeedbackLoopS4:
     ) -> bool:
         """
         Ingest sentiment shift (CSAT delta).
-        
+
         Args:
             customer_id: Customer ID
             tenant_id: Tenant ID
             previous_sentiment: Previous sentiment score
             current_sentiment: Current sentiment score
             delta: Difference
-        
+
         Returns:
             Success flag
         """
@@ -107,14 +107,14 @@ class FeedbackLoopS4:
     ) -> bool:
         """
         Ingest model retraining trigger.
-        
+
         Args:
             trigger_type: 'accuracy', 'drift', 'coverage'
             model_name: Model being monitored
             metric_name: Metric that triggered
             threshold: Alert threshold
             current_value: Current metric value
-        
+
         Returns:
             Success flag
         """
@@ -200,12 +200,12 @@ class FeedbackLoopS4:
     ) -> bool:
         """
         Log feedback signal to feedback_signals table.
-        
+
         Args:
             tenant_id: Tenant ID
             signal_type: Type of signal
             metadata: Signal metadata
-        
+
         Returns:
             Success flag
         """

@@ -18,7 +18,7 @@ async def test_audit_chain_integrity_after_n_inserts(pg_session: AsyncSession) -
     for i in range(5):
         await pg_session.execute(
             text("""
-                INSERT INTO triage.audit_log 
+                INSERT INTO triage.audit_log
                 (tenant_id, actor_id, actor_type, action, target_type, target_id, payload, prev_hash, row_hash)
                 VALUES (:tenant_id, :actor_id, :actor_type, :action, :target_type, :target_id, :payload, '', '')
             """),
@@ -57,7 +57,7 @@ async def test_audit_chain_detects_tampered_payload(pg_session: AsyncSession) ->
     # Insert one record
     await pg_session.execute(
         text("""
-            INSERT INTO triage.audit_log 
+            INSERT INTO triage.audit_log
             (tenant_id, actor_id, actor_type, action, target_type, target_id, payload, prev_hash, row_hash)
             VALUES (:tenant_id, :actor_id, :actor_type, :action, :target_type, :target_id, :payload, '', '')
         """),
@@ -84,8 +84,8 @@ async def test_audit_chain_detects_tampered_payload(pg_session: AsyncSession) ->
     # Tamper with the payload (using raw SQL bypass)
     await pg_session.execute(
         text("""
-            UPDATE triage.audit_log 
-            SET payload = :new_payload 
+            UPDATE triage.audit_log
+            SET payload = :new_payload
             WHERE id = :row_id
         """),
         {
@@ -118,7 +118,7 @@ async def test_audit_update_is_forbidden(pg_session: AsyncSession) -> None:
     # Insert one record
     await pg_session.execute(
         text("""
-            INSERT INTO triage.audit_log 
+            INSERT INTO triage.audit_log
             (tenant_id, actor_id, actor_type, action, target_type, target_id, payload, prev_hash, row_hash)
             VALUES (:tenant_id, :actor_id, :actor_type, :action, :target_type, :target_id, :payload, '', '')
         """),
@@ -139,8 +139,8 @@ async def test_audit_update_is_forbidden(pg_session: AsyncSession) -> None:
     with pytest.raises(Exception) as exc_info:
         await pg_session.execute(
             text("""
-                UPDATE triage.audit_log 
-                SET action = 'update' 
+                UPDATE triage.audit_log
+                SET action = 'update'
                 WHERE tenant_id = :tenant_id
             """),
             {"tenant_id": tenant_id}
@@ -160,7 +160,7 @@ async def test_audit_delete_is_forbidden(pg_session: AsyncSession) -> None:
     # Insert one record
     await pg_session.execute(
         text("""
-            INSERT INTO triage.audit_log 
+            INSERT INTO triage.audit_log
             (tenant_id, actor_id, actor_type, action, target_type, target_id, payload, prev_hash, row_hash)
             VALUES (:tenant_id, :actor_id, :actor_type, :action, :target_type, :target_id, :payload, '', '')
         """),
@@ -181,7 +181,7 @@ async def test_audit_delete_is_forbidden(pg_session: AsyncSession) -> None:
     with pytest.raises(Exception) as exc_info:
         await pg_session.execute(
             text("""
-                DELETE FROM triage.audit_log 
+                DELETE FROM triage.audit_log
                 WHERE tenant_id = :tenant_id
             """),
             {"tenant_id": tenant_id}
@@ -201,7 +201,7 @@ async def test_first_row_prev_hash_is_genesis(pg_session: AsyncSession) -> None:
     # Insert one record (should be first for this tenant)
     await pg_session.execute(
         text("""
-            INSERT INTO triage.audit_log 
+            INSERT INTO triage.audit_log
             (tenant_id, actor_id, actor_type, action, target_type, target_id, payload, prev_hash, row_hash)
             VALUES (:tenant_id, :actor_id, :actor_type, :action, :target_type, :target_id, :payload, '', '')
         """),
@@ -221,9 +221,9 @@ async def test_first_row_prev_hash_is_genesis(pg_session: AsyncSession) -> None:
     # Query the row
     result = await pg_session.execute(
         text("""
-            SELECT prev_hash FROM triage.audit_log 
-            WHERE tenant_id = :tenant_id 
-            ORDER BY id ASC 
+            SELECT prev_hash FROM triage.audit_log
+            WHERE tenant_id = :tenant_id
+            ORDER BY id ASC
             LIMIT 1
         """),
         {"tenant_id": tenant_id}

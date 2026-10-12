@@ -119,7 +119,7 @@ class OODEnsemble:
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict OOD score using ensemble.
-        
+
         Returns:
             (ood_scores, ood_predictions)
         """
@@ -150,7 +150,7 @@ class OODEnsemble:
     ) -> float:
         """
         Calibrate threshold for target recall on OOD samples.
-        
+
         Args:
             target_recall: Target recall on known novel/OOD samples
         """
@@ -184,7 +184,7 @@ class ThresholdCalibrator:
     ) -> float:
         """
         Find threshold that achieves target recall on novel intents.
-        
+
         Args:
             ood_scores: OOD scores for all samples
             labels: Intent labels

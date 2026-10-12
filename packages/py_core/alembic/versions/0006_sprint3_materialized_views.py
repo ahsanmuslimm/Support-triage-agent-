@@ -166,15 +166,15 @@ def upgrade() -> None:
     # For now, include a comment showing the intended refresh schedule:
     op.execute("""
         -- Intended refresh schedules (to be configured via pg_cron or application scheduler):
-        -- SELECT cron.schedule('refresh-triage-daily-summary', '*/15 * * * *', 
+        -- SELECT cron.schedule('refresh-triage-daily-summary', '*/15 * * * *',
         --     'REFRESH MATERIALIZED VIEW CONCURRENTLY triage.v_triage_daily_summary');
-        -- SELECT cron.schedule('refresh-agent-performance-daily', '*/15 * * * *', 
+        -- SELECT cron.schedule('refresh-agent-performance-daily', '*/15 * * * *',
         --     'REFRESH MATERIALIZED VIEW CONCURRENTLY triage.v_agent_performance_daily');
-        -- SELECT cron.schedule('refresh-customer-outcomes-daily', '*/15 * * * *', 
+        -- SELECT cron.schedule('refresh-customer-outcomes-daily', '*/15 * * * *',
         --     'REFRESH MATERIALIZED VIEW CONCURRENTLY triage.v_customer_outcomes_daily');
-        -- SELECT cron.schedule('refresh-anomalies-recent', '*/5 * * * *', 
+        -- SELECT cron.schedule('refresh-anomalies-recent', '*/5 * * * *',
         --     'REFRESH MATERIALIZED VIEW CONCURRENTLY triage.v_anomalies_recent');
-        -- SELECT cron.schedule('refresh-model-performance-history', '*/30 * * * *', 
+        -- SELECT cron.schedule('refresh-model-performance-history', '*/30 * * * *',
         --     'REFRESH MATERIALIZED VIEW CONCURRENTLY triage.v_model_performance_history');
     """)
 

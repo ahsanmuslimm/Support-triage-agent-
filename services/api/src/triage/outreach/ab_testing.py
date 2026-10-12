@@ -14,7 +14,7 @@ class ABTestFramework:
     def __init__(self, min_sample_size: int = 100, db_session=None):
         """
         Initialize A/B testing framework.
-        
+
         Args:
             min_sample_size: Minimum samples required before results
             db_session: Database session
@@ -29,11 +29,11 @@ class ABTestFramework:
     ) -> bool:
         """
         Record campaign event (opened, clicked, converted).
-        
+
         Args:
             campaign_id: Campaign ID
             event_type: 'opened', 'clicked', or 'converted'
-        
+
         Returns:
             Success flag
         """
@@ -59,11 +59,11 @@ class ABTestFramework:
     ) -> ABTestResult | None:
         """
         Compute A/B test results after min_sample_size reached.
-        
+
         Args:
             tenant_id: Tenant ID
             campaign_type: Type of campaign
-        
+
         Returns:
             ABTestResult if min sample size reached, None otherwise
         """
@@ -91,11 +91,11 @@ class ABTestFramework:
     ) -> str | None:
         """
         Get the winning variant (A or B) based on conversion rate.
-        
+
         Args:
             tenant_id: Tenant ID
             campaign_type: Type of campaign
-        
+
         Returns:
             'A', 'B', or None if inconclusive
         """

@@ -81,7 +81,7 @@ class PredictionCache:
             tenant_id: Tenant ID
         """
         prefix = f"prediction:*:{tenant_id}:{customer_id}"
-        keys_to_delete = [k for k in self._store.keys() if k.endswith(f":{tenant_id}:{customer_id}")]
+        keys_to_delete = [k for k in self._store if k.endswith(f":{tenant_id}:{customer_id}")]
         for key in keys_to_delete:
             del self._store[key]
         logger.debug(f"Invalidated {len(keys_to_delete)} predictions for customer {customer_id}")

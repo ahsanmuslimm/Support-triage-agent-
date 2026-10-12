@@ -183,15 +183,15 @@ class QualityDashboard:
         # Stub: would use reportlab or similar
         pdf_content = f"""
         ROI Report: {report.period_start} to {report.period_end}
-        
+
         Costs:
         - Total Cost: ${report.total_cost:.2f}
-        
+
         Value:
         - Deflections: {report.deflection_count} x $50 = ${report.deflection_count * 50:.2f}
         - Faster Resolutions: {report.faster_resolution_count} x $10 = ${report.faster_resolution_count * 10:.2f}
         - Total Value: ${report.total_value:.2f}
-        
+
         ROI:
         - Net ROI: ${report.net_roi:.2f}
         - Payback Period: {report.payback_period_days:.1f} days if applicable

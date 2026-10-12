@@ -40,7 +40,7 @@ class KBArticle:
 class MultilingualRetriever:
     """Retrieve KB articles in customer's language or cross-language."""
 
-    def __init__(self, kb_articles: list[KBArticle] = None) -> None:
+    def __init__(self, kb_articles: list[KBArticle] | None = None) -> None:
         """Initialize retriever.
 
         Args:

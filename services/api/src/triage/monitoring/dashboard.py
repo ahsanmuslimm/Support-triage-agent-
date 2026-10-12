@@ -14,7 +14,7 @@ class DashboardServer:
     def __init__(self, db_session=None, anomaly_detector=None, queue_manager=None, metrics_collector=None):
         """
         Initialize dashboard server.
-        
+
         Args:
             db_session: Database session
             anomaly_detector: Anomaly detector instance
@@ -29,10 +29,10 @@ class DashboardServer:
     async def get_dashboard_data(self, tenant_id: int) -> dict[str, Any]:
         """
         Get 4-panel dashboard data.
-        
+
         Args:
             tenant_id: Tenant ID
-        
+
         Returns:
             Dashboard data dictionary
         """
@@ -54,7 +54,7 @@ class DashboardServer:
     async def _get_agent_performance_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get agent performance panel data.
-        
+
         Returns:
             Panel data with KPIs
         """
@@ -95,7 +95,7 @@ class DashboardServer:
     async def _get_anomaly_alerts_panel(self, tenant_id: int) -> list[dict[str, Any]]:
         """
         Get anomaly alerts panel data (24h timeline).
-        
+
         Returns:
             List of anomaly events
         """
@@ -122,7 +122,7 @@ class DashboardServer:
     async def _get_override_queue_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get override queue panel data.
-        
+
         Returns:
             Panel data with override reasons
         """
@@ -149,7 +149,7 @@ class DashboardServer:
     async def _get_workload_balancing_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get workload balancing panel data.
-        
+
         Returns:
             Panel data with queue depth and utilization
         """
@@ -176,7 +176,7 @@ class DashboardServer:
     async def stream_updates(self, tenant_id: int, websocket) -> None:
         """
         Stream dashboard updates via WebSocket every 5 seconds.
-        
+
         Args:
             tenant_id: Tenant ID
             websocket: WebSocket connection

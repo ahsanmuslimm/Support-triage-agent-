@@ -45,12 +45,12 @@ class WriteTool(ABC):
         **kwargs,
     ) -> WriteToolResult:
         """Execute the write tool idempotently.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             **kwargs: Tool-specific arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -58,12 +58,12 @@ class WriteTool(ABC):
     @abstractmethod
     def _generate_idempotency_key(self, tenant_id: str, customer_id: str, **kwargs) -> str:
         """Generate idempotency key for the tool.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             **kwargs: Tool-specific arguments
-            
+
         Returns:
             Idempotency key
         """
@@ -71,13 +71,13 @@ class WriteTool(ABC):
 
 class RefundTool(WriteTool):
     """Refund write tool supporting Stripe and Shopify.
-    
+
     Idempotent by order_id + amount.
     """
 
     def __init__(self, stripe_client, shopify_client, idempotency_store):
         """Initialize refund tool.
-        
+
         Args:
             stripe_client: Stripe API client
             shopify_client: Shopify API client
@@ -97,7 +97,7 @@ class RefundTool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute refund.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
@@ -105,7 +105,7 @@ class RefundTool(WriteTool):
             amount: Refund amount in cents
             reason: Refund reason
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -232,7 +232,7 @@ class RefundTool(WriteTool):
 
 class ReturnRMATool(WriteTool):
     """Return/RMA write tool.
-    
+
     Idempotent by return_request_id.
     """
 
@@ -251,7 +251,7 @@ class ReturnRMATool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute return/RMA.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
@@ -259,7 +259,7 @@ class ReturnRMATool(WriteTool):
             return_type: "full" or "partial"
             reason: Return reason
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -328,7 +328,7 @@ class ReturnRMATool(WriteTool):
 
 class CancelOrderTool(WriteTool):
     """Cancel order write tool.
-    
+
     Idempotent by order_id.
     """
 
@@ -346,14 +346,14 @@ class CancelOrderTool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute order cancellation.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             order_id: Order ID
             reason: Cancellation reason
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -413,7 +413,7 @@ class CancelOrderTool(WriteTool):
 
 class AddressChangeTool(WriteTool):
     """Address change write tool.
-    
+
     Idempotent by customer_id + new_address hash.
     """
 
@@ -430,13 +430,13 @@ class AddressChangeTool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute address change.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             new_address: Dictionary with street, city, state, zip, country
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -496,7 +496,7 @@ class AddressChangeTool(WriteTool):
 
 class PasswordResetTool(WriteTool):
     """Password reset link write tool.
-    
+
     Idempotent by customer_id + timestamp (hourly).
     """
 
@@ -514,13 +514,13 @@ class PasswordResetTool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute password reset.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             email: Customer email
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
@@ -599,7 +599,7 @@ class PasswordResetTool(WriteTool):
 
 class PlanChangeTool(WriteTool):
     """Plan change write tool (for subscription changes).
-    
+
     Idempotent by customer_id + new_plan.
     """
 
@@ -617,14 +617,14 @@ class PlanChangeTool(WriteTool):
         **kwargs,
     ) -> WriteToolResult:
         """Execute plan change.
-        
+
         Args:
             tenant_id: Tenant ID
             customer_id: Customer ID
             new_plan: Target plan name
             effective_date: When to apply change (ISO format, default: immediately)
             **kwargs: Additional arguments
-            
+
         Returns:
             WriteToolResult
         """
