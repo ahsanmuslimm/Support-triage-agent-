@@ -6,9 +6,9 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
+    async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import sessionmaker
 
 from py_core.tenant import get_tenant, set_tenant
 
@@ -35,13 +35,13 @@ async def create_async_engine_from_env() -> AsyncEngine:
 
 
 # Create a session factory (to be bound to an engine later)
-AsyncSessionFactory = sessionmaker(
+AsyncSessionFactory = async_sessionmaker(
     class_=AsyncSession, expire_on_commit=False, autoflush=False, autocommit=False
 )
 
 
 async def get_db_session(
-    session_factory: sessionmaker,
+    session_factory: async_sessionmaker[AsyncSession],
 ) -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency for database sessions.
 
@@ -49,7 +49,7 @@ async def get_db_session(
     Yields a session with tenant context already set.
 
     Args:
-        session_factory: sessionmaker instance to use.
+        session_factory: async_sessionmaker instance to use.
 
     Yields:
         AsyncSession: Database session for the request.

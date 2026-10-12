@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "ml-evals"
 version = "0.1.0"
 description = "Evaluation harness and golden datasets"
-requires-python = "^3.12"
+requires-python = ">=3.12"
 authors = [{ name = "Support Triage Team" }]
 dependencies = [
     "py-core @ file:///../packages/py_core",

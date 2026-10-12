@@ -1,7 +1,7 @@
 """OpenTelemetry instrumentation and tracing setup."""
 
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -41,7 +41,7 @@ def get_tracer(name: str) -> trace.Tracer:
 
 
 def record_exception(
-    span: trace.Span, exc: Exception, attributes: Optional[dict] = None
+    span: trace.Span, exc: Exception, attributes: Optional[dict[str, Any]] = None
 ) -> None:
     """Record an exception on a span, filtering PII.
 

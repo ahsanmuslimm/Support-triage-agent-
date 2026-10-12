@@ -11,7 +11,58 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Minimal viable CI - just run security scans that don't depend on complex setup
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      # Blocking: syntax errors and undefined names (runtime crashes)
+      - name: Ruff (critical errors)
+        run: ruff check packages/ services/ apps/ ml/ --select E9,F63,F7,F82
+
+      # Non-blocking: full style report until the existing backlog is cleaned up
+      - name: Ruff (full report, non-blocking)
+        run: ruff check packages/ services/ apps/ ml/ --statistics --exit-zero
+
+      - name: Mypy (py_core, strict)
+        run: mypy packages/py_core/py_core --strict
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      - name: Run unit tests
+        run: pytest packages/py_core/tests -m unit -v --cov=packages/py_core --cov-report=term-missing --cov-fail-under=50
+
   gitleaks:
     name: Secret Scanning (Gitleaks)
     runs-on: ubuntu-latest

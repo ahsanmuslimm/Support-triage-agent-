@@ -141,6 +141,7 @@ class KafkaEventBus:
             event_type=event_type,
             tenant_id=tenant_id,
             payload=payload,
+            aggregate_type=aggregate_type,
             aggregate_id=aggregate_id,
             outbox_event_id=outbox_event_id,
         )
@@ -177,6 +178,7 @@ class KafkaEventBus:
         event_type: str,
         tenant_id: str,
         payload: Any,
+        aggregate_type: str,
         aggregate_id: Optional[str],
         outbox_event_id: Optional[str] = None,
     ) -> Dict[str, Any]:

@@ -89,4 +89,5 @@ def get_logger(name: str) -> structlog.BoundLogger:
     Returns:
         structlog.BoundLogger: Configured logger.
     """
-    return structlog.get_logger(name)
+    logger: structlog.BoundLogger = structlog.get_logger(name)
+    return logger

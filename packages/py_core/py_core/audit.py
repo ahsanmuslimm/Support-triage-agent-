@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 @dataclass
 class AuditBreak:
@@ -18,7 +20,7 @@ class AuditBreak:
     """Actual hash value found in the database."""
 
 
-async def verify_audit_chain(session, tenant_id: UUID) -> list[AuditBreak]:
+async def verify_audit_chain(session: AsyncSession, tenant_id: UUID) -> list[AuditBreak]:
     """Verify integrity of audit log hash chain.
 
     Args:
