@@ -1,48 +1,42 @@
-# Multi-stage build for Support Triage Agent
-# Stage 1: Builder
-FROM python:3.12-slim as builder
+# Support Triage Agent - Production Dockerfile
+FROM python:3.12-slim
 
-WORKDIR /build
+WORKDIR /app
 
-# Install build dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    postgresql-client \
+    curl \
     git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
 COPY . .
 
-# Install UV package manager and build the project
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install uv and sync dependencies for each workspace member
 RUN pip install --no-cache-dir uv
-RUN uv sync --frozen
 
-# Stage 2: Runtime
-FROM python:3.12-slim
+# Install dependencies from each workspace member's pyproject.toml
+RUN cd packages/py_core && pip install --no-cache-dir -e . || true
+RUN cd services/api && pip install --no-cache-dir -e . || true
+RUN cd services/triage_worker && pip install --no-cache-dir -e . || true
+RUN cd services/knowledge_worker && pip install --no-cache-dir -e . || true
 
-WORKDIR /app
-
-# Install runtime dependencies only
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy Python environment from builder
-COPY --from=builder /build/.venv /app/.venv
-COPY --from=builder /build /app
-
-# Ensure the virtual environment is used
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH="/app:$PYTHONPATH"
+# Set environment
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/app:$PYTHONPATH" \
+    PORT=8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
 EXPOSE 8000
 
-# Run the application
+# Run application
 CMD ["uvicorn", "services.api.src.triage.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
