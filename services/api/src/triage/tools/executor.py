@@ -3,7 +3,8 @@
 import hashlib
 import uuid
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from typing import Any
+
 import structlog
 
 from triage.models.decision import AutonomyLevel
@@ -19,8 +20,8 @@ class ToolExecutionResult:
     tool_name: str
     success: bool
     execution_id: str
-    result_data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    result_data: dict[str, Any] | None = None
+    error: str | None = None
 
 
 class ToolExecutor:
@@ -37,12 +38,12 @@ class ToolExecutor:
         self.autonomy_level = autonomy_level
         self.tenant_id = tenant_id
         self.customer_id = customer_id
-        self.execution_cache: Dict[str, ToolExecutionResult] = {}  # Idempotency cache
+        self.execution_cache: dict[str, ToolExecutionResult] = {}  # Idempotency cache
 
     def execute(
         self,
         tool_spec: ToolSpec,
-        args: Dict[str, Any],
+        args: dict[str, Any],
         message_id: str,
     ) -> ToolExecutionResult:
         """Execute a tool with autonomy gating and idempotency.
@@ -121,7 +122,7 @@ class ToolExecutor:
     @staticmethod
     def _generate_idempotency_key(
         tool_spec: ToolSpec,
-        args: Dict[str, Any],
+        args: dict[str, Any],
         message_id: str,
     ) -> str:
         """Generate idempotency key to prevent duplicate executions.
@@ -142,7 +143,7 @@ class ToolExecutor:
         return hashlib.sha256(key_text.encode()).hexdigest()
 
     @staticmethod
-    def _execute_tool_impl(tool_spec: ToolSpec, args: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_tool_impl(tool_spec: ToolSpec, args: dict[str, Any]) -> dict[str, Any]:
         """Execute tool (mock implementation).
 
         Args:

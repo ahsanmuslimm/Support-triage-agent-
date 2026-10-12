@@ -1,12 +1,11 @@
 """Market intelligence analyzer orchestrator."""
 
-from typing import Dict
 import logging
 
-from .mentions import MentionTracker
-from .feature_requests import FeatureRequestAggregator
-from .churn_reasons import ChurnReasonAnalyzer
 from .benchmarking import CompetitiveBenchmarker
+from .churn_reasons import ChurnReasonAnalyzer
+from .feature_requests import FeatureRequestAggregator
+from .mentions import MentionTracker
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class MarketIntelligenceAnalyzer:
 
     async def analyze_market_intelligence(
         self, tenant_id: int
-    ) -> Dict:
+    ) -> dict:
         """Full market intelligence analysis."""
         return {
             "mentions": await self.mentions.monthly_mention_report(tenant_id, "2026-01"),

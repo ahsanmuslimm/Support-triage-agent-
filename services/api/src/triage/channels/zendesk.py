@@ -1,18 +1,20 @@
 """Zendesk adapter implementation with advanced routing."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
+
 from triage.channels.connector import (
     Attachment,
     AttachmentType,
     HelpdeskConnector,
     MessageNormalization,
     ReplyResult,
+    ThreadEntry,
     TicketNormalization,
     TicketPriority,
     TicketStatus,
-    ThreadEntry,
     TicketUpdateRequest,
 )
 
@@ -22,7 +24,7 @@ log = structlog.get_logger()
 class ZendeskAdapter(HelpdeskConnector):
     """Zendesk helpdesk adapter with sidebar + advanced routing."""
 
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize Zendesk comment.
 
         Args:
@@ -75,7 +77,7 @@ class ZendeskAdapter(HelpdeskConnector):
             metadata=metadata,
         )
 
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize Zendesk ticket.
 
         Args:
@@ -143,7 +145,7 @@ class ZendeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post comment to Zendesk ticket.
 
@@ -236,7 +238,7 @@ class ZendeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch Zendesk ticket comments.
 
         Args:
@@ -272,7 +274,7 @@ class ZendeskAdapter(HelpdeskConnector):
             log.error("fetch_thread_history_failed", error=str(e))
             raise ValueError(f"Could not fetch thread history: {e}")
 
-    def get_routing_sidebar_config(self, ticket: TicketNormalization) -> Dict[str, Any]:
+    def get_routing_sidebar_config(self, ticket: TicketNormalization) -> dict[str, Any]:
         """Build sidebar configuration for advanced routing UI.
 
         Args:
@@ -288,7 +290,7 @@ class ZendeskAdapter(HelpdeskConnector):
             "routing_hints": self._generate_routing_hints(ticket),
         }
 
-    def _suggest_assignees(self, ticket: TicketNormalization) -> List[Dict[str, Any]]:
+    def _suggest_assignees(self, ticket: TicketNormalization) -> list[dict[str, Any]]:
         """Suggest appropriate assignees based on ticket properties."""
         # Placeholder for agent skill matching
         return [
@@ -302,7 +304,7 @@ class ZendeskAdapter(HelpdeskConnector):
             return "pending"
         return ticket.status.value
 
-    def _generate_routing_hints(self, ticket: TicketNormalization) -> Dict[str, str]:
+    def _generate_routing_hints(self, ticket: TicketNormalization) -> dict[str, str]:
         """Generate routing hints for agent context."""
         return {
             "priority_hint": f"Customer is {ticket.priority.value} priority",

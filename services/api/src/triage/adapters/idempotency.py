@@ -1,9 +1,8 @@
 """S6.3: Consumer idempotency layer with Redis fast path + Postgres slow path."""
-import asyncio
-import json
-from typing import Optional, Dict, Any
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import timedelta
+from typing import Any
+
 import structlog
 
 try:
@@ -19,8 +18,8 @@ class IdempotencyResult:
     """Result of idempotency check."""
 
     is_duplicate: bool
-    prior_result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    prior_result: dict[str, Any] | None = None
+    error: str | None = None
 
 
 class IdempotencyStore:
@@ -47,7 +46,7 @@ class IdempotencyStore:
     FAST_PATH_TTL = timedelta(days=7)
     REDIS_KEY_PREFIX = "idempotency"
 
-    def __init__(self, redis_client: Optional[Any] = None, db_session: Optional[Any] = None):
+    def __init__(self, redis_client: Any | None = None, db_session: Any | None = None):
         """Initialize idempotency store.
 
         Args:
@@ -188,10 +187,10 @@ class EventHandler:
 
     async def handle_with_idempotency(
         self,
-        event: Dict[str, Any],
+        event: dict[str, Any],
         handler_func: Any,
         use_slow_path: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute handler with idempotency guarantees.
 
         Args:

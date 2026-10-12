@@ -1,8 +1,7 @@
 """Tests for autonomy gate and promoter (Phase 2)."""
 
-import pytest
-from datetime import datetime, timedelta
 
+import pytest
 from triage.decision.autonomy import AutonomyGate, AutonomyPromoter
 from triage.models.decision import AutonomyLevel
 

@@ -1,6 +1,7 @@
 """Prometheus metrics collection for Sprint 4 monitoring."""
 
 import logging
+
 from prometheus_client import Counter, Gauge, Histogram
 
 logger = logging.getLogger(__name__)

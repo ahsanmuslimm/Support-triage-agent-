@@ -2,8 +2,8 @@
 
 import logging
 from datetime import datetime
-from typing import Optional, List
-from .models import Campaign, ABTestResult, CampaignType
+
+from .models import ABTestResult, CampaignType
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +40,10 @@ class ABTestFramework:
         if event_type not in ['opened', 'clicked', 'converted']:
             logger.warning(f"Unknown event type: {event_type}")
             return False
-        
+
         try:
             timestamp = datetime.utcnow()
-            
+
             # In a real implementation, update the campaigns table
             # For now, this is a placeholder
             logger.info(f"Recorded {event_type} event for campaign {campaign_id}")
@@ -56,7 +56,7 @@ class ABTestFramework:
         self,
         tenant_id: int,
         campaign_type: CampaignType,
-    ) -> Optional[ABTestResult]:
+    ) -> ABTestResult | None:
         """
         Compute A/B test results after min_sample_size reached.
         
@@ -70,14 +70,14 @@ class ABTestFramework:
         try:
             # This would query the campaigns table
             # For now, return None to indicate no results yet
-            
+
             # Example logic:
             # SELECT variant, COUNT(*) as sent, COUNT(opened_at) as opened, ...
             # WHERE tenant_id = ? AND campaign_type = ?
             # GROUP BY variant
-            
+
             # Then compute rates and compare
-            
+
             logger.debug(f"Computing results for {campaign_type.value}")
             return None
         except Exception as e:
@@ -88,7 +88,7 @@ class ABTestFramework:
         self,
         tenant_id: int,
         campaign_type: CampaignType,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get the winning variant (A or B) based on conversion rate.
         
@@ -100,12 +100,12 @@ class ABTestFramework:
             'A', 'B', or None if inconclusive
         """
         results = await self.compute_results(tenant_id, campaign_type)
-        
+
         if not results or results.sample_size < self.min_sample_size:
             return None
-        
+
         # Winner is variant with higher conversion rate
         if results.conversion_rate > 0:
             return results.variant
-        
+
         return None

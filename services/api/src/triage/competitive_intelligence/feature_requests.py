@@ -1,6 +1,5 @@
 """Feature request aggregation."""
 
-from typing import List, Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,9 +10,9 @@ class FeatureRequestAggregator:
 
     def __init__(self):
         """Initialize aggregator."""
-        self.requests: List[Dict] = []
+        self.requests: list[dict] = []
 
-    async def extract_feature_requests(self, text: str) -> List[str]:
+    async def extract_feature_requests(self, text: str) -> list[str]:
         """Extract feature requests from text."""
         keywords = ["would like", "need", "request", "feature", "could"]
         if any(kw in text.lower() for kw in keywords):
@@ -22,7 +21,7 @@ class FeatureRequestAggregator:
 
     async def aggregate_requests(
         self, tenant_id: int, days: int = 90
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Aggregate feature requests."""
         return [
             {"feature": "bulk_operations", "count": 45, "priority": "high"},
@@ -30,7 +29,7 @@ class FeatureRequestAggregator:
         ]
 
     async def prioritize_features(
-        self, requests: List[Dict]
-    ) -> List[Dict]:
+        self, requests: list[dict]
+    ) -> list[dict]:
         """Prioritize features."""
         return sorted(requests, key=lambda x: x.get("count", 0), reverse=True)

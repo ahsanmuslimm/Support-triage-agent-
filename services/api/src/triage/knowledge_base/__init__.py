@@ -1,13 +1,13 @@
 """Knowledge base optimization module."""
 
-from .optimizer import KBOptimizer
-from .placement import PlacementEngine
 from .gap_analysis import GapAnalyzer
+from .optimizer import KBOptimizer
 from .performance_tracker import PerformanceTracker
+from .placement import PlacementEngine
 
 __all__ = [
-    "KBOptimizer",
-    "PlacementEngine",
     "GapAnalyzer",
+    "KBOptimizer",
     "PerformanceTracker",
+    "PlacementEngine",
 ]

@@ -1,11 +1,10 @@
 """Tests for message normalizers."""
 
-import pytest
-from datetime import datetime
 
+import pytest
 from triage.ingestion.normalizers import (
-    NormalizerFactory,
     EmailNormalizer,
+    NormalizerFactory,
     WebChatNormalizer,
     ZendeskNormalizer,
 )

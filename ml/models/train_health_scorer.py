@@ -1,19 +1,21 @@
 """Train and save the account health LightGBM model."""
 
-import pickle
 import json
-import numpy as np
-import lightgbm as lgb
+import pickle
 from datetime import datetime
 from pathlib import Path
+
+import lightgbm as lgb
+import numpy as np
+
 
 # Generate synthetic training data
 def generate_synthetic_data(n_samples=1000):
     """Generate synthetic customer health data for training."""
     np.random.seed(42)
-    
+
     X = np.random.randn(n_samples, 15)
-    
+
     # Scale features to reasonable ranges
     # recency_days: 0-365
     X[:, 0] = np.abs(X[:, 0]) * 50 + np.random.uniform(0, 365, n_samples)
@@ -45,7 +47,7 @@ def generate_synthetic_data(n_samples=1000):
     X[:, 13] = np.clip(np.random.rand(n_samples), 0, 1)
     # sentiment_negative_ratio: 0-1
     X[:, 14] = np.clip(np.random.rand(n_samples), 0, 1)
-    
+
     # Generate labels based on churn risk heuristic
     # High risk factors: high recency, low frequency, failed payments, inactive subscription, negative sentiment
     churn_scores = np.zeros(n_samples)
@@ -54,14 +56,14 @@ def generate_synthetic_data(n_samples=1000):
     churn_scores += X[:, 5] * 0.05                    # failed payments
     churn_scores += np.where(X[:, 8] == 0, 0.2, 0)   # inactive subscription
     churn_scores += X[:, 14] * 0.1                    # negative sentiment
-    
+
     # Add some noise
     churn_scores += np.random.normal(0, 0.1, n_samples)
     churn_scores = np.clip(churn_scores, 0, 1)
-    
+
     # Threshold at 0.65 to create labels
     y = (churn_scores >= 0.65).astype(int)
-    
+
     return X, y
 
 # Train the model

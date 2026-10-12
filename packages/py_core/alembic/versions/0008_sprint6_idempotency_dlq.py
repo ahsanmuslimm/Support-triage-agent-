@@ -1,11 +1,11 @@
 """Sprint 6: Idempotency & DLQ tables (S6.3)."""
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
 def upgrade():
     """Create idempotency_records and dlq_events tables."""
-    
+
     # Idempotency records (insert-first strategy, fast path + slow path)
     op.create_table(
         "idempotency_records",
@@ -18,7 +18,7 @@ def upgrade():
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"], ondelete="CASCADE"),
         schema="triage",
     )
-    
+
     op.create_index(
         "idx_idempotency_processed_at",
         "idempotency_records",
@@ -31,7 +31,7 @@ def upgrade():
         ["event_type"],
         schema="triage",
     )
-    
+
     # DLQ (persistent storage for failed events with replay capability)
     op.create_table(
         "dlq_events",
@@ -47,7 +47,7 @@ def upgrade():
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"], ondelete="CASCADE"),
         schema="triage",
     )
-    
+
     op.create_index(
         "idx_dlq_created_at",
         "dlq_events",

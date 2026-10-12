@@ -1,6 +1,5 @@
 """Semantic ranking using sentence transformers."""
 
-from typing import List, Tuple, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,8 +14,8 @@ class SemanticRanker:
         self.model = None
 
     async def rank_articles(
-        self, query: str, candidates: List[Dict[str, str]], top_k: int = 3
-    ) -> List[Tuple[int, float]]:
+        self, query: str, candidates: list[dict[str, str]], top_k: int = 3
+    ) -> list[tuple[int, float]]:
         """Rank candidates by semantic similarity."""
         if not query or not candidates:
             return []
@@ -24,8 +23,8 @@ class SemanticRanker:
         return [(c.get("id", i), 0.95 - i * 0.1) for i, c in enumerate(candidates[:top_k])]
 
     async def rerank_tfidf_results(
-        self, query: str, tfidf_results: List[Tuple[int, float]]
-    ) -> List[Tuple[int, float]]:
+        self, query: str, tfidf_results: list[tuple[int, float]]
+    ) -> list[tuple[int, float]]:
         """Re-rank TF-IDF results using semantic similarity."""
         if not tfidf_results:
             return []

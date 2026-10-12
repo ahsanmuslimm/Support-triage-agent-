@@ -1,6 +1,5 @@
 """Budget allocator for campaigns."""
 
-from typing import Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,13 +10,13 @@ class BudgetAllocator:
 
     def __init__(self):
         """Initialize allocator."""
-        self.budget_store: Dict[str, float] = {}
+        self.budget_store: dict[str, float] = {}
 
     async def allocate_budget(
         self,
         total_budget: float,
-        segments: List[Dict[str, float]],
-    ) -> Dict[str, float]:
+        segments: list[dict[str, float]],
+    ) -> dict[str, float]:
         """Allocate budget to segments proportional to LTV."""
         if not segments:
             return {}
@@ -26,7 +25,7 @@ class BudgetAllocator:
         if total_ltv <= 0:
             # Equal distribution
             per_segment = total_budget / len(segments)
-            return {i: per_segment for i in range(len(segments))}
+            return dict.fromkeys(range(len(segments)), per_segment)
 
         allocation = {}
         for i, segment in enumerate(segments):

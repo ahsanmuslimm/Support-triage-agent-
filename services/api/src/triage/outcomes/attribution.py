@@ -1,6 +1,5 @@
 """LTV attribution modeling."""
 
-from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,11 +10,11 @@ class AttributionModel:
 
     def __init__(self):
         """Initialize attribution model."""
-        self.attributions: Dict = {}
+        self.attributions: dict = {}
 
     async def attribute_ltv_change(
         self, customer_id: int, tenant_id: int, lookback_days: int = 90
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Attribute LTV change to interventions."""
         return {
             "support_credit": 0.6,

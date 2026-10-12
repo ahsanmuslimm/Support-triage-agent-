@@ -1,7 +1,7 @@
 """Database connection and session management."""
 
 import os
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from py_core.tenant import get_tenant, set_tenant
+from py_core.tenant import get_tenant
 
 
 async def create_async_engine_from_env() -> AsyncEngine:

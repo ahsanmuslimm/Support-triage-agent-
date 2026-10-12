@@ -1,9 +1,9 @@
 """ML-based entity extraction using HuggingFace NER models."""
 
-from typing import List, Optional
+
 import structlog
 
-from triage.models.entity import ExtractedEntity, EntityType, EntityExtractionResult
+from triage.models.entity import EntityExtractionResult, EntityType, ExtractedEntity
 
 log = structlog.get_logger()
 
@@ -54,8 +54,8 @@ class MLEntityExtractor:
         Returns:
             EntityExtractionResult with extracted entities
         """
-        entities: List[ExtractedEntity] = []
-        errors: List[str] = []
+        entities: list[ExtractedEntity] = []
+        errors: list[str] = []
 
         if not self.available:
             log.debug("ml_extractor_unavailable_fallback", message_id=message_id)
@@ -95,7 +95,7 @@ class MLEntityExtractor:
 
         except Exception as e:
             log.error("ml_extraction_error", message_id=message_id, error=str(e))
-            errors.append(f"ML extraction failed: {str(e)}")
+            errors.append(f"ML extraction failed: {e!s}")
 
         return EntityExtractionResult(
             message_id=message_id,
@@ -105,7 +105,7 @@ class MLEntityExtractor:
         )
 
     @staticmethod
-    def _map_tag_to_entity_type(tag: str) -> Optional[EntityType]:
+    def _map_tag_to_entity_type(tag: str) -> EntityType | None:
         """Map HF NER tag to custom entity type.
 
         For now, most tags map to PRODUCT placeholder.

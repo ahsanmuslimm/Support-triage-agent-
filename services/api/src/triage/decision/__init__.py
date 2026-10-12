@@ -1,6 +1,6 @@
 """Decision matrix and autonomy module."""
 
-from .matrix import DecisionMatrix
 from .autonomy import AutonomyGate, AutonomyPromoter
+from .matrix import DecisionMatrix
 
-__all__ = ["DecisionMatrix", "AutonomyGate", "AutonomyPromoter"]
+__all__ = ["AutonomyGate", "AutonomyPromoter", "DecisionMatrix"]

@@ -1,9 +1,7 @@
 """Tests for intent classification (Phase 1)."""
 
-import pytest
-from unittest.mock import MagicMock, patch
-import numpy as np
 
+import pytest
 from triage.classification.classifier import IntentClassifier, IntentClassifierError
 from triage.classification.fallback import FallbackIntentClassifier
 from triage.classification.temperature_scaler import TemperatureScaler

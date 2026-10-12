@@ -1,10 +1,10 @@
 """Fallback intent classifier using keyword and fuzzy matching."""
 
 from difflib import SequenceMatcher
-from typing import List, Dict, Optional
+
 import structlog
 
-from triage.models.intent import IntentPrediction, IntentClassifierResult
+from triage.models.intent import IntentClassifierResult, IntentPrediction
 
 log = structlog.get_logger()
 
@@ -23,9 +23,9 @@ class FallbackIntentClassifier:
             fuzzy_threshold: Levenshtein similarity threshold [0, 1].
         """
         self.fuzzy_threshold = fuzzy_threshold
-        self.intent_keywords: Dict[str, List[str]] = {}
+        self.intent_keywords: dict[str, list[str]] = {}
 
-    def set_intent_keywords(self, keywords: Dict[str, List[str]]) -> None:
+    def set_intent_keywords(self, keywords: dict[str, list[str]]) -> None:
         """Set keywords for each intent.
 
         Args:

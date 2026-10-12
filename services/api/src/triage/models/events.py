@@ -1,9 +1,10 @@
 """Outbox event models for transactional publishing."""
 
-from datetime import datetime
-from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field
 import uuid
+from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class OutboxEvent(BaseModel):
@@ -14,8 +15,8 @@ class OutboxEvent(BaseModel):
     aggregate_type: str  # "message", "conversation", etc.
     aggregate_id: str
     event_type: str  # "message.ingested", "conversation.created", etc.
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
     retry_count: int = 0
-    error_message: Optional[str] = None
+    error_message: str | None = None

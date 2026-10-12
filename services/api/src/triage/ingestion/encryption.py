@@ -1,15 +1,15 @@
 """Envelope encryption for message bodies."""
 
 import os
-import json
-from typing import Optional, Dict, Any
+from typing import Any
+
 from cryptography.fernet import Fernet, InvalidToken
 
 
 class EnvelopeEncryption:
     """Encrypts and decrypts message bodies using Fernet (AES-128-CBC)."""
 
-    def __init__(self, master_key: Optional[str] = None):
+    def __init__(self, master_key: str | None = None):
         """Initialize with master key (Fernet format, base64-encoded).
 
         Args:
@@ -29,7 +29,7 @@ class EnvelopeEncryption:
 
         self.dek_version = 1  # Data Encryption Key version
 
-    def encrypt(self, plaintext: str) -> Dict[str, Any]:
+    def encrypt(self, plaintext: str) -> dict[str, Any]:
         """Encrypt plaintext and return ciphertext with metadata.
 
         Args:

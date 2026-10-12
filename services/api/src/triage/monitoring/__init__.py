@@ -1,6 +1,6 @@
 """Monitoring and alerting module."""
 
-from .metrics import MetricsCollector
 from .dashboard import DashboardServer
+from .metrics import MetricsCollector
 
-__all__ = ["MetricsCollector", "DashboardServer"]
+__all__ = ["DashboardServer", "MetricsCollector"]

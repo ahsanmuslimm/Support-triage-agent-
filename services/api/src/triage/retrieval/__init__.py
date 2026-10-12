@@ -1,8 +1,8 @@
 """RAG retrieval pipeline."""
 
-from triage.retrieval.chunker import DocumentChunker
-from triage.retrieval.vector_store import VectorStore
 from triage.retrieval.bm25_search import BM25Search
+from triage.retrieval.chunker import DocumentChunker
 from triage.retrieval.hybrid import HybridRetriever
+from triage.retrieval.vector_store import VectorStore
 
-__all__ = ["DocumentChunker", "VectorStore", "BM25Search", "HybridRetriever"]
+__all__ = ["BM25Search", "DocumentChunker", "HybridRetriever", "VectorStore"]

@@ -1,16 +1,17 @@
 """Tests for LangGraph agent (Phase 7)."""
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
 from triage.agent.nodes import (
     classify_intent_node,
     extract_entities_node,
+    generate_response_node,
     make_decision_node,
     retrieve_context_node,
-    generate_response_node,
 )
+from triage.models.intent import IntentClassifierResult, IntentPrediction
 from triage.models.triage_state import TriageState
-from triage.models.intent import IntentPrediction, IntentClassifierResult
 
 
 class TestTriageAgentNodes:
@@ -38,7 +39,7 @@ class TestTriageAgentNodes:
             ],
             fallback_used=False,
         )
-        
+
         with patch('triage.agent.nodes.IntentClassifier') as MockClassifier:
             mock_classifier = AsyncMock()
             mock_classifier.classify = AsyncMock(return_value=mock_result)

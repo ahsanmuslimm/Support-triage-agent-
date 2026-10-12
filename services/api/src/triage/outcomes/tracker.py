@@ -1,12 +1,11 @@
 """Outcome tracker orchestrator."""
 
-from typing import Dict
 import logging
 
 from .attribution import AttributionModel
+from .cohort import CohortAnalyzer
 from .retention import RetentionAnalyzer
 from .revenue_lift import RevenueLiftCalculator
-from .cohort import CohortAnalyzer
 
 logger = logging.getLogger(__name__)
 

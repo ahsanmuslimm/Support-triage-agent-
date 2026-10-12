@@ -1,13 +1,12 @@
 """Recommendation engine orchestrator."""
 
-from typing import List, Dict, Optional
 import logging
 
-from .models import RecommendationResult, ABTestVariant
-from .tfidf_ranker import TFIDFRanker
-from .semantic_ranker import SemanticRanker
-from .collaborative import CollaborativeFilter
 from .ab_testing import ABTestingFramework
+from .collaborative import CollaborativeFilter
+from .models import ABTestVariant, RecommendationResult
+from .semantic_ranker import SemanticRanker
+from .tfidf_ranker import TFIDFRanker
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,9 @@ class RecommendationEngine:
         customer_id: int,
         tenant_id: int,
         query: str,
-        variant: Optional[ABTestVariant] = None,
+        variant: ABTestVariant | None = None,
         top_k: int = 5,
-    ) -> List[RecommendationResult]:
+    ) -> list[RecommendationResult]:
         """Recommend KB articles for customer."""
         if variant is None:
             variant = await self.ab_test.get_variant_for_customer(customer_id)

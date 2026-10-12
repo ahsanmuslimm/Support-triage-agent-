@@ -1,9 +1,10 @@
 """Bind extracted entities to tool arguments."""
 
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 import structlog
 
-from triage.models.entity import ExtractedEntity, EntityType
+from triage.models.entity import EntityType, ExtractedEntity
 from triage.tools.registry import ToolSpec
 
 log = structlog.get_logger()
@@ -22,7 +23,7 @@ class ArgumentBinder:
     }
 
     @staticmethod
-    def bind(entities: List[ExtractedEntity], tool_spec: ToolSpec) -> Dict[str, Any]:
+    def bind(entities: list[ExtractedEntity], tool_spec: ToolSpec) -> dict[str, Any]:
         """Bind entities to tool arguments.
 
         Args:
@@ -35,7 +36,7 @@ class ArgumentBinder:
         Raises:
             ValueError: If required args not bound
         """
-        bound_args: Dict[str, Any] = {}
+        bound_args: dict[str, Any] = {}
 
         # Bind each entity to its argument
         for entity in entities:

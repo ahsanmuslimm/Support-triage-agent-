@@ -1,9 +1,8 @@
 """S3.8: Feedback Collection and Storage."""
 
-import logging
 import json
+import logging
 from datetime import datetime
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +19,8 @@ class FeedbackIngester:
         tenant_id: int,
         conversation_id: int,
         feedback_type: str,  # 'thumbs_up', 'thumbs_down', 'manual_tag', 'escalation_resolved'
-        feedback_value: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        feedback_value: str | None = None,
+        metadata: dict | None = None,
     ) -> bool:
         """
         Ingest feedback event.

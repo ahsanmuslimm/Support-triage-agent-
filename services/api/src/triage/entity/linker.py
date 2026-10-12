@@ -1,10 +1,10 @@
 """Entity linking: resolve extracted entities to database records."""
 
-from typing import Optional, Dict, Any
-import structlog
-from enum import Enum
+from typing import Any
 
-from triage.models.entity import ExtractedEntity, EntityType
+import structlog
+
+from triage.models.entity import EntityType, ExtractedEntity
 
 log = structlog.get_logger()
 
@@ -16,10 +16,10 @@ class LinkResult:
         self,
         entity_type: EntityType,
         value: str,
-        linked_id: Optional[int] = None,
-        linked_data: Optional[Dict[str, Any]] = None,
-        tenant_id: Optional[str] = None,
-        error: Optional[str] = None,
+        linked_id: int | None = None,
+        linked_data: dict[str, Any] | None = None,
+        tenant_id: str | None = None,
+        error: str | None = None,
     ):
         self.entity_type = entity_type
         self.value = value
@@ -78,7 +78,7 @@ class EntityLinker:
             return LinkResult(
                 entity_type=entity.entity_type,
                 value=entity.value,
-                error=f"Linking failed: {str(e)}",
+                error=f"Linking failed: {e!s}",
             )
 
     async def _link_order(self, entity: ExtractedEntity) -> LinkResult:

@@ -1,10 +1,8 @@
 """Sandbox tenant for demo and testing (S10.9)."""
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
 import copy
-
+from dataclasses import dataclass, field
+from typing import Any
 
 SANDBOX_TENANT_ID = "sandbox_demo_12345"
 
@@ -24,7 +22,7 @@ class SandboxConversation:
 class SandboxKnowledgeBase:
     """Sample KB entries for sandbox."""
 
-    entries: List[Dict[str, str]] = field(default_factory=list)
+    entries: list[dict[str, str]] = field(default_factory=list)
 
 
 class SandboxTenant:
@@ -32,9 +30,9 @@ class SandboxTenant:
 
     def __init__(self):
         self.tenant_id = SANDBOX_TENANT_ID
-        self.conversations: List[Dict[str, Any]] = []
-        self.messages: List[Dict[str, Any]] = []
-        self.kb_entries: List[Dict[str, Any]] = []
+        self.conversations: list[dict[str, Any]] = []
+        self.messages: list[dict[str, Any]] = []
+        self.kb_entries: list[dict[str, Any]] = []
         self.initial_state = None
         self._initialize_sandbox()
 
@@ -163,7 +161,7 @@ class SandboxTenant:
         operation: str,
         provider: str,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute write operation in dry-run mode (doesn't hit external services).
 
         Args:
@@ -223,15 +221,15 @@ class SandboxTenant:
 
         return True
 
-    def get_sample_conversations(self, limit: int = 5) -> List[Dict[str, Any]]:
+    def get_sample_conversations(self, limit: int = 5) -> list[dict[str, Any]]:
         """Get sample conversations."""
         return self.conversations[:limit]
 
-    def get_sample_messages(self, conversation_id: str) -> List[Dict[str, Any]]:
+    def get_sample_messages(self, conversation_id: str) -> list[dict[str, Any]]:
         """Get sample messages for conversation."""
         return [m for m in self.messages if m["conversation_id"] == conversation_id]
 
-    def get_kb(self) -> List[Dict[str, Any]]:
+    def get_kb(self) -> list[dict[str, Any]]:
         """Get sample knowledge base."""
         return self.kb_entries
 
@@ -245,7 +243,7 @@ class SandboxTenant:
 
 
 # Singleton instance
-_sandbox_instance: Optional[SandboxTenant] = None
+_sandbox_instance: SandboxTenant | None = None
 
 
 def get_sandbox_tenant() -> SandboxTenant:

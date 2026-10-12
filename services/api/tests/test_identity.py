@@ -1,7 +1,7 @@
 """Tests for identity resolution."""
 
 import pytest
-from triage.ingestion.identity import IdentityResolver, IdentityAssuranceLevel
+from triage.ingestion.identity import IdentityAssuranceLevel, IdentityResolver
 
 
 @pytest.fixture

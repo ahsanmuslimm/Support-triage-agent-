@@ -2,7 +2,6 @@
 
 import pytest
 from triage.agent.graph import TriageAgentGraph
-from triage.models.triage_state import TriageState
 
 
 class TestJ2LowConfidenceEscalation:

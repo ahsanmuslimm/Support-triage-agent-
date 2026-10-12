@@ -1,8 +1,7 @@
 """Message coalescing for conversation batching."""
 
-import time
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import Any
+
 from ..models.message import CanonicalMessage, ChannelType
 
 
@@ -32,7 +31,7 @@ class MessageCoalescer:
             redis_client: Redis client for distributed locking. If None, uses in-memory store.
         """
         self.redis = redis_client
-        self._in_memory_store: Dict[str, Dict[str, Any]] = {}  # Demo mode
+        self._in_memory_store: dict[str, dict[str, Any]] = {}  # Demo mode
 
     def find_or_create_conversation(
         self,

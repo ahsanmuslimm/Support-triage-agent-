@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any
+from typing import Any
 
 from .models import EscalationJob, Priority
 
@@ -38,7 +38,7 @@ class EscalationQueueManager:
                 f"Enqueued: ticket={job.ticket_id} priority={job.priority.value} "
                 f"deadline={job.deadline.isoformat()}"
             )
-            
+
             # Log to audit trail
             await self._audit_log(
                 job.tenant_id,
@@ -46,7 +46,7 @@ class EscalationQueueManager:
                 "enqueued",
                 {"ticket_id": job.ticket_id, "priority": job.priority.value},
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to enqueue job: {e}")
@@ -66,20 +66,20 @@ class EscalationQueueManager:
         try:
             # In real implementation, update escalation_queue table
             logger.info(f"Assigned job {job_id} to agent {agent_id}")
-            
+
             await self._audit_log(
                 tenant_id=0,  # Would get from job
                 escalation_id=job_id,
                 action="assigned",
                 details={"agent_id": agent_id, "assigned_at": datetime.utcnow().isoformat()},
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to assign job: {e}")
             return False
 
-    async def detect_sla_breaches(self, tenant_id: int) -> List[EscalationJob]:
+    async def detect_sla_breaches(self, tenant_id: int) -> list[EscalationJob]:
         """
         Detect SLA breaches and auto-escalate.
         
@@ -90,17 +90,17 @@ class EscalationQueueManager:
             List of breached jobs
         """
         try:
-            breached_jobs: List[EscalationJob] = []
-            
+            breached_jobs: list[EscalationJob] = []
+
             # In real implementation, query escalation_queue table
             # WHERE tenant_id = ? AND status != 'resolved' AND now() > deadline
-            
+
             logger.info(f"SLA check: {len(breached_jobs)} breaches detected")
-            
+
             # For each breached job, trigger auto-escalation
             for job in breached_jobs:
                 await self._handle_sla_breach(job)
-            
+
             return breached_jobs
         except Exception as e:
             logger.error(f"Failed to detect SLA breaches: {e}")
@@ -119,10 +119,10 @@ class EscalationQueueManager:
                 f"SLA breach: job={job.id} ticket={job.ticket_id} "
                 f"priority={job.priority.value} deadline={job.deadline.isoformat()}"
             )
-            
+
             # Add +5 min grace period escalation
             grace_deadline = datetime.utcnow() + timedelta(minutes=self.sla_grace_minutes)
-            
+
             # Create manager escalation
             manager_job = EscalationJob(
                 tenant_id=job.tenant_id,
@@ -132,12 +132,12 @@ class EscalationQueueManager:
                 status="pending",
                 created_at=datetime.utcnow(),
             )
-            
+
             await self.enqueue(manager_job)
-            
+
             # Emit webhook alert
             await self._emit_alert_webhook(job)
-            
+
             # Log to audit
             await self._audit_log(
                 job.tenant_id,
@@ -165,26 +165,26 @@ class EscalationQueueManager:
         """
         try:
             now = datetime.utcnow()
-            
+
             # In real implementation, update escalation_queue table
             logger.info(f"Resolved job {job_id}: {resolution_notes}")
-            
+
             # Calculate resolution time
             # resolution_time_sec = (now - created_at).total_seconds()
-            
+
             await self._audit_log(
                 tenant_id=0,  # Would get from job
                 escalation_id=job_id,
                 action="resolved",
                 details={"resolution_notes": resolution_notes, "resolved_at": now.isoformat()},
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to resolve job: {e}")
             return False
 
-    async def get_queue_stats(self, tenant_id: int) -> Dict[str, Any]:
+    async def get_queue_stats(self, tenant_id: int) -> dict[str, Any]:
         """
         Get queue statistics.
         
@@ -205,7 +205,7 @@ class EscalationQueueManager:
                 "sla_breach_pct": 0.0,
                 "as_of": datetime.utcnow().isoformat(),
             }
-            
+
             return stats
         except Exception as e:
             logger.error(f"Failed to get queue stats: {e}")
@@ -216,7 +216,7 @@ class EscalationQueueManager:
         tenant_id: int,
         escalation_id: int,
         action: str,
-        details: Dict[str, Any],
+        details: dict[str, Any],
     ) -> bool:
         """
         Log action to escalation audit trail.

@@ -1,6 +1,6 @@
 """S6.2: Event bus factory for toggling between MVP (OutboxPoller) and production (Kafka)."""
-from typing import Union, Optional
 import os
+
 import structlog
 
 log = structlog.get_logger(__name__)
@@ -16,7 +16,7 @@ class EventBusFactory:
     """
 
     @staticmethod
-    def create_event_bus(use_kafka: Optional[bool] = None) -> object:
+    def create_event_bus(use_kafka: bool | None = None) -> object:
         """Create appropriate event bus implementation.
         
         Args:

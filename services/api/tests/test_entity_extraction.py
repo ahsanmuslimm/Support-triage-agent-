@@ -2,8 +2,8 @@
 
 import pytest
 from triage.entity.extractor import RuleBasedEntityExtractor
-from triage.entity.ml_extractor import MLEntityExtractor
 from triage.entity.linker import EntityLinker
+from triage.entity.ml_extractor import MLEntityExtractor
 from triage.models.entity import EntityType, ExtractedEntity
 
 

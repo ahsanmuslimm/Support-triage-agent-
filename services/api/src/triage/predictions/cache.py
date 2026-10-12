@@ -1,6 +1,5 @@
 """Redis-backed prediction cache."""
 
-from typing import Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ class PredictionCache:
 
     def __init__(self):
         """Initialize cache."""
-        self._store: Dict[str, tuple] = {}  # {key: (value, expiry_time)}
+        self._store: dict[str, tuple] = {}  # {key: (value, expiry_time)}
 
     def _make_key(
         self, prediction_type: str, tenant_id: int, customer_id: int
@@ -24,7 +23,7 @@ class PredictionCache:
         prediction_type: str,
         customer_id: int,
         tenant_id: int,
-        data: Dict,
+        data: dict,
         ttl_seconds: int = 3600,
     ) -> None:
         """
@@ -46,7 +45,7 @@ class PredictionCache:
 
     async def get_prediction(
         self, prediction_type: str, customer_id: int, tenant_id: int
-    ) -> Optional[Dict]:
+    ) -> dict | None:
         """
         Retrieve prediction from cache.
 

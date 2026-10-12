@@ -1,19 +1,19 @@
 """Message ingestion and streaming endpoints."""
 
-from fastapi import APIRouter, HTTPException, Header, Response
-from fastapi.responses import StreamingResponse
 import asyncio
 import json
-from typing import Optional
 import uuid
 
-from ...models.message import MessageRequest, MessageResponse, MessageStatus, ChannelType
-from ...ingestion.normalizers import NormalizerFactory
-from ...ingestion.idempotency import IdempotencyManager
+from fastapi import APIRouter, Header, HTTPException
+from fastapi.responses import StreamingResponse
+
 from ...ingestion.encryption import EnvelopeEncryption
-from ...ingestion.pii_handler import PiiHandler
+from ...ingestion.idempotency import IdempotencyManager
 from ...ingestion.identity import IdentityResolver
+from ...ingestion.normalizers import NormalizerFactory
 from ...ingestion.outbox import OutboxWriter
+from ...ingestion.pii_handler import PiiHandler
+from ...models.message import MessageRequest, MessageResponse, MessageStatus
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ async def ingest_message(
     conversation_id: str,
     request: MessageRequest,
     tenant_id: str = Header(..., alias="X-Tenant-ID"),
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> MessageResponse:
     """Ingest a message into a conversation.
 
@@ -197,7 +197,7 @@ async def stream_conversation(
             #         .order_by(Message.created_at)
             #     )
             # For now, stub: yield empty initial batch
-            
+
             yield f"data: {json.dumps({{'type': 'init', 'conversation_id': conversation_id}})}\n\n"
 
             # ========== STEP 2: Subscribe to new messages via Redis Pub/Sub or AsyncIO queue ==========
@@ -212,7 +212,7 @@ async def stream_conversation(
 
             while heartbeat_count < max_heartbeats:
                 # Send heartbeat comment (client uses this to detect dead connections)
-                yield f": heartbeat (connection alive)\n\n"
+                yield ": heartbeat (connection alive)\n\n"
                 await asyncio.sleep(30)
                 heartbeat_count += 1
 

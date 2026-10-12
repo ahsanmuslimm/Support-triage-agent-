@@ -1,7 +1,7 @@
 """Multilingual KB retrieval with cross-language search."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
+
 import structlog
 
 log = structlog.get_logger()
@@ -23,10 +23,10 @@ class KBArticle:
     language: str
     """ISO 639-1 language code."""
 
-    tags: List[str] = None
+    tags: list[str] = None
     """Article tags."""
 
-    embedding: Optional[List[float]] = None
+    embedding: list[float] | None = None
     """Dense embedding vector."""
 
     relevance_score: float = 0.0
@@ -40,22 +40,22 @@ class KBArticle:
 class MultilingualRetriever:
     """Retrieve KB articles in customer's language or cross-language."""
 
-    def __init__(self, kb_articles: List[KBArticle] = None) -> None:
+    def __init__(self, kb_articles: list[KBArticle] = None) -> None:
         """Initialize retriever.
 
         Args:
             kb_articles: List of KB articles indexed in embedding space.
         """
         self.kb_articles = kb_articles or []
-        self.language_index: Dict[str, List[KBArticle]] = self._build_language_index()
+        self.language_index: dict[str, list[KBArticle]] = self._build_language_index()
 
-    def _build_language_index(self) -> Dict[str, List[KBArticle]]:
+    def _build_language_index(self) -> dict[str, list[KBArticle]]:
         """Build index of articles by language.
 
         Returns:
             Dict[str, List[KBArticle]]: Articles grouped by language.
         """
-        index: Dict[str, List[KBArticle]] = {}
+        index: dict[str, list[KBArticle]] = {}
         for article in self.kb_articles:
             lang = article.language
             if lang not in index:
@@ -69,7 +69,7 @@ class MultilingualRetriever:
         customer_language: str,
         top_k: int = 5,
         cross_language: bool = True,
-    ) -> List[KBArticle]:
+    ) -> list[KBArticle]:
         """Retrieve KB articles matching query.
 
         Args:
@@ -124,9 +124,9 @@ class MultilingualRetriever:
 
     def _prioritize_language(
         self,
-        articles: List[KBArticle],
+        articles: list[KBArticle],
         target_language: str,
-    ) -> List[KBArticle]:
+    ) -> list[KBArticle]:
         """Reorder results to prioritize target language.
 
         Args:
@@ -150,7 +150,7 @@ class MultilingualRetriever:
 
         return result
 
-    async def _embed_text(self, text: str) -> List[float]:
+    async def _embed_text(self, text: str) -> list[float]:
         """Generate embedding for text using multilingual-e5.
 
         Args:
@@ -177,7 +177,7 @@ class MultilingualRetriever:
             log.error("embedding_error", error=str(e))
             return [0.0] * 384
 
-    def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+    def _cosine_similarity(self, vec1: list[float], vec2: list[float]) -> float:
         """Compute cosine similarity between vectors.
 
         Args:
@@ -206,7 +206,7 @@ class MultilingualRetriever:
             log.error("similarity_error", error=str(e))
             return 0.0
 
-    def get_language_statistics(self) -> Dict[str, int]:
+    def get_language_statistics(self) -> dict[str, int]:
         """Get count of articles by language.
 
         Returns:

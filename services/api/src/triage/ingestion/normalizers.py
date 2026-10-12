@@ -1,10 +1,8 @@
 """Message normalizers for different channels."""
 
 import html
-import re
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 from abc import ABC, abstractmethod
+from typing import Any
 
 from ..models.message import CanonicalMessage, ChannelType, SenderType
 
@@ -18,10 +16,9 @@ class MessageNormalizer(ABC):
         tenant_id: str,
         conversation_id: str,
         channel_id: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> CanonicalMessage:
         """Normalize channel-specific payload to CanonicalMessage."""
-        pass
 
     @staticmethod
     def _normalize_text(text: str) -> str:
@@ -50,7 +47,7 @@ class EmailNormalizer(MessageNormalizer):
         tenant_id: str,
         conversation_id: str,
         channel_id: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> CanonicalMessage:
         """Normalize email payload."""
         body = self._normalize_text(payload.get("body", ""))
@@ -97,7 +94,7 @@ class WebChatNormalizer(MessageNormalizer):
         tenant_id: str,
         conversation_id: str,
         channel_id: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> CanonicalMessage:
         """Normalize web chat payload."""
         body = self._normalize_text(payload.get("body", ""))
@@ -128,7 +125,7 @@ class ZendeskNormalizer(MessageNormalizer):
         tenant_id: str,
         conversation_id: str,
         channel_id: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> CanonicalMessage:
         """Normalize Zendesk payload."""
         # Extract comment from webhook
@@ -187,7 +184,7 @@ class NormalizerFactory:
         tenant_id: str,
         conversation_id: str,
         channel_id: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> CanonicalMessage:
         """Normalize payload to CanonicalMessage."""
         normalizer = cls.get_normalizer(channel_type)

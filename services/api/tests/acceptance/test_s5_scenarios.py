@@ -1,7 +1,8 @@
 """Sprint 5 acceptance tests - E2E scenarios."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 class TestLifecycleDetection:

@@ -1,7 +1,6 @@
 """Sprint 6.1: Protobuf contract tests for event serialization."""
+
 import pytest
-from datetime import datetime
-import json
 
 # Note: After buf code generation, these imports will work:
 # from gen.python.triage.events.v1 import message_events_pb2, events_pb2
@@ -17,7 +16,7 @@ class TestProtobufContracts:
         # This test verifies the proto definition is correct
         # After buf generation, the implementation will be in gen/python/triage/events/v1/message_events_pb2.py
         # The test structure documents expected behavior:
-        
+
         # Create event
         event_dict = {
             "base_id": "evt_123",
@@ -29,7 +28,7 @@ class TestProtobufContracts:
             "channel": "email",
             "body": "Where is my order?",
         }
-        
+
         # Expected: After buf generates code, we can instantiate and serialize
         # message_ingested = MessageIngested(
         #     base=BaseEvent(id="evt_123", tenant_id="tenant_1", version=1),
@@ -41,7 +40,7 @@ class TestProtobufContracts:
         # )
         # serialized = message_ingested.SerializeToString()
         # assert len(serialized) < 500  # Protobuf is compact
-        
+
         assert event_dict["message_id"] == "msg_456"
 
     def test_cloud_event_envelope_structure(self):
@@ -54,7 +53,7 @@ class TestProtobufContracts:
             "data_content_type": "application/protobuf",
             "subject": "tenant/tenant_1/message/msg_456",
         }
-        
+
         assert cloud_event_dict["type"] == "message.ingested"
         assert cloud_event_dict["tenant_id"] == "tenant_1"
 
@@ -62,12 +61,12 @@ class TestProtobufContracts:
         """Test: Old consumers handle new schema fields gracefully (proto3 default behavior)."""
         # In Proto3, unknown fields are ignored during deserialization
         # This test documents forward compatibility
-        
+
         # If old consumer deserializes new message with unknown fields:
         # - Protobuf ignores unknown fields
         # - Known fields are preserved
         # - Result: safe evolution
-        
+
         assert True  # Proto3 provides this automatically
 
     def test_message_status_enum(self):

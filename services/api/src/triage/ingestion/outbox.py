@@ -1,8 +1,9 @@
 """Transactional outbox for event durability."""
 
 import asyncio
-from typing import Dict, Any, Optional, Callable, List
-from datetime import datetime
+from collections.abc import Callable
+from typing import Any
+
 from ..models.events import OutboxEvent
 
 
@@ -16,7 +17,7 @@ class OutboxWriter:
             db_session: Database session for writing outbox events
         """
         self.db_session = db_session
-        self._in_memory_events: List[OutboxEvent] = []  # Demo mode
+        self._in_memory_events: list[OutboxEvent] = []  # Demo mode
 
     async def write_event(
         self,
@@ -24,7 +25,7 @@ class OutboxWriter:
         aggregate_type: str,
         aggregate_id: str,
         event_type: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> OutboxEvent:
         """Write event to outbox (atomically with domain transaction).
 
@@ -61,7 +62,7 @@ class OutboxWriter:
         #     # INSERT message first
         #     stmt = insert(messages_table).values(...)
         #     await transaction.execute(stmt)
-        #     
+        #
         #     # INSERT outbox event in same transaction
         #     stmt = insert(outbox_events_table).values(...)
         #     await transaction.execute(stmt)
@@ -72,7 +73,7 @@ class OutboxWriter:
 
         return event
 
-    def get_unpublished_events(self, limit: int = 100) -> List[OutboxEvent]:
+    def get_unpublished_events(self, limit: int = 100) -> list[OutboxEvent]:
         """Get unpublished events.
 
         Args:
@@ -90,7 +91,6 @@ class OutboxWriter:
             event_id: Event ID
         """
         # TODO: Update database
-        pass
 
 
 class OutboxPoller:
@@ -99,7 +99,7 @@ class OutboxPoller:
     def __init__(
         self,
         outbox_writer: OutboxWriter,
-        handlers: Optional[Dict[str, Callable]] = None,
+        handlers: dict[str, Callable] | None = None,
         poll_interval: int = 1,
     ):
         """Initialize poller.

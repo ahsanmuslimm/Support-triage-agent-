@@ -3,7 +3,6 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from .base import CacheManager, EnricherBase
 from .exceptions import APITimeoutError, EnrichmentError
@@ -221,7 +220,7 @@ class BillingEnricher(EnricherBase):
                 # Based on subscription status and payment_settings
                 status = sub.get("status")
                 payment_settings = sub.get("payment_settings", {})
-                
+
                 # Determine dunning stage from subscription status
                 if status == "active":
                     dunning_stage = "none"

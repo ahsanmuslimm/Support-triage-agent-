@@ -1,6 +1,5 @@
 """Prophet model for ticket volume forecasting."""
 
-from typing import List, Tuple, Dict, Optional
 import logging
 from datetime import datetime, timedelta
 
@@ -13,15 +12,15 @@ class VolumeForecaster:
     def __init__(self):
         """Initialize forecaster."""
         self.model = None
-        self.trained_at: Optional[datetime] = None
+        self.trained_at: datetime | None = None
         self.mape = 0.0
         self.last_known_volume = 100
 
     async def train(
         self,
-        daily_volumes: List[Tuple[datetime, int]],
+        daily_volumes: list[tuple[datetime, int]],
         forecast_days: int = 90,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Train Prophet model (mocked for testing).
 
@@ -71,7 +70,7 @@ class VolumeForecaster:
     async def forecast(
         self,
         days_ahead: int = 30,
-    ) -> List[Tuple[datetime, float, float, float]]:
+    ) -> list[tuple[datetime, float, float, float]]:
         """
         Forecast ticket volume.
 
@@ -109,9 +108,9 @@ class VolumeForecaster:
 
     async def detect_anomalies(
         self,
-        recent_actuals: List[Tuple[datetime, int]],
-        forecast_data: List[Tuple[datetime, float, float, float]],
-    ) -> List[Tuple[datetime, float, str]]:
+        recent_actuals: list[tuple[datetime, int]],
+        forecast_data: list[tuple[datetime, float, float, float]],
+    ) -> list[tuple[datetime, float, str]]:
         """
         Detect volume anomalies vs. forecast.
 

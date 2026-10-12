@@ -1,27 +1,28 @@
 """LangGraph definition for triage agent."""
 
-import structlog
 from typing import Literal
 
+import structlog
+
 try:
-    from langgraph.graph import StateGraph, END
     from langgraph.checkpoint.sqlite import SqliteSaver
+    from langgraph.graph import END, StateGraph
 except ImportError:
     StateGraph = None
     END = None
     SqliteSaver = None
 
-from triage.models.triage_state import TriageState
 from triage.agent.nodes import (
     classify_intent_node,
+    escalate_node,
+    execute_tools_node,
     extract_entities_node,
+    generate_response_node,
     make_decision_node,
     retrieve_context_node,
-    generate_response_node,
     validate_output_node,
-    execute_tools_node,
-    escalate_node,
 )
+from triage.models.triage_state import TriageState
 
 log = structlog.get_logger()
 
@@ -142,5 +143,5 @@ class TriageAgentGraph:
         except Exception as e:
             log.error("triage_run_error", error=str(e))
             initial_state.escalate = True
-            initial_state.escalation_reason = f"Graph execution failed: {str(e)}"
+            initial_state.escalation_reason = f"Graph execution failed: {e!s}"
             return initial_state

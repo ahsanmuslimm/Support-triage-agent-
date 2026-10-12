@@ -1,19 +1,19 @@
 """Test infrastructure: fakes, factories, and fixtures."""
 
-from py_core.testing.fakes import FakeClock, FakeLLM, InMemoryEventBus
 from py_core.testing.factories import (
-    TenantFactory,
-    CustomerFactory,
     ConversationFactory,
+    CustomerFactory,
     MessageFactory,
+    TenantFactory,
 )
+from py_core.testing.fakes import FakeClock, FakeLLM, InMemoryEventBus
 
 __all__ = [
-    "FakeLLM",
-    "FakeClock",
-    "InMemoryEventBus",
-    "TenantFactory",
-    "CustomerFactory",
     "ConversationFactory",
+    "CustomerFactory",
+    "FakeClock",
+    "FakeLLM",
+    "InMemoryEventBus",
     "MessageFactory",
+    "TenantFactory",
 ]

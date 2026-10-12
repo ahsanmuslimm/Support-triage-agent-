@@ -1,6 +1,5 @@
 """AB testing framework for recommendations."""
 
-from typing import Dict, Optional
 import hashlib
 import logging
 
@@ -14,7 +13,7 @@ class ABTestingFramework:
 
     def __init__(self):
         """Initialize AB testing."""
-        self.test_events: Dict[str, list] = {}
+        self.test_events: dict[str, list] = {}
 
     async def get_variant_for_customer(
         self, customer_id: int, test_name: str = "recommendation_v1"
@@ -48,7 +47,7 @@ class ABTestingFramework:
 
     async def compute_test_metrics(
         self, test_name: str, days: int = 7
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> dict[str, dict[str, float]]:
         """Compute metrics per variant."""
         metrics = {
             "control": {"click_rate": 0.08, "resolution_rate": 0.35},

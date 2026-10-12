@@ -1,7 +1,7 @@
 """Temperature scaling for confidence calibration."""
 
+
 import numpy as np
-from typing import List, Tuple
 import structlog
 
 log = structlog.get_logger()
@@ -15,7 +15,7 @@ class TemperatureScaler:
     """
 
     @staticmethod
-    def compute_ece(confidences: List[float], accuracies: List[bool], n_bins: int = 10) -> float:
+    def compute_ece(confidences: list[float], accuracies: list[bool], n_bins: int = 10) -> float:
         """Compute Expected Calibration Error.
 
         Args:
@@ -56,9 +56,9 @@ class TemperatureScaler:
 
     @staticmethod
     def find_optimal_temperature(
-        raw_confidences: List[float],
-        accuracies: List[bool],
-        temperature_range: Tuple[float, float] = (0.5, 2.0),
+        raw_confidences: list[float],
+        accuracies: list[bool],
+        temperature_range: tuple[float, float] = (0.5, 2.0),
         n_steps: int = 20,
     ) -> float:
         """Find temperature that minimizes ECE.

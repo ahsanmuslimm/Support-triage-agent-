@@ -4,7 +4,6 @@ import json
 import logging
 from datetime import datetime, timedelta
 from statistics import median
-from typing import Optional
 
 from .base import CacheManager, EnricherBase
 from .exceptions import APITimeoutError, EnrichmentError

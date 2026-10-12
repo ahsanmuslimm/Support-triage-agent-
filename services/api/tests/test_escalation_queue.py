@@ -1,11 +1,10 @@
 """Tests for escalation queue manager (S4.5)."""
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch, AsyncMock
 
-from triage.escalation.queue_manager import EscalationQueueManager
+import pytest
 from triage.escalation.models import EscalationJob, Priority
+from triage.escalation.queue_manager import EscalationQueueManager
 
 
 class TestEscalationQueueManager:
@@ -117,15 +116,15 @@ class TestEscalationQueueManager:
             status="pending",
             created_at=datetime.utcnow(),
         )
-        
+
         # Enqueue
         result = await manager.enqueue(job)
         assert result is True
-        
+
         # Assign
         result = await manager.assign_to_agent(job.id or 0, "agent@example.com")
         assert result is True
-        
+
         # Resolve
         result = await manager.resolve_job(job.id or 0, "Done")
         assert result is True

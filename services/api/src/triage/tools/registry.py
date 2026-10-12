@@ -1,8 +1,8 @@
 """Tool registry: register and lookup available tools."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Any, Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -23,9 +23,9 @@ class ToolSpec:
 
     name: str
     description: str
-    required_args: Dict[str, str]  # arg_name -> arg_type
+    required_args: dict[str, str]  # arg_name -> arg_type
     min_autonomy_level: AutonomyLevel
-    idempotency_key_field: Optional[str] = None  # Field used for idempotency
+    idempotency_key_field: str | None = None  # Field used for idempotency
     is_destructive: bool = False
 
 
@@ -77,7 +77,7 @@ class ToolRegistry:
 
     def __init__(self):
         """Initialize registry with built-in tools."""
-        self.tools: Dict[str, ToolSpec] = self.BUILTIN_TOOLS.copy()
+        self.tools: dict[str, ToolSpec] = self.BUILTIN_TOOLS.copy()
         log.info("tool_registry_initialized", tool_count=len(self.tools))
 
     def register(self, spec: ToolSpec) -> None:
@@ -89,7 +89,7 @@ class ToolRegistry:
         self.tools[spec.name] = spec
         log.info("tool_registered", tool_name=spec.name)
 
-    def get_tool(self, name: str) -> Optional[ToolSpec]:
+    def get_tool(self, name: str) -> ToolSpec | None:
         """Get tool by name.
 
         Args:
@@ -100,7 +100,7 @@ class ToolRegistry:
         """
         return self.tools.get(name)
 
-    def list_tools(self) -> Dict[str, ToolSpec]:
+    def list_tools(self) -> dict[str, ToolSpec]:
         """Get all registered tools.
 
         Returns:
@@ -108,7 +108,7 @@ class ToolRegistry:
         """
         return self.tools.copy()
 
-    def get_tools_for_autonomy_level(self, level: AutonomyLevel) -> Dict[str, ToolSpec]:
+    def get_tools_for_autonomy_level(self, level: AutonomyLevel) -> dict[str, ToolSpec]:
         """Get all tools available at given autonomy level.
 
         Args:

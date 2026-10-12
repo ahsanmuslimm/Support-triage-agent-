@@ -1,6 +1,5 @@
 """Competitive benchmarking."""
 
-from typing import Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,11 +10,10 @@ class CompetitiveBenchmarker:
 
     def __init__(self):
         """Initialize benchmarker."""
-        pass
 
     async def compare_support_metrics(
-        self, tenant_id: int, benchmark_data: Dict
-    ) -> Dict[str, float]:
+        self, tenant_id: int, benchmark_data: dict
+    ) -> dict[str, float]:
         """Compare metrics against benchmarks."""
         return {
             "csat_percentile": 75,
@@ -24,7 +22,7 @@ class CompetitiveBenchmarker:
         }
 
     async def identify_gaps(
-        self, tenant_id: int, competitive_report: Dict
-    ) -> List[str]:
+        self, tenant_id: int, competitive_report: dict
+    ) -> list[str]:
         """Identify gaps vs. competitors."""
         return ["response_time", "omnichannel_support"]

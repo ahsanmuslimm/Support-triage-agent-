@@ -1,7 +1,8 @@
 """Fake implementations for testing."""
 
-from datetime import datetime, timezone
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime
+from typing import Any
 
 
 class FakeLLM:
@@ -75,7 +76,7 @@ class FakeClock:
         Args:
             start: Initial datetime; defaults to now.
         """
-        self._current_time = start or datetime.now(timezone.utc)
+        self._current_time = start or datetime.now(UTC)
 
     def now(self) -> datetime:
         """Return current frozen time.

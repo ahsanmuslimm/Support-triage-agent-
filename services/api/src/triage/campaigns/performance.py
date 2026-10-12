@@ -1,6 +1,5 @@
 """Campaign performance tracking."""
 
-from typing import Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,8 +10,8 @@ class PerformanceMonitor:
 
     def __init__(self):
         """Initialize monitor."""
-        self.events: Dict[str, list] = {}
-        self.metrics_store: Dict[str, dict] = {}
+        self.events: dict[str, list] = {}
+        self.metrics_store: dict[str, dict] = {}
 
     async def track_campaign_event(
         self, campaign_id: str, customer_id: int, event_type: str
@@ -23,7 +22,7 @@ class PerformanceMonitor:
             self.events[key] = []
         self.events[key].append({"customer_id": customer_id})
 
-    async def compute_metrics(self, campaign_id: str) -> Dict[str, float]:
+    async def compute_metrics(self, campaign_id: str) -> dict[str, float]:
         """Compute campaign metrics."""
         sent_key = f"{campaign_id}:sent"
         clicked_key = f"{campaign_id}:clicked"

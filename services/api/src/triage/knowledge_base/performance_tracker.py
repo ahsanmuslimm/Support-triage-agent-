@@ -1,6 +1,5 @@
 """KB article performance tracking."""
 
-from typing import List, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ class PerformanceTracker:
 
     def __init__(self):
         """Initialize tracker."""
-        self.interactions: Dict[int, list] = {}
+        self.interactions: dict[int, list] = {}
 
     async def log_article_interaction(
         self, article_id: int, action: str, duration_sec: int
@@ -26,7 +25,7 @@ class PerformanceTracker:
 
     async def compute_article_metrics(
         self, article_id: int, days: int = 30
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compute article metrics."""
         interactions = self.interactions.get(article_id, [])
         views = len(interactions)
@@ -45,7 +44,7 @@ class PerformanceTracker:
 
     async def identify_underperforming_articles(
         self, threshold_ctr: float = 0.10
-    ) -> List[int]:
+    ) -> list[int]:
         """Identify underperforming articles."""
         underperformers = []
         for article_id in self.interactions.keys():

@@ -1,7 +1,7 @@
 """Channel selector for campaigns."""
 
-from enum import Enum
 import logging
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 

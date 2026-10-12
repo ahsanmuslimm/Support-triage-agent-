@@ -1,9 +1,9 @@
 """Proactive outreach campaign models."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Dict, Any
+
 from pydantic import BaseModel
 
 
@@ -21,11 +21,11 @@ class CampaignTemplate(BaseModel):
 
     template_id: str
     campaign_type: CampaignType
-    channels: List[str]  # ['email', 'in_app']
+    channels: list[str]  # ['email', 'in_app']
     subject_line: str
     body_template: str  # Jinja2 template
     cta_text: str
-    
+
     class Config:
         use_enum_values = False
 
@@ -33,18 +33,18 @@ class CampaignTemplate(BaseModel):
 class Campaign(BaseModel):
     """Campaign instance for a specific customer."""
 
-    id: Optional[str] = None
+    id: str | None = None
     tenant_id: int
     customer_id: int
     template_id: str
     campaign_type: CampaignType
     variant: str  # 'A' or 'B' for A/B testing
     created_at: datetime
-    sent_at: Optional[datetime] = None
-    opened_at: Optional[datetime] = None
-    clicked_at: Optional[datetime] = None
-    converted_at: Optional[datetime] = None
-    
+    sent_at: datetime | None = None
+    opened_at: datetime | None = None
+    clicked_at: datetime | None = None
+    converted_at: datetime | None = None
+
     class Config:
         use_enum_values = False
 
@@ -58,7 +58,7 @@ class ABTestResult(BaseModel):
     click_rate: float
     conversion_rate: float
     sample_size: int
-    
+
     class Config:
         use_enum_values = False
 
@@ -69,17 +69,17 @@ class CampaignContext:
 
     customer_id: int
     tenant_id: int
-    
+
     # Health and engagement signals
     health_score: float
     is_active: bool
-    last_support_contact: Optional[datetime] = None
+    last_support_contact: datetime | None = None
     is_vip: bool = False
-    
+
     # Billing signals
     payment_failed_count: int = 0
     churn_risk: float = 0.0
-    
+
     # Order signals
     order_count: int = 0
-    last_order_date: Optional[datetime] = None
+    last_order_date: datetime | None = None

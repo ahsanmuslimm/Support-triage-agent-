@@ -1,6 +1,5 @@
 """Competitive mention detection."""
 
-from typing import List, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,9 +12,9 @@ class MentionTracker:
 
     def __init__(self):
         """Initialize tracker."""
-        self.mentions: List[Dict] = []
+        self.mentions: list[dict] = []
 
-    async def extract_mentions(self, text: str) -> List[Dict]:
+    async def extract_mentions(self, text: str) -> list[dict]:
         """Extract competitive mentions from text."""
         found_mentions = []
         for competitor in self.COMPETITORS:
@@ -36,7 +35,7 @@ class MentionTracker:
 
     async def monthly_mention_report(
         self, tenant_id: int, month: str
-    ) -> Dict:
+    ) -> dict:
         """Generate monthly mention report."""
         return {
             "total_mentions": len(self.mentions),

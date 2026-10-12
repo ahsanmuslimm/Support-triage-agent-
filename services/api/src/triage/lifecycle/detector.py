@@ -1,16 +1,14 @@
 """Lifecycle stage detector orchestrator."""
 
-from datetime import datetime
-from typing import Dict, List, Optional
 import logging
+from datetime import datetime
 
+from .clustering import LifecycleClusterer
 from .models import (
     CustomerLifecycleProfile,
     LifecycleStage,
-    RFMDimensions,
 )
 from .rfm import RFMCalculator
-from .clustering import LifecycleClusterer
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +25,8 @@ class LifecycleDetector:
         self,
         tenant_id: int,
         customer_id: int,
-        days_since_last_order: Optional[int] = None,
-        days_since_last_ticket: Optional[int] = None,
+        days_since_last_order: int | None = None,
+        days_since_last_ticket: int | None = None,
         order_count_365d: int = 0,
         ticket_count_365d: int = 0,
         total_spend_365d: float = 0.0,
@@ -83,8 +81,8 @@ class LifecycleDetector:
         )
 
     async def detect_lifecycle_for_tenant(
-        self, tenant_id: int, customers_data: Dict[int, Dict]
-    ) -> Dict[int, CustomerLifecycleProfile]:
+        self, tenant_id: int, customers_data: dict[int, dict]
+    ) -> dict[int, CustomerLifecycleProfile]:
         """
         Batch detect lifecycle for all customers in tenant.
 
@@ -132,7 +130,7 @@ class LifecycleDetector:
 
     async def get_engagement_strategy(
         self, stage: LifecycleStage
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Get engagement strategy for lifecycle stage.
 

@@ -1,11 +1,10 @@
 """Tests for load-aware agent assignment and rebalancing."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from triage.routing.load_balancer import (
     LoadBalancer,
-    AgentLoad,
-    TicketAssignment,
 )
 
 

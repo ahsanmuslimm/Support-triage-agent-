@@ -1,7 +1,7 @@
 """In-memory vector store using embeddings and cosine similarity."""
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+
 import numpy as np
 import structlog
 
@@ -28,8 +28,8 @@ class VectorStore:
             embedding_model: Embedding model (e.g., SentenceTransformer).
                            If None, will try to load default.
         """
-        self.documents: List[Tuple[str, str]] = []  # (doc_id, text)
-        self.embeddings: Optional[np.ndarray] = None
+        self.documents: list[tuple[str, str]] = []  # (doc_id, text)
+        self.embeddings: np.ndarray | None = None
         self.embedding_model = embedding_model
         self._init_embedding_model()
 
@@ -46,7 +46,7 @@ class VectorStore:
             log.warning("vector_store_embedding_model_unavailable", error=str(e))
             self.embedding_model = None
 
-    def add_documents(self, documents: List[Tuple[str, str]]) -> None:
+    def add_documents(self, documents: list[tuple[str, str]]) -> None:
         """Add documents to store.
 
         Args:
@@ -65,7 +65,7 @@ class VectorStore:
             log.error("vector_store_embedding_error", error=str(e))
             self.embeddings = None
 
-    def search(self, query: str, k: int = 5) -> List[SearchResult]:
+    def search(self, query: str, k: int = 5) -> list[SearchResult]:
         """Search for documents similar to query.
 
         Args:

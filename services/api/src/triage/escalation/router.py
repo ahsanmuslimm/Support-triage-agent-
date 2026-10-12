@@ -1,12 +1,13 @@
 """Multi-channel escalation routing (Slack, email, PagerDuty, webhook)."""
 
-import os
-import logging
-import json
-import hmac
 import hashlib
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+import hmac
+import json
+import logging
+import os
+from datetime import datetime
+from typing import Any
+
 import aiohttp
 
 from .models import EscalationJob, HandoffContext
@@ -29,7 +30,7 @@ class EscalationRouter:
         self.slack_client = slack_client
         self.pagerduty_client = pagerduty_client
         self.email_service = email_service
-        
+
         # Configuration from env
         self.slack_webhook = os.getenv("SLACK_WEBHOOK_URL")
         self.slack_channel = os.getenv("SLACK_ESCALATION_CHANNEL", "#escalations")
@@ -40,9 +41,9 @@ class EscalationRouter:
         self.escalation_queue_email = os.getenv(
             "ESCALATION_QUEUE_EMAIL", "escalations@company.com"
         )
-        
+
         # Caches
-        self.oncall_cache: Dict[int, Dict[str, Any]] = {}
+        self.oncall_cache: dict[int, dict[str, Any]] = {}
         self.oncall_cache_ttl = 3600  # 1 hour
 
     async def route_escalation(
@@ -50,7 +51,7 @@ class EscalationRouter:
         job: EscalationJob,
         handoff_context: HandoffContext,
         escalation_job_id: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Route escalation across multiple channels with DND checking.
         
@@ -70,40 +71,40 @@ class EscalationRouter:
                 "routing_timestamp": datetime.utcnow().isoformat(),
                 "success": True,
             }
-            
+
             # Sync on-call rotation
             oncall = await self._sync_oncall_rotation(job.tenant_id)
             on_call_agent = oncall.get("current_oncall", {}).get("email", "")
-            
+
             # Try primary channel (Slack)
             if on_call_agent and not await self._check_dnd_schedule(on_call_agent):
                 success = await self._send_slack(on_call_agent, job, handoff_context)
                 if success:
                     routed_channels.append("slack")
-            
+
             # Fallback to email
             if not routed_channels:
                 success = await self._send_email(job, handoff_context)
                 if success:
                     routed_channels.append("email")
-            
+
             # Send PagerDuty incident
             success = await self._send_pagerduty(job, handoff_context)
             if success:
                 routed_channels.append("pagerduty")
-            
+
             # Send webhook
             success = await self._send_webhook(job, handoff_context)
             if success:
                 routed_channels.append("webhook")
-            
+
             result["routed_to_channels"] = routed_channels
             result["on_call_agent"] = on_call_agent
-            
+
             logger.info(
                 f"Routed escalation {escalation_job_id} to: {', '.join(routed_channels)}"
             )
-            
+
             return result
         except Exception as e:
             logger.error(f"Failed to route escalation: {e}")
@@ -114,7 +115,7 @@ class EscalationRouter:
                 "error": str(e),
             }
 
-    async def _sync_oncall_rotation(self, tenant_id: int) -> Dict[str, Any]:
+    async def _sync_oncall_rotation(self, tenant_id: int) -> dict[str, Any]:
         """
         Sync on-call rotation from PagerDuty (cached 1 hour).
         
@@ -129,7 +130,7 @@ class EscalationRouter:
             cache_entry = self.oncall_cache[tenant_id]
             if datetime.utcnow().timestamp() - cache_entry.get("cached_at", 0) < self.oncall_cache_ttl:
                 return cache_entry
-        
+
         try:
             # Mock implementation - would call PagerDuty API
             rotation = {
@@ -145,7 +146,7 @@ class EscalationRouter:
                 },
                 "cached_at": datetime.utcnow().timestamp(),
             }
-            
+
             self.oncall_cache[tenant_id] = rotation
             return rotation
         except Exception as e:
@@ -191,7 +192,7 @@ class EscalationRouter:
             if not self.slack_webhook:
                 logger.warning("Slack webhook URL not configured")
                 return False
-            
+
             message = {
                 "channel": self.slack_channel,
                 "text": f"🔴 {job.priority.value.upper()} Escalation: {job.ticket_id}",
@@ -214,14 +215,13 @@ class EscalationRouter:
                     },
                 ],
             }
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.slack_webhook,
-                    json=message,
-                    timeout=aiohttp.ClientTimeout(total=5),
-                ) as resp:
-                    return resp.status == 200
+
+            async with aiohttp.ClientSession() as session, session.post(
+                self.slack_webhook,
+                json=message,
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp:
+                return resp.status == 200
         except Exception as e:
             logger.error(f"Failed to send Slack message: {e}")
             return False
@@ -245,7 +245,7 @@ class EscalationRouter:
             if not self.pagerduty_api_key:
                 logger.warning("PagerDuty API key not configured")
                 return False
-            
+
             # Mock implementation - would call PagerDuty API
             logger.info(f"PagerDuty incident created: {job.ticket_id}")
             return True
@@ -295,7 +295,7 @@ class EscalationRouter:
             if not self.escalation_webhook_url:
                 logger.debug("Escalation webhook URL not configured")
                 return False
-            
+
             payload = {
                 "escalation_id": job.id,
                 "tenant_id": job.tenant_id,
@@ -305,7 +305,7 @@ class EscalationRouter:
                 "summary": handoff.summary_text,
                 "customer_context": handoff.customer_context,
             }
-            
+
             # Generate HMAC signature
             body_str = json.dumps(payload)
             signature = ""
@@ -315,20 +315,19 @@ class EscalationRouter:
                     body_str.encode(),
                     hashlib.sha256,
                 ).hexdigest()
-            
+
             headers = {
                 "X-Webhook-Signature": signature,
                 "Content-Type": "application/json",
             }
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.escalation_webhook_url,
-                    json=payload,
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=5),
-                ) as resp:
-                    return resp.status in [200, 202]
+
+            async with aiohttp.ClientSession() as session, session.post(
+                self.escalation_webhook_url,
+                json=payload,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp:
+                return resp.status in [200, 202]
         except Exception as e:
             logger.error(f"Failed to send webhook: {e}")
             return False

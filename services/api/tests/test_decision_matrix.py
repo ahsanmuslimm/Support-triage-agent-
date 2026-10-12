@@ -1,12 +1,10 @@
 """Tests for decision matrix (Phase 2)."""
 
-import pytest
 
 from triage.decision.matrix import DecisionMatrix
 from triage.models.decision import (
-    PolicyInput,
     AutonomyLevel,
-    SafetyFlag,
+    PolicyInput,
 )
 
 

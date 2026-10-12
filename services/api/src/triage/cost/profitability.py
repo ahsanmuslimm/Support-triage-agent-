@@ -1,6 +1,5 @@
 """Segment profitability analysis."""
 
-from typing import Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,11 +10,10 @@ class ProfitabilityAnalyzer:
 
     def __init__(self):
         """Initialize analyzer."""
-        pass
 
     async def compute_segment_profitability(
         self, segment_name: str, tenant_id: int, date_range: tuple
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compute profitability metrics for segment."""
         return {
             "ltv": 1000.0,
@@ -30,6 +28,6 @@ class ProfitabilityAnalyzer:
 
     async def identify_underperforming_segments(
         self, threshold: float = 1.5
-    ) -> List[str]:
+    ) -> list[str]:
         """Identify underperforming segments."""
         return ["segment_1", "segment_2"]

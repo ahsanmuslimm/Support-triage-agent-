@@ -1,10 +1,10 @@
 """Autonomy policy enforcement and promotion workflow."""
 
-import structlog
-from typing import Optional, Tuple, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from triage.models.decision import AutonomyLevel, PolicyInput
+import structlog
+
+from triage.models.decision import AutonomyLevel
 
 log = structlog.get_logger()
 
@@ -12,7 +12,7 @@ log = structlog.get_logger()
 class AutonomyGate:
     """Enforces autonomy levels at tool execution time."""
 
-    def __init__(self, autonomy_policies: Optional[Dict[str, int]] = None):
+    def __init__(self, autonomy_policies: dict[str, int] | None = None):
         """Initialize autonomy gate.
 
         Args:
@@ -39,7 +39,7 @@ class AutonomyGate:
         intent_name: str,
         tool_required_level: AutonomyLevel,
         policy_autonomy_level: AutonomyLevel,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if tool execution is allowed.
 
         Args:
@@ -90,7 +90,7 @@ class AutonomyPromoter:
 
     def __init__(self):
         """Initialize autonomy promoter."""
-        self.last_promotion: Dict[str, datetime] = {}
+        self.last_promotion: dict[str, datetime] = {}
 
     def should_promote(
         self,
@@ -99,7 +99,7 @@ class AutonomyPromoter:
         groundedness: float,
         sample_count: int,
         admin_approved: bool = False,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if intent should be promoted to higher autonomy.
 
         Args:
@@ -154,7 +154,7 @@ class AutonomyPromoter:
         false_resolution_rate: float,
         groundedness: float,
         injection_attempts_today: int,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if intent should be demoted to lower autonomy.
 
         Args:

@@ -1,14 +1,13 @@
 """Tests for in-app SDK JWT validation."""
 
+from datetime import timedelta
+
 import pytest
-from datetime import datetime, timedelta
 from triage.sdk.jwt_validator import (
+    AlgorithmMismatchError,
+    JWTError,
     JWTValidator,
     KeyRotationManager,
-    JWTError,
-    TokenExpiredError,
-    AlgorithmMismatchError,
-    AudienceMismatchError,
 )
 
 
@@ -96,7 +95,7 @@ class TestWidgetInitialization:
         """Test widget initialization configuration."""
         # This documents the expected init format:
         # window.TriageWidget.init({jwt: token, tenant: 'acme', target: '#chat-widget'})
-        
+
         init_config = {
             "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEifQ.eyJpc3MiOiJodHRwczovL2FjbWUuZXhhbXBsZS5jb20iLCJhdWQiOiJhY21lIiwic3ViIjoiY3VzdG9tZXJfMTIzIiwiaWF0IjoxNzA1MzE1MjAwLCJleHAiOjE3MDUzMTYxMDB9.signature",
             "tenant": "acme",
@@ -142,7 +141,7 @@ class TestIAL2Assertion:
         # IAL2 JWT must contain:
         # aud=tenant_id (audience)
         # sub=customer_id (subject)
-        
+
         expected_claims = {
             "aud": "acme",  # Tenant ID
             "sub": "customer_123",  # Customer ID

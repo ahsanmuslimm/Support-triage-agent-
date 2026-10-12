@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
 
 log = structlog.get_logger()
@@ -65,10 +66,10 @@ class MessageNormalization:
     sender_id: str
     """Sender identifier in source system."""
 
-    sender_email: Optional[str] = None
+    sender_email: str | None = None
     """Sender email if available."""
 
-    sender_name: Optional[str] = None
+    sender_name: str | None = None
     """Sender name."""
 
     timestamp: datetime = field(default_factory=datetime.utcnow)
@@ -77,10 +78,10 @@ class MessageNormalization:
     thread_id: str = ""
     """Thread/conversation identifier."""
 
-    attachments: List[Attachment] = field(default_factory=list)
+    attachments: list[Attachment] = field(default_factory=list)
     """Attached files."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Channel-specific metadata."""
 
 
@@ -106,13 +107,13 @@ class TicketNormalization:
     requester_id: str
     """Customer identifier."""
 
-    requester_email: Optional[str] = None
+    requester_email: str | None = None
     """Customer email."""
 
-    requester_name: Optional[str] = None
+    requester_name: str | None = None
     """Customer name."""
 
-    assignee_id: Optional[str] = None
+    assignee_id: str | None = None
     """Assigned agent ID."""
 
     created_at: datetime = field(default_factory=datetime.utcnow)
@@ -121,19 +122,19 @@ class TicketNormalization:
     updated_at: datetime = field(default_factory=datetime.utcnow)
     """Last update time."""
 
-    custom_fields: Dict[str, Any] = field(default_factory=dict)
+    custom_fields: dict[str, Any] = field(default_factory=dict)
     """Adapter-specific custom fields."""
 
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     """Ticket tags/labels."""
 
-    category: Optional[str] = None
+    category: str | None = None
     """Ticket category."""
 
-    segment: Optional[str] = None
+    segment: str | None = None
     """Customer segment."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional metadata."""
 
 
@@ -156,10 +157,10 @@ class ThreadEntry:
     timestamp: datetime
     """Message creation time."""
 
-    attachments: List[Attachment] = field(default_factory=list)
+    attachments: list[Attachment] = field(default_factory=list)
     """Attached files."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Channel-specific metadata."""
 
 
@@ -173,10 +174,10 @@ class ReplyResult:
     provider_message_id: str = ""
     """ID assigned by provider."""
 
-    error: Optional[str] = None
+    error: str | None = None
     """Error message if failed."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Response metadata."""
 
 
@@ -184,25 +185,25 @@ class ReplyResult:
 class TicketUpdateRequest:
     """Request to update ticket properties."""
 
-    status: Optional[TicketStatus] = None
+    status: TicketStatus | None = None
     """New status."""
 
-    priority: Optional[TicketPriority] = None
+    priority: TicketPriority | None = None
     """New priority."""
 
-    assignee_id: Optional[str] = None
+    assignee_id: str | None = None
     """Assign to agent."""
 
-    custom_fields: Dict[str, Any] = field(default_factory=dict)
+    custom_fields: dict[str, Any] = field(default_factory=dict)
     """Custom field updates."""
 
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     """Tags to set."""
 
-    category: Optional[str] = None
+    category: str | None = None
     """New category."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional updates."""
 
 
@@ -222,7 +223,7 @@ class HelpdeskConnector(ABC):
         self.config = config
 
     @abstractmethod
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize message from provider format to canonical form.
 
         Args:
@@ -234,10 +235,9 @@ class HelpdeskConnector(ABC):
         Raises:
             ValueError: If message cannot be normalized.
         """
-        pass
 
     @abstractmethod
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize ticket from provider format.
 
         Args:
@@ -249,14 +249,13 @@ class HelpdeskConnector(ABC):
         Raises:
             ValueError: If ticket cannot be normalized.
         """
-        pass
 
     @abstractmethod
     async def post_reply(
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post a reply to a ticket.
 
@@ -268,7 +267,6 @@ class HelpdeskConnector(ABC):
         Returns:
             ReplyResult: Success/failure with provider message ID.
         """
-        pass
 
     @abstractmethod
     async def update_ticket(
@@ -285,14 +283,13 @@ class HelpdeskConnector(ABC):
         Returns:
             bool: True if successful.
         """
-        pass
 
     @abstractmethod
     async def fetch_thread_history(
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch complete thread/ticket history.
 
         Args:
@@ -305,4 +302,3 @@ class HelpdeskConnector(ABC):
         Raises:
             ValueError: If ticket not found.
         """
-        pass

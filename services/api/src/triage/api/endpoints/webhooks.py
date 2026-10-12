@@ -1,8 +1,8 @@
 """Webhook receivers for external integrations."""
 
-from fastapi import APIRouter, HTTPException, Header, Request
-from typing import Optional
 import os
+
+from fastapi import APIRouter, Header, HTTPException, Request
 
 from ...ingestion.zendesk_webhook import ZendeskWebhookHandler
 

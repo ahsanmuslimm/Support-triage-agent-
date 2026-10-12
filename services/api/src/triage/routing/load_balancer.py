@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import structlog
 
 log = structlog.get_logger()
@@ -30,7 +31,7 @@ class AgentLoad:
     last_activity: datetime = field(default_factory=datetime.utcnow)
     """Last activity timestamp."""
 
-    skills: List[str] = field(default_factory=list)
+    skills: list[str] = field(default_factory=list)
     """Agent skills/specialties."""
 
     max_capacity: int = 10
@@ -50,7 +51,7 @@ class TicketAssignment:
     assigned_at: datetime = field(default_factory=datetime.utcnow)
     """Assignment timestamp."""
 
-    acknowledged_at: Optional[datetime] = None
+    acknowledged_at: datetime | None = None
     """When agent acknowledged the ticket."""
 
     priority: str = "p2"
@@ -76,14 +77,14 @@ class LoadBalancer:
 
     def __init__(self) -> None:
         """Initialize load balancer."""
-        self.agents: Dict[str, AgentLoad] = {}  # agent_id -> AgentLoad
-        self.assignments: Dict[str, TicketAssignment] = {}  # ticket_id -> Assignment
-        self.assignment_history: List[TicketAssignment] = []  # History log
+        self.agents: dict[str, AgentLoad] = {}  # agent_id -> AgentLoad
+        self.assignments: dict[str, TicketAssignment] = {}  # ticket_id -> Assignment
+        self.assignment_history: list[TicketAssignment] = []  # History log
 
     def register_agent(
         self,
         agent_id: str,
-        skills: List[str] = None,
+        skills: list[str] = None,
         max_capacity: int = 10,
     ) -> None:
         """Register agent in load balancer.
@@ -125,8 +126,8 @@ class LoadBalancer:
         self,
         ticket_id: str,
         priority: str = "p2",
-        required_skills: List[str] = None,
-    ) -> Optional[str]:
+        required_skills: list[str] = None,
+    ) -> str | None:
         """Assign ticket to available agent.
 
         Args:
@@ -211,7 +212,7 @@ class LoadBalancer:
             return True
         return False
 
-    def check_stale_assignments(self) -> List[tuple[str, str]]:
+    def check_stale_assignments(self) -> list[tuple[str, str]]:
         """Find unacknowledged tickets that should be reassigned.
 
         Returns:
@@ -244,7 +245,7 @@ class LoadBalancer:
 
         return to_reassign
 
-    def check_offline_releases(self) -> List[tuple[str, str]]:
+    def check_offline_releases(self) -> list[tuple[str, str]]:
         """Find tickets from offline agents to release.
 
         Returns:
@@ -271,7 +272,7 @@ class LoadBalancer:
 
         return to_release
 
-    def rebalance(self) -> Dict[str, str]:
+    def rebalance(self) -> dict[str, str]:
         """Rebalance tickets if any agent is overloaded.
 
         Returns:
@@ -320,7 +321,7 @@ class LoadBalancer:
 
         return reassignments
 
-    def _get_available_agents(self, required_skills: List[str] = None) -> List[AgentLoad]:
+    def _get_available_agents(self, required_skills: list[str] = None) -> list[AgentLoad]:
         """Get online agents with required skills.
 
         Args:
@@ -354,7 +355,7 @@ class LoadBalancer:
         """
         return agent.open_tickets + (agent.estimated_handling_time_minutes / 60)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get load balancer statistics.
 
         Returns:

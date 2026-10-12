@@ -6,11 +6,10 @@ Evaluates write actions against Rego policies:
 - guardrails: Anti-fraud and compliance guardrails
 """
 
-import json
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-import structlog
+from typing import Any
+
 import aiohttp
+import structlog
 
 log = structlog.get_logger()
 
@@ -18,14 +17,14 @@ log = structlog.get_logger()
 class OPADecision:
     """Decision result from OPA policy evaluation."""
 
-    def __init__(self, approved: bool, reason: str, guardrails_triggered: List[str], approval_required: bool):
+    def __init__(self, approved: bool, reason: str, guardrails_triggered: list[str], approval_required: bool):
         """Initialize OPA decision."""
         self.approved = approved
         self.reason = reason
         self.guardrails_triggered = guardrails_triggered
         self.approval_required = approval_required
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "approved": self.approved,
@@ -51,16 +50,16 @@ class OPAAdapter:
         """
         self.opa_url = opa_url
         self.use_embedded = use_embedded
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session: aiohttp.ClientSession | None = None
 
     async def evaluate(
         self,
         action_type: str,
         tenant_id: str,
         customer_id: str,
-        arguments: Dict[str, Any],
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        arguments: dict[str, Any],
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """Evaluate action against policies.
         
         Args:
@@ -109,12 +108,12 @@ class OPAAdapter:
             # Default to conservative policy on error
             return {
                 "approved": False,
-                "reason": f"Policy evaluation error: {str(e)}",
+                "reason": f"Policy evaluation error: {e!s}",
                 "guardrails_triggered": ["policy_error"],
                 "approval_required": True,
             }
 
-    async def _evaluate_remote(self, input_data: Dict[str, Any], action_type: str) -> OPADecision:
+    async def _evaluate_remote(self, input_data: dict[str, Any], action_type: str) -> OPADecision:
         """Evaluate using remote OPA server."""
         if not self.session:
             self.session = aiohttp.ClientSession()
@@ -143,7 +142,7 @@ class OPAAdapter:
             # Fall back to embedded policy
             return await self._evaluate_embedded(input_data)
 
-    async def _evaluate_embedded(self, input_data: Dict[str, Any]) -> OPADecision:
+    async def _evaluate_embedded(self, input_data: dict[str, Any]) -> OPADecision:
         """Evaluate using embedded policies (for testing/offline)."""
         action_type = input_data.get("action_type")
 
@@ -167,7 +166,7 @@ class OPAAdapter:
                 approval_required=True,
             )
 
-    def _evaluate_refund_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_refund_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded refund policy."""
         arguments = input_data.get("arguments", {})
         context = input_data.get("context", {})
@@ -177,7 +176,7 @@ class OPAAdapter:
         account_age_days = context.get("account_age_days", 0)
         previous_refunds = context.get("previous_refunds", 0)
         order_status = context.get("order_status", "unknown")
-        
+
         guardrails = []
 
         # Guardrail 1: Amount limits
@@ -234,20 +233,18 @@ class OPAAdapter:
             approval_required=True,
         )
 
-    def _evaluate_return_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_return_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded return/RMA policy."""
         arguments = input_data.get("arguments", {})
         context = input_data.get("context", {})
 
         return_type = arguments.get("return_type", "full")
         order_age_days = context.get("order_age_days", 0)
-        
+
         guardrails = []
 
         # Return window: 30 days standard, 60 days for premium
-        if context.get("customer_tier") == "standard" and order_age_days > 30:
-            guardrails.append("return_window_exceeded")
-        elif context.get("customer_tier") == "premium" and order_age_days > 60:
+        if (context.get("customer_tier") == "standard" and order_age_days > 30) or (context.get("customer_tier") == "premium" and order_age_days > 60):
             guardrails.append("return_window_exceeded")
 
         if guardrails:
@@ -265,7 +262,7 @@ class OPAAdapter:
             approval_required=False,
         )
 
-    def _evaluate_cancel_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_cancel_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded cancel order policy."""
         context = input_data.get("context", {})
 
@@ -291,7 +288,7 @@ class OPAAdapter:
             approval_required=False,
         )
 
-    def _evaluate_address_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_address_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded address change policy."""
         arguments = input_data.get("arguments", {})
         new_address = arguments.get("new_address", {})
@@ -319,7 +316,7 @@ class OPAAdapter:
             approval_required=False,
         )
 
-    def _evaluate_password_reset_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_password_reset_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded password reset policy."""
         # Password reset requires IAL2 (identity verification)
         context = input_data.get("context", {})
@@ -340,7 +337,7 @@ class OPAAdapter:
             approval_required=False,
         )
 
-    def _evaluate_plan_change_policy(self, input_data: Dict[str, Any]) -> OPADecision:
+    def _evaluate_plan_change_policy(self, input_data: dict[str, Any]) -> OPADecision:
         """Embedded plan change policy."""
         arguments = input_data.get("arguments", {})
         context = input_data.get("context", {})

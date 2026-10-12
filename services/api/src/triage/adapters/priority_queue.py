@@ -1,8 +1,9 @@
 """S6.4: Priority queues for routing messages by SLA (chat vs email)."""
-from typing import Dict, Any, Optional, List
-from enum import IntEnum
-from datetime import datetime
 import json
+from datetime import datetime
+from enum import IntEnum
+from typing import Any
+
 import structlog
 
 try:
@@ -57,7 +58,7 @@ class PriorityQueue:
         message_id: str,
         tenant_id: str,
         channel: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> str:
         """Enqueue message to appropriate lane.
 
@@ -122,7 +123,7 @@ class PriorityQueue:
         self,
         channel: str,
         batch_size: int = 1,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Dequeue message(s) from lane.
 
         Args:
@@ -176,7 +177,7 @@ class PriorityQueue:
             log.exception("get_queue_depth_failed", error=str(e))
             return 0
 
-    async def get_queue_stats(self) -> Dict[str, Any]:
+    async def get_queue_stats(self) -> dict[str, Any]:
         """Get statistics for all queues.
 
         Returns:

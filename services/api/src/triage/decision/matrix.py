@@ -1,14 +1,13 @@
 """Decision matrix: 10+ rules mapping policy input to autonomy level."""
 
-import structlog
 import re
-from typing import Tuple, Dict, Optional
+
+import structlog
 
 from triage.models.decision import (
-    PolicyInput,
-    DecisionResult,
     AutonomyLevel,
-    SafetyFlag,
+    DecisionResult,
+    PolicyInput,
 )
 
 log = structlog.get_logger()
@@ -31,7 +30,7 @@ class DecisionMatrix:
         r"(?i)(script.*>|iframe|javascript:|onerror=|onload=)",
     ]
 
-    def __init__(self, autonomy_policies: Optional[Dict[str, int]] = None):
+    def __init__(self, autonomy_policies: dict[str, int] | None = None):
         """Initialize DecisionMatrix with optional per-tenant autonomy policies.
         
         Args:
@@ -40,7 +39,7 @@ class DecisionMatrix:
         """
         self.autonomy_policies = autonomy_policies or {}
 
-    def _check_autonomy_policy_override(self, policy: PolicyInput) -> Tuple[bool, Optional[AutonomyLevel], str]:
+    def _check_autonomy_policy_override(self, policy: PolicyInput) -> tuple[bool, AutonomyLevel | None, str]:
         """Check for per-tenant autonomy policy override (pre-rule gate).
         
         Returns:
@@ -61,7 +60,7 @@ class DecisionMatrix:
         return False, None, ""
 
     @staticmethod
-    def _check_safety_flags(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_safety_flags(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 1: Safety triggers → immediate L0."""
         if policy.safety_flags:
             flags_str = ", ".join(policy.safety_flags)
@@ -69,7 +68,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_injection_heuristics(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_injection_heuristics(policy: PolicyInput) -> tuple[bool, str]:
         """Check for injection attack patterns in message."""
         for pattern in DecisionMatrix.INJECTION_PATTERNS:
             if re.search(pattern, policy.message_text):
@@ -77,21 +76,21 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_confidence_too_low(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_confidence_too_low(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 2: Low confidence → escalate, L0."""
         if policy.intent_confidence is not None and policy.intent_confidence < 0.5:
             return True, f"Confidence too low: {policy.intent_confidence:.2f} < 0.5"
         return False, ""
 
     @staticmethod
-    def _check_repeat_customer_no_resolution(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_repeat_customer_no_resolution(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 3: Repeat customer with failed attempts → escalate."""
         if policy.is_repeat_customer and policy.previous_resolution_attempts >= 2:
             return True, f"Repeat customer with {policy.previous_resolution_attempts} failed attempts"
         return False, ""
 
     @staticmethod
-    def _check_ial_mismatch(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_ial_mismatch(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 4: IAL too low for sensitive intents → escalate."""
         sensitive_intents = {"password_reset", "account_delete", "billing_change", "refund"}
         if (
@@ -102,7 +101,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_high_value_transaction(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_high_value_transaction(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 5: Refunds > $500 require confirmation (L2 max)."""
         if (
             policy.intent_name == "refund"
@@ -113,7 +112,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_low_confidence_high_value(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_low_confidence_high_value(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 6: Low confidence + high value → escalate."""
         if (
             policy.intent_confidence
@@ -125,7 +124,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_standard_order_status(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_standard_order_status(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 7: Standard WISMO (order status) with high confidence → L1."""
         if (
             policy.intent_name == "order_status"
@@ -136,7 +135,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_premium_low_risk(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_premium_low_risk(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 8: Premium customer, low-risk intent, high confidence → L2."""
         low_risk_intents = {
             "order_status",
@@ -155,7 +154,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_low_risk_refund(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_low_risk_refund(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 9: Refund < $100, high confidence, verified customer → L2."""
         if (
             policy.intent_name == "refund"
@@ -169,7 +168,7 @@ class DecisionMatrix:
         return False, ""
 
     @staticmethod
-    def _check_enterprise_auto(policy: PolicyInput) -> Tuple[bool, str]:
+    def _check_enterprise_auto(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 10: Enterprise customer, very high confidence, low risk → L3."""
         low_risk_intents = {
             "order_status",

@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures for evaluation tests."""
 
 import json
+
 import pytest
 
 
@@ -54,7 +55,7 @@ def _load_jsonl(path: str) -> list[dict]:
     full_path = os.path.join(os.path.dirname(__file__), "..", path.replace("ml/evals/", ""))
     data = []
     if os.path.exists(full_path):
-        with open(full_path, "r") as f:
+        with open(full_path) as f:
             for line in f:
                 if line.strip():
                     data.append(json.loads(line))

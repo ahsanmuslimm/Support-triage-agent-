@@ -1,15 +1,15 @@
 """Knowledge Base Recommendation Engine module."""
 
-from .engine import RecommendationEngine
-from .tfidf_ranker import TFIDFRanker
-from .semantic_ranker import SemanticRanker
-from .collaborative import CollaborativeFilter
 from .ab_testing import ABTestingFramework
+from .collaborative import CollaborativeFilter
+from .engine import RecommendationEngine
+from .semantic_ranker import SemanticRanker
+from .tfidf_ranker import TFIDFRanker
 
 __all__ = [
-    "RecommendationEngine",
-    "TFIDFRanker",
-    "SemanticRanker",
-    "CollaborativeFilter",
     "ABTestingFramework",
+    "CollaborativeFilter",
+    "RecommendationEngine",
+    "SemanticRanker",
+    "TFIDFRanker",
 ]

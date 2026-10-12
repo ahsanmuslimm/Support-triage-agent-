@@ -1,8 +1,9 @@
 """Tests for incident clustering and urgency boost."""
 
-import pytest
 from datetime import datetime, timedelta
-from triage.routing.incident_clustering import IncidentClusterer, TicketCluster
+
+import pytest
+from triage.routing.incident_clustering import IncidentClusterer
 
 
 @pytest.fixture
@@ -150,7 +151,6 @@ class TestClusterLinking:
     async def test_auto_link_runbook(self, clusterer):
         """Test runbook can be auto-linked based on incident type."""
         # This would require external runbook index
-        pass
 
 
 class TestRelatedTickets:
@@ -212,7 +212,7 @@ class TestSimilarityThreshold:
 
     def test_lookback_window_minutes(self, clusterer):
         """Test lookback window is 30 minutes."""
-        assert clusterer.LOOKBACK_WINDOW == timedelta(minutes=30)
+        assert timedelta(minutes=30) == clusterer.LOOKBACK_WINDOW
 
     def test_urgency_boost_threshold_count(self, clusterer):
         """Test urgency boost triggers at 5 tickets."""
@@ -220,7 +220,7 @@ class TestSimilarityThreshold:
 
     def test_urgency_boost_window_minutes(self, clusterer):
         """Test urgency boost counts tickets within 10 minutes."""
-        assert clusterer.URGENCY_BOOST_WINDOW == timedelta(minutes=10)
+        assert timedelta(minutes=10) == clusterer.URGENCY_BOOST_WINDOW
 
 
 class TestStats:

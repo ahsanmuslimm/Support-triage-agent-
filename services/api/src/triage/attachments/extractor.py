@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -33,7 +33,7 @@ class ExtractionResult:
     pages: int = 0
     """Number of pages (for PDFs)."""
 
-    error: Optional[str] = None
+    error: str | None = None
     """Error message if extraction failed."""
 
 

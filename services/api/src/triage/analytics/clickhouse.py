@@ -1,10 +1,9 @@
 """ClickHouse analytics with Kafka integration (S10.4)."""
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
-import json
+from typing import Any
 
 
 class KafkaTopic(str, Enum):
@@ -22,11 +21,11 @@ class ConversationEvent:
     created_at: datetime
     updated_at: datetime
     status: str
-    intent_primary: Optional[str]
-    intent_secondary: Optional[str]
+    intent_primary: str | None
+    intent_secondary: str | None
     is_auto_resolved: bool
     escalation_triggered: bool
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -69,9 +68,9 @@ class ClickhouseAnalytics:
             test_mode: Use in-memory storage instead of ClickHouse
         """
         self.test_mode = test_mode
-        self.conversation_events: List[ConversationEvent] = []
-        self.llm_invocations: List[LLMInvocation] = []
-        self.kpis: Dict[str, KPIRecord] = {}
+        self.conversation_events: list[ConversationEvent] = []
+        self.llm_invocations: list[LLMInvocation] = []
+        self.kpis: dict[str, KPIRecord] = {}
 
     async def ingest_conversation_event(self, event: ConversationEvent):
         """Ingest conversation event (from Kafka).
@@ -94,7 +93,7 @@ class ClickhouseAnalytics:
         tenant_id: str,
         start_date: datetime,
         end_date: datetime,
-    ) -> Optional[KPIRecord]:
+    ) -> KPIRecord | None:
         """Compute KPIs for date range.
 
         Args:
@@ -166,8 +165,8 @@ class ClickhouseAnalytics:
         tenant_id: str,
         start_date: str,
         end_date: str,
-        segment: Optional[str] = None,
-    ) -> List[KPIRecord]:
+        segment: str | None = None,
+    ) -> list[KPIRecord]:
         """Query KPIs for date range.
 
         Args:
@@ -192,7 +191,7 @@ class ClickhouseAnalytics:
 
         return kpis
 
-    def get_table_schema(self, table_name: str) -> Dict[str, str]:
+    def get_table_schema(self, table_name: str) -> dict[str, str]:
         """Get ClickHouse table schema.
 
         Args:

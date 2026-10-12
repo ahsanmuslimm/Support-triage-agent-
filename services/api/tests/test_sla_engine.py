@@ -1,13 +1,13 @@
 """Tests for SLA engine with temporal timers and breach prediction."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from triage.sla import (
-    SLAEngine,
-    SLAPolicy,
-    SLAEventType,
     BusinessCalendar,
-    BusinessHours,
+    SLAEngine,
+    SLAEventType,
+    SLAPolicy,
 )
 
 
@@ -140,7 +140,7 @@ class TestSLATimerState:
     def test_timer_is_breached(self, sla_engine):
         """Test checking if timer is breached."""
         timer = sla_engine.create_timer("ticket_breach", {"priority": "p0"})
-        
+
         # Newly created timer should not be breached
         assert not timer.is_breached()
 
@@ -155,7 +155,7 @@ class TestSLAEvents:
     def test_warning_event_generation(self, sla_engine):
         """Test warning event is emitted at 75% threshold."""
         timer = sla_engine.create_timer("ticket_warn", {"priority": "p1"})
-        
+
         # Manually advance to warning threshold
         timer.warning_threshold = datetime.utcnow() - timedelta(seconds=1)
 
@@ -167,7 +167,7 @@ class TestSLAEvents:
     def test_breach_event_generation(self, sla_engine):
         """Test breach event is emitted at deadline."""
         timer = sla_engine.create_timer("ticket_breach_event", {"priority": "p0"})
-        
+
         # Manually set deadline to past
         timer.deadline = datetime.utcnow() - timedelta(seconds=1)
 
@@ -196,7 +196,7 @@ class TestDSTHandling:
         """Test DST transition is handled correctly."""
         # This is a placeholder test; real implementation would need
         # timezone-aware datetime objects and proper DST handling
-        
+
         # Verify business_calendar has timezone
         assert business_calendar.business_hours.timezone is not None
 

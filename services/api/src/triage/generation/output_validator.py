@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional, List
+
 import structlog
 
 log = structlog.get_logger()
@@ -13,11 +13,11 @@ class ValidationResult:
     """Result of output validation."""
 
     valid: bool
-    reason: Optional[str] = None
+    reason: str | None = None
     pii_detected: bool = False
     injection_detected: bool = False
     toxicity_score: float = 0.0  # [0, 1]
-    flags: List[str] = None  # Additional flags
+    flags: list[str] = None  # Additional flags
 
 
 class OutputValidator:
@@ -50,7 +50,7 @@ class OutputValidator:
     def validate(
         self,
         response_text: str,
-        grounding_score: Optional[float] = None,
+        grounding_score: float | None = None,
     ) -> ValidationResult:
         """Validate generated response.
 
@@ -112,7 +112,7 @@ class OutputValidator:
         return result
 
     @staticmethod
-    def _check_pii(text: str) -> tuple[bool, List[str]]:
+    def _check_pii(text: str) -> tuple[bool, list[str]]:
         """Check for PII in response.
 
         Args:

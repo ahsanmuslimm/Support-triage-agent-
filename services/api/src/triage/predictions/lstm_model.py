@@ -1,6 +1,5 @@
 """LSTM model for next-issue prediction."""
 
-from typing import List, Tuple, Dict, Optional
 import logging
 from datetime import datetime
 
@@ -23,14 +22,14 @@ class LSTMNextIssuePredictor:
         self.model = None
         self.intent_vocab = {}
         self.reverse_vocab = {}
-        self.trained_at: Optional[datetime] = None
+        self.trained_at: datetime | None = None
 
     async def train(
         self,
-        training_sequences: List[Tuple[List[str], str]],
+        training_sequences: list[tuple[list[str], str]],
         validation_split: float = 0.2,
         epochs: int = 10,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Train LSTM model (mocked for testing).
 
@@ -79,9 +78,9 @@ class LSTMNextIssuePredictor:
     async def predict_next_issue(
         self,
         customer_id: int,
-        issue_history: List[str],
+        issue_history: list[str],
         top_k: int = 3,
-    ) -> List[Tuple[str, float]]:
+    ) -> list[tuple[str, float]]:
         """
         Predict next issue types.
 

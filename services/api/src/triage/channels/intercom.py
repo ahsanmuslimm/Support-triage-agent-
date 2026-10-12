@@ -1,18 +1,20 @@
 """Intercom adapter implementation."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
+
 from triage.channels.connector import (
     Attachment,
     AttachmentType,
     HelpdeskConnector,
     MessageNormalization,
     ReplyResult,
+    ThreadEntry,
     TicketNormalization,
     TicketPriority,
     TicketStatus,
-    ThreadEntry,
     TicketUpdateRequest,
 )
 
@@ -22,7 +24,7 @@ log = structlog.get_logger()
 class IntercomAdapter(HelpdeskConnector):
     """Intercom helpdesk adapter."""
 
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize Intercom conversation message.
 
         Args:
@@ -84,7 +86,7 @@ class IntercomAdapter(HelpdeskConnector):
             metadata=metadata,
         )
 
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize Intercom conversation to ticket.
 
         Args:
@@ -154,7 +156,7 @@ class IntercomAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post reply to Intercom conversation.
 
@@ -229,7 +231,7 @@ class IntercomAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch Intercom conversation history.
 
         Args:

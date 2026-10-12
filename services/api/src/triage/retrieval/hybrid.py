@@ -1,11 +1,12 @@
 """Hybrid retrieval with RRF (Reciprocal Rank Fusion)."""
 
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+
 import structlog
 
-from triage.retrieval.vector_store import VectorStore, SearchResult as VectorResult
-from triage.retrieval.bm25_search import BM25Search, BM25Result
+from triage.retrieval.bm25_search import BM25Result, BM25Search
+from triage.retrieval.vector_store import SearchResult as VectorResult
+from triage.retrieval.vector_store import VectorStore
 
 log = structlog.get_logger()
 
@@ -38,7 +39,7 @@ class HybridRetriever:
         self.vector_store = VectorStore()
         self.bm25_search = BM25Search()
 
-    def add_documents(self, documents: List[tuple[str, str]]) -> None:
+    def add_documents(self, documents: list[tuple[str, str]]) -> None:
         """Add documents to both search indices.
 
         Args:
@@ -48,7 +49,7 @@ class HybridRetriever:
         self.bm25_search.add_documents(documents)
         log.info("hybrid_retriever_documents_added", count=len(documents))
 
-    async def retrieve(self, query: str, k: int = 5) -> List[RetrievalResult]:
+    async def retrieve(self, query: str, k: int = 5) -> list[RetrievalResult]:
         """Retrieve documents using hybrid search with RRF fusion.
 
         Args:
@@ -76,8 +77,8 @@ class HybridRetriever:
         return fused
 
     def _rrf_fusion(
-        self, vector_results: List[VectorResult], bm25_results: List[BM25Result], k: int
-    ) -> List[RetrievalResult]:
+        self, vector_results: list[VectorResult], bm25_results: list[BM25Result], k: int
+    ) -> list[RetrievalResult]:
         """Fuse results using Reciprocal Rank Fusion.
 
         RRF(d) = sum over search systems s of (1 / (k + rank_s(d)))
@@ -91,7 +92,7 @@ class HybridRetriever:
             List of fused results
         """
         # Map doc_id -> (text, fused_score, sources)
-        doc_scores: Dict[str, tuple[str, float, set]] = {}
+        doc_scores: dict[str, tuple[str, float, set]] = {}
 
         # Add vector results
         for rank, result in enumerate(vector_results):

@@ -1,20 +1,20 @@
 """Message ingestion pipeline."""
 
-from .normalizers import NormalizerFactory
-from .idempotency import IdempotencyManager
-from .encryption import EnvelopeEncryption
-from .pii_handler import PiiHandler
-from .identity import IdentityResolver
 from .coalescing import MessageCoalescer
-from .outbox import OutboxWriter, OutboxPoller
+from .encryption import EnvelopeEncryption
+from .idempotency import IdempotencyManager
+from .identity import IdentityResolver
+from .normalizers import NormalizerFactory
+from .outbox import OutboxPoller, OutboxWriter
+from .pii_handler import PiiHandler
 
 __all__ = [
-    "NormalizerFactory",
-    "IdempotencyManager",
     "EnvelopeEncryption",
-    "PiiHandler",
+    "IdempotencyManager",
     "IdentityResolver",
     "MessageCoalescer",
-    "OutboxWriter",
+    "NormalizerFactory",
     "OutboxPoller",
+    "OutboxWriter",
+    "PiiHandler",
 ]

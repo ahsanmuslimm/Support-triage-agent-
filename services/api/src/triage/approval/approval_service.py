@@ -9,10 +9,11 @@ Manages approval requests with:
 """
 
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 import structlog
 
 log = structlog.get_logger()
@@ -45,25 +46,25 @@ class ApprovalRequest:
     tenant_id: str
     action_id: str
     action_type: str
-    arguments: Dict[str, Any]
-    context: Dict[str, Any]
-    
+    arguments: dict[str, Any]
+    context: dict[str, Any]
+
     status: ApprovalStatus
     priority: ApprovalPriority
-    
+
     requested_by: str = "triage_agent"
-    assigned_to: Optional[str] = None
-    decided_by: Optional[str] = None
-    
+    assigned_to: str | None = None
+    decided_by: str | None = None
+
     created_at: datetime = None
     expires_at: datetime = None
-    decided_at: Optional[datetime] = None
-    escalated_at: Optional[datetime] = None
-    
-    decision: Optional[bool] = None
-    decision_reason: Optional[str] = None
-    
-    audit_trail: List[Dict[str, Any]] = None
+    decided_at: datetime | None = None
+    escalated_at: datetime | None = None
+
+    decision: bool | None = None
+    decision_reason: str | None = None
+
+    audit_trail: list[dict[str, Any]] = None
 
     def __post_init__(self):
         """Initialize defaults."""
@@ -78,7 +79,7 @@ class ApprovalRequest:
         """Check if request has expired."""
         return datetime.utcnow() > self.expires_at and self.status == ApprovalStatus.PENDING
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         d = asdict(self)
         d["status"] = self.status.value
@@ -104,18 +105,18 @@ class ApprovalService:
         """
         self.db_session = db_session
         self.slack_client = slack_client
-        self.pending_requests: Dict[str, ApprovalRequest] = {}  # In-memory store for testing
+        self.pending_requests: dict[str, ApprovalRequest] = {}  # In-memory store for testing
 
     async def create_request(
         self,
         action_id: str,
         tenant_id: str,
         action_type: str,
-        arguments: Dict[str, Any],
-        context: Dict[str, Any],
-        expires_at: Optional[datetime] = None,
+        arguments: dict[str, Any],
+        context: dict[str, Any],
+        expires_at: datetime | None = None,
         priority: ApprovalPriority = ApprovalPriority.MEDIUM,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create an approval request.
         
         Args:
@@ -131,7 +132,7 @@ class ApprovalService:
             Dictionary with approval request details
         """
         request_id = str(uuid.uuid4())
-        
+
         if expires_at is None:
             expires_at = datetime.utcnow() + timedelta(hours=4)
 
@@ -207,7 +208,7 @@ class ApprovalService:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": f"```{str(request.arguments)}```",
+                            "text": f"```{request.arguments!s}```",
                         },
                     },
                     {
@@ -242,7 +243,7 @@ class ApprovalService:
                 channel="approval-inbox",
                 **message,
             )
-            
+
             log.info("approval_slack_notification_sent", request_id=request.id)
 
         except Exception as e:
@@ -253,8 +254,8 @@ class ApprovalService:
         request_id: str,
         approved: bool,
         actor_id: str,
-        reason: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        reason: str | None = None,
+    ) -> dict[str, Any]:
         """Approve or reject an approval request.
         
         Args:
@@ -307,7 +308,7 @@ class ApprovalService:
         self,
         approval_request_id: str,
         timeout_seconds: int = 14400,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Wait for a decision on an approval request (blocking call).
         
         In a real system with Temporal, this would use signals or conditions.
@@ -321,7 +322,7 @@ class ApprovalService:
             Dictionary with decision (approved, actor_id, timestamp)
         """
         import asyncio
-        
+
         start_time = datetime.utcnow()
         poll_interval = 1  # seconds
 
@@ -346,7 +347,7 @@ class ApprovalService:
                     "timestamp": datetime.utcnow().isoformat(),
                 })
                 await self._escalate_request(request)
-                
+
                 return {
                     "approved": False,
                     "actor_id": "system",
@@ -361,7 +362,7 @@ class ApprovalService:
                     request_id=approval_request_id,
                     elapsed_seconds=elapsed,
                 )
-                raise asyncio.TimeoutError(f"Approval decision timeout after {elapsed}s")
+                raise TimeoutError(f"Approval decision timeout after {elapsed}s")
 
             # Poll
             await asyncio.sleep(poll_interval)
@@ -397,7 +398,7 @@ class ApprovalService:
             except Exception as e:
                 log.error("escalation_notification_error", error=str(e))
 
-    async def get_request(self, request_id: str) -> Optional[Dict[str, Any]]:
+    async def get_request(self, request_id: str) -> dict[str, Any] | None:
         """Get approval request by ID.
         
         Args:
@@ -409,7 +410,7 @@ class ApprovalService:
         request = self.pending_requests.get(request_id)
         return request.to_dict() if request else None
 
-    async def list_pending(self, tenant_id: str) -> List[Dict[str, Any]]:
+    async def list_pending(self, tenant_id: str) -> list[dict[str, Any]]:
         """List all pending approval requests for a tenant.
         
         Args:
@@ -427,8 +428,8 @@ class ApprovalService:
 
     async def handle_slack_interaction(
         self,
-        interaction_payload: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        interaction_payload: dict[str, Any],
+    ) -> dict[str, Any]:
         """Handle Slack interactive button action.
         
         Args:

@@ -1,9 +1,6 @@
 """S3.6: Customer Sentiment & NPS History."""
 
 import logging
-from dataclasses import dataclass
-from typing import Optional, List
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +89,7 @@ class SentimentAnalyzer:
             return "detractor"
 
     @staticmethod
-    def compute_trend(scores: List[float]) -> str:
+    def compute_trend(scores: list[float]) -> str:
         """Compute trend from score history (last 5)."""
         if len(scores) < 2:
             return "stable"

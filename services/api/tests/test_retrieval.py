@@ -1,10 +1,10 @@
 """Tests for RAG retrieval pipeline (Phase 4)."""
 
 import pytest
-from triage.retrieval.chunker import DocumentChunker
-from triage.retrieval.vector_store import VectorStore
 from triage.retrieval.bm25_search import BM25Search
+from triage.retrieval.chunker import DocumentChunker
 from triage.retrieval.hybrid import HybridRetriever
+from triage.retrieval.vector_store import VectorStore
 
 
 class TestDocumentChunker:

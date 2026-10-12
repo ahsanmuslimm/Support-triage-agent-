@@ -1,7 +1,7 @@
 """Conversation endpoints."""
 
-from fastapi import APIRouter, HTTPException, Header
-from typing import Optional, List
+
+from fastapi import APIRouter, Header, HTTPException
 
 from ...models.conversation import ConversationModel, ConversationStatus
 
@@ -34,13 +34,13 @@ async def get_conversation(
     )
 
 
-@router.get("/conversations", response_model=List[ConversationModel])
+@router.get("/conversations", response_model=list[ConversationModel])
 async def list_conversations(
     tenant_id: str = Header(..., alias="X-Tenant-ID"),
-    status: Optional[str] = None,
+    status: str | None = None,
     limit: int = 50,
     offset: int = 0,
-) -> List[ConversationModel]:
+) -> list[ConversationModel]:
     """List conversations for tenant.
 
     Args:
@@ -62,7 +62,7 @@ async def list_conversations(
 @router.patch("/conversations/{conversation_id}")
 async def update_conversation(
     conversation_id: str,
-    status: Optional[ConversationStatus] = None,
+    status: ConversationStatus | None = None,
     tenant_id: str = Header(..., alias="X-Tenant-ID"),
 ) -> ConversationModel:
     """Update conversation status.
