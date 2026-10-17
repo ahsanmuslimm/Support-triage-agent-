@@ -1,8 +1,7 @@
 """EU Data Residency & Data Governance (S10.8)."""
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 
 
@@ -17,7 +16,6 @@ class Datacenter(str, Enum):
 class DataResidencyError(Exception):
     """Data residency violation."""
 
-    pass
 
 
 @dataclass
@@ -41,7 +39,7 @@ class DataResidencyAuditLog:
     datacenter: Datacenter
     location: str  # e.g., "EU-PostgreSQL", "EU-S3", "EU-ClickHouse"
     status: str  # "success", "failure"
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class DataResidencyManager:
@@ -49,8 +47,8 @@ class DataResidencyManager:
 
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
-        self.tenant_config: Dict[str, TenantDatacenterConfig] = {}
-        self.audit_log: List[DataResidencyAuditLog] = []
+        self.tenant_config: dict[str, TenantDatacenterConfig] = {}
+        self.audit_log: list[DataResidencyAuditLog] = []
 
     def set_tenant_datacenter(
         self,
@@ -75,7 +73,7 @@ class DataResidencyManager:
         self.tenant_config[tenant_id] = config
         return config
 
-    def get_tenant_datacenter(self, tenant_id: str) -> Optional[Datacenter]:
+    def get_tenant_datacenter(self, tenant_id: str) -> Datacenter | None:
         """Get configured datacenter for tenant."""
         if tenant_id in self.tenant_config:
             return self.tenant_config[tenant_id].datacenter
@@ -112,11 +110,10 @@ class DataResidencyManager:
                 raise DataResidencyError(
                     f"Tenant {tenant_id} requires EU residency, got {storage_location}"
                 )
-        elif datacenter == Datacenter.US:
-            if "us" not in location_lower:
-                raise DataResidencyError(
-                    f"Tenant {tenant_id} requires US residency, got {storage_location}"
-                )
+        elif datacenter == Datacenter.US and "us" not in location_lower:
+            raise DataResidencyError(
+                f"Tenant {tenant_id} requires US residency, got {storage_location}"
+            )
 
         # Log successful write
         self.audit_log.append(DataResidencyAuditLog(
@@ -158,12 +155,13 @@ class DataResidencyManager:
                 raise DataResidencyError(
                     f"EU tenant cannot call US endpoint: {endpoint_url}"
                 )
-        elif datacenter == Datacenter.US:
+        elif datacenter == Datacenter.US and (
+            "eu" in endpoint_url.lower() or "europe" in endpoint_url.lower()
+        ):
             # US tenant can only call US-region endpoints
-            if "eu" in endpoint_url.lower() or "europe" in endpoint_url.lower():
-                raise DataResidencyError(
-                    f"US tenant cannot call EU endpoint: {endpoint_url}"
-                )
+            raise DataResidencyError(
+                f"US tenant cannot call EU endpoint: {endpoint_url}"
+            )
 
         # Log successful egress
         self.audit_log.append(DataResidencyAuditLog(
@@ -182,7 +180,7 @@ class DataResidencyManager:
         self,
         tenant_id: str,
         limit: int = 100,
-    ) -> List[DataResidencyAuditLog]:
+    ) -> list[DataResidencyAuditLog]:
         """Get residency audit log for tenant."""
         entries = [
             e for e in self.audit_log
@@ -193,17 +191,14 @@ class DataResidencyManager:
     def validate_schema(self) -> bool:
         """Validate data residency configuration schema."""
         # Check that all tenants with configs have valid datacenters
-        for tenant_id, config in self.tenant_config.items():
-            if config.datacenter not in Datacenter:
-                return False
-        return True
+        return all(config.datacenter in Datacenter for config in self.tenant_config.values())
 
 
 class RegionLockManager:
     """Enforce LiteLLM region locking for EU tenants."""
 
     def __init__(self):
-        self.region_mappings: Dict[str, Dict[str, str]] = {
+        self.region_mappings: dict[str, dict[str, str]] = {
             "eu": {
                 "openai": "https://api.openai.com",  # Would be EU proxy in production
                 "anthropic": "https://api.anthropic.com",  # Would be EU proxy

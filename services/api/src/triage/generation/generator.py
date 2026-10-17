@@ -4,7 +4,7 @@ import asyncio
 import os
 import time
 from dataclasses import dataclass
-from typing import Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -18,13 +18,13 @@ class GenerationResult:
     model: str
     tokens_used: int
     latency_ms: float
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class ResponseGenerator:
     """Generate responses using LLM via LiteLLM abstraction."""
 
-    def __init__(self, model: Optional[str] = None):
+    def __init__(self, model: str | None = None):
         """Initialize generator.
 
         Args:

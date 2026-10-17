@@ -1,10 +1,11 @@
 """Autonomy policy enforcement and promotion workflow."""
 
-import structlog
-from typing import Optional, Tuple, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import ClassVar
 
-from triage.models.decision import AutonomyLevel, PolicyInput
+import structlog
+
+from triage.models.decision import AutonomyLevel
 
 log = structlog.get_logger()
 
@@ -12,7 +13,7 @@ log = structlog.get_logger()
 class AutonomyGate:
     """Enforces autonomy levels at tool execution time."""
 
-    def __init__(self, autonomy_policies: Optional[Dict[str, int]] = None):
+    def __init__(self, autonomy_policies: dict[str, int] | None = None):
         """Initialize autonomy gate.
 
         Args:
@@ -39,7 +40,7 @@ class AutonomyGate:
         intent_name: str,
         tool_required_level: AutonomyLevel,
         policy_autonomy_level: AutonomyLevel,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if tool execution is allowed.
 
         Args:
@@ -75,14 +76,14 @@ class AutonomyGate:
 class AutonomyPromoter:
     """Manages autonomy level promotion and demotion."""
 
-    PROMOTION_CRITERIA = {
+    PROMOTION_CRITERIA: ClassVar[dict[str, float]] = {
         "accuracy_threshold": 0.95,  # ≥ 95% accuracy required
         "groundedness_threshold": 0.95,  # ≥ 95% groundedness required
         "sample_count_threshold": 200,  # ≥ 200 samples required
         "max_promotion_frequency_days": 7,  # Max 1 promotion per 7 days
     }
 
-    DEMOTION_TRIGGERS = {
+    DEMOTION_TRIGGERS: ClassVar[dict[str, float]] = {
         "false_resolution_threshold": 0.05,  # > 5% false resolution rate
         "groundedness_drop_threshold": 0.85,  # < 85% groundedness
         "injection_attempts_per_day": 10,  # > 10 injection attempts/day
@@ -90,7 +91,7 @@ class AutonomyPromoter:
 
     def __init__(self):
         """Initialize autonomy promoter."""
-        self.last_promotion: Dict[str, datetime] = {}
+        self.last_promotion: dict[str, datetime] = {}
 
     def should_promote(
         self,
@@ -99,7 +100,7 @@ class AutonomyPromoter:
         groundedness: float,
         sample_count: int,
         admin_approved: bool = False,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if intent should be promoted to higher autonomy.
 
         Args:
@@ -154,7 +155,7 @@ class AutonomyPromoter:
         false_resolution_rate: float,
         groundedness: float,
         injection_attempts_today: int,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Check if intent should be demoted to lower autonomy.
 
         Args:

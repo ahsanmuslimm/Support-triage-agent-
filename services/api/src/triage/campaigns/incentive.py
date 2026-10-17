@@ -1,8 +1,7 @@
 """Incentive matrix generator."""
 
-from enum import Enum
-from typing import Dict, Tuple
 import logging
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class IncentiveMatrixGenerator:
         """Initialize matrix."""
         self.matrix = self._build_matrix()
 
-    def _build_matrix(self) -> Dict[Tuple[str, str], OfferTier]:
+    def _build_matrix(self) -> dict[tuple[str, str], OfferTier]:
         """Build incentive matrix."""
         return {
             ("Q4", "LOW"): OfferTier.FREE_SHIPPING,

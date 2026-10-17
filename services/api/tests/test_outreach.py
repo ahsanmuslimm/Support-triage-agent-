@@ -1,12 +1,11 @@
 """Tests for proactive outreach campaigns (S4.2)."""
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch, AsyncMock
 
-from triage.outreach.campaigns import CampaignEngine
+import pytest
 from triage.outreach.ab_testing import ABTestFramework
-from triage.outreach.models import CampaignType, CampaignContext, Campaign
+from triage.outreach.campaigns import CampaignEngine
+from triage.outreach.models import CampaignContext, CampaignType
 
 
 class TestCampaignEngine:
@@ -44,7 +43,7 @@ class TestCampaignEngine:
         """Test health check campaign trigger."""
         # Health score in range (0.35 - 0.65) should trigger
         sample_context.health_score = 0.5
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         health_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.HEALTH_CHECK]
         assert len(health_campaigns) == 1
@@ -55,7 +54,7 @@ class TestCampaignEngine:
         """Test no health check for healthy customers."""
         # Health score > 0.8 should not trigger
         sample_context.health_score = 0.85
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         health_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.HEALTH_CHECK]
         assert len(health_campaigns) == 0
@@ -65,7 +64,7 @@ class TestCampaignEngine:
         """Test engagement campaign trigger."""
         # No contact for 60+ days should trigger
         sample_context.last_support_contact = datetime.utcnow() - timedelta(days=90)
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         engagement_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.ENGAGEMENT]
         assert len(engagement_campaigns) == 1
@@ -75,7 +74,7 @@ class TestCampaignEngine:
         """Test no engagement if recent contact."""
         # Contact within 60 days - no trigger
         sample_context.last_support_contact = datetime.utcnow() - timedelta(days=30)
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         engagement_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.ENGAGEMENT]
         assert len(engagement_campaigns) == 0
@@ -86,7 +85,7 @@ class TestCampaignEngine:
         # Payment failures + high churn risk should trigger
         sample_context.payment_failed_count = 2
         sample_context.churn_risk = 0.8
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         billing_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.BILLING_WINBACK]
         assert len(billing_campaigns) == 1
@@ -96,7 +95,7 @@ class TestCampaignEngine:
         """Test no billing winback without payment failures."""
         sample_context.payment_failed_count = 0
         sample_context.churn_risk = 0.9
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         billing_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.BILLING_WINBACK]
         assert len(billing_campaigns) == 0
@@ -108,7 +107,7 @@ class TestCampaignEngine:
         sample_context.order_count = 15
         sample_context.health_score = 0.9
         sample_context.is_vip = False
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         loyalty_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.LOYALTY_REWARD]
         assert len(loyalty_campaigns) == 1
@@ -119,7 +118,7 @@ class TestCampaignEngine:
         sample_context.order_count = 15
         sample_context.health_score = 0.9
         sample_context.is_vip = True
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, sample_context)
         loyalty_campaigns = [c for c in campaigns if c.campaign_type == CampaignType.LOYALTY_REWARD]
         assert len(loyalty_campaigns) == 0
@@ -132,7 +131,7 @@ class TestCampaignEngine:
             variant = engine._random_ab_variant()
             variants.append(variant)
             assert variant in ['A', 'B']
-        
+
         # Should have roughly 50/50 distribution
         a_count = variants.count('A')
         b_count = variants.count('B')
@@ -163,7 +162,7 @@ class TestCampaignEngine:
             churn_risk=0.8,  # Triggers billing winback
             order_count=15,  # Triggers loyalty
         )
-        
+
         campaigns = await engine.trigger_campaigns(1, 1, context)
         assert len(campaigns) >= 3  # At least 3 campaigns should trigger
 

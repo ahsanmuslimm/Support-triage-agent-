@@ -1,6 +1,6 @@
 """Prompt building with token budget enforcement."""
 
-from typing import List, Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -22,10 +22,10 @@ class PromptBuilder:
         self,
         system_prompt: str,
         user_message: str,
-        entities: Optional[List[str]] = None,
-        intents: Optional[List[str]] = None,
-        customer_tier: Optional[str] = None,
-        retrieved_docs: Optional[List[str]] = None,
+        entities: list[str] | None = None,
+        intents: list[str] | None = None,
+        customer_tier: str | None = None,
+        retrieved_docs: list[str] | None = None,
     ) -> tuple[str, int]:
         """Build full prompt within token budget.
 
@@ -106,7 +106,7 @@ class PromptBuilder:
         return int(len(words) * 1.3)  # 1 token ≈ 0.77 words
 
     @staticmethod
-    def _build_doc_section(docs: List[str], available_tokens: int) -> str:
+    def _build_doc_section(docs: list[str], available_tokens: int) -> str:
         """Build retrieved documents section within token budget.
 
         Args:

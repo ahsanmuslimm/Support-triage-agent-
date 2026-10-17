@@ -1,8 +1,9 @@
 """Tests for incident clustering and urgency boost."""
 
-import pytest
 from datetime import datetime, timedelta
-from triage.routing.incident_clustering import IncidentClusterer, TicketCluster
+
+import pytest
+from triage.routing.incident_clustering import IncidentClusterer
 
 
 @pytest.fixture
@@ -108,9 +109,8 @@ class TestUrgencyBoost:
         now = datetime.utcnow()
 
         # Create 3 tickets in current window
-        cluster_id = None
         for i in range(3):
-            cluster_id = await clusterer.cluster_ticket(
+            await clusterer.cluster_ticket(
                 f"current_{i}",
                 "Issue",
                 now + timedelta(minutes=i),
@@ -124,10 +124,8 @@ class TestUrgencyBoost:
                 now - timedelta(minutes=15 + i),
             )
 
-        if cluster_id:
-            cluster = clusterer.clusters.get(cluster_id)
-            # Should not be boosted (only 3 recent tickets)
-            # Note: may not work due to lookback window filtering
+        # The cluster should not be boosted (only 3 recent tickets), but this is
+        # not asserted: it may not hold due to lookback window filtering.
 
 
 class TestClusterLinking:
@@ -150,7 +148,6 @@ class TestClusterLinking:
     async def test_auto_link_runbook(self, clusterer):
         """Test runbook can be auto-linked based on incident type."""
         # This would require external runbook index
-        pass
 
 
 class TestRelatedTickets:
@@ -162,7 +159,7 @@ class TestRelatedTickets:
         now = datetime.utcnow()
 
         # Create cluster
-        cluster_id = await clusterer.cluster_ticket("ticket_1", "Bug X", now)
+        await clusterer.cluster_ticket("ticket_1", "Bug X", now)
         await clusterer.cluster_ticket("ticket_2", "Bug X error", now + timedelta(minutes=1))
 
         related = clusterer.get_related_tickets("ticket_1")
@@ -212,7 +209,7 @@ class TestSimilarityThreshold:
 
     def test_lookback_window_minutes(self, clusterer):
         """Test lookback window is 30 minutes."""
-        assert clusterer.LOOKBACK_WINDOW == timedelta(minutes=30)
+        assert timedelta(minutes=30) == clusterer.LOOKBACK_WINDOW
 
     def test_urgency_boost_threshold_count(self, clusterer):
         """Test urgency boost triggers at 5 tickets."""
@@ -220,7 +217,7 @@ class TestSimilarityThreshold:
 
     def test_urgency_boost_window_minutes(self, clusterer):
         """Test urgency boost counts tickets within 10 minutes."""
-        assert clusterer.URGENCY_BOOST_WINDOW == timedelta(minutes=10)
+        assert timedelta(minutes=10) == clusterer.URGENCY_BOOST_WINDOW
 
 
 class TestStats:

@@ -1,15 +1,12 @@
 """API authentication and authorization (S10.2)."""
 
-import os
 import secrets
-import hashlib
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional, List, Set
 from enum import Enum
-from dataclasses import dataclass, asdict
+
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHash
-import json
 
 
 class APIKeyScope(str, Enum):
@@ -29,12 +26,12 @@ class APIKey:
     key_id: str
     key_prefix: str  # trg_live_abc... or trg_test_xyz...
     key_hash: str  # Argon2id hash
-    scopes: List[APIKeyScope]
+    scopes: list[APIKeyScope]
     tenant_id: str
     active: bool = True
     created_at: datetime = None
-    rotated_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
+    rotated_at: datetime | None = None
+    expires_at: datetime | None = None
 
     def __post_init__(self):
         if self.created_at is None:
@@ -54,8 +51,8 @@ class APIKeyManager:
     def generate_key(
         self,
         tenant_id: str,
-        scopes: List[APIKeyScope],
-        expiration_days: Optional[int] = None,
+        scopes: list[APIKeyScope],
+        expiration_days: int | None = None,
     ) -> tuple[str, str]:
         """Generate a new API key.
 
@@ -67,8 +64,7 @@ class APIKeyManager:
         Returns:
             (full_key, key_id) tuple
         """
-        # Generate 32-byte random value
-        random_bytes = secrets.token_bytes(32)
+        # 32 bytes of URL-safe randomness
         full_key = f"trg_{self.environment}_{secrets.token_urlsafe(32)}"
 
         # Compute prefix (first 16 chars after trg_live_ or trg_test_)
@@ -98,7 +94,7 @@ class APIKeyManager:
 
         return full_key, key_id
 
-    def validate_key(self, full_key: str) -> Optional[APIKey]:
+    def validate_key(self, full_key: str) -> APIKey | None:
         """Validate an API key.
 
         Args:
@@ -111,7 +107,7 @@ class APIKeyManager:
         prefix = full_key[:20]
 
         # Find key by prefix
-        for key_id, key_record in self._keys_store.items():
+        for key_record in self._keys_store.values():
             if key_record.key_prefix == prefix:
                 # Check if active
                 if not key_record.active:
@@ -130,7 +126,7 @@ class APIKeyManager:
 
         return None
 
-    def rotate_key(self, old_key_id: str, tenant_id: str, scopes: List[APIKeyScope]) -> tuple[str, str]:
+    def rotate_key(self, old_key_id: str, tenant_id: str, scopes: list[APIKeyScope]) -> tuple[str, str]:
         """Rotate an API key (old key valid for 7 more days).
 
         Args:
@@ -174,7 +170,7 @@ class APIKeyStore:
         """Store API key."""
         self.keys[key.key_id] = key
 
-    def get_by_prefix(self, prefix: str) -> Optional[APIKey]:
+    def get_by_prefix(self, prefix: str) -> APIKey | None:
         """Get key by prefix."""
         for key in self.keys.values():
             if key.key_prefix == prefix:

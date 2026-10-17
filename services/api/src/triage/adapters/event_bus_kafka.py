@@ -1,14 +1,14 @@
 """S6.2: Kafka-backed EventBus adapter with Protobuf serialization and CloudEvents envelope."""
-from typing import Dict, Any, Optional, Callable, List
-from datetime import datetime
-import asyncio
 import json
 import uuid
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any
+
 import structlog
 
 try:
-    from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-    from aiokafka.errors import KafkaError
+    from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 except ImportError:
     # aiokafka not installed; graceful fallback
     AIOKafkaProducer = None
@@ -19,14 +19,14 @@ log = structlog.get_logger(__name__)
 
 class KafkaEventBus:
     """Production EventBus backed by Apache Kafka with Protobuf serialization.
-    
+
     Design Principles:
     - Event Topic Naming: "triage.{event_type}" (e.g., "message.ingested" → "triage.message.ingested")
     - Partition Key: tenant_id (for tenant isolation + ordering guarantees per tenant)
     - Serialization: Protobuf-serialized CloudEvent envelope (RFC 7807)
     - Idempotency: Event ID propagation to consumers (S6.3)
     - Durability: acks='all' (wait for all in-sync replicas)
-    
+
     Integration with Debezium (S6.2):
     - Debezium PostgreSQL connector captures outbox_events CDC
     - EventRouter transform routes by event_type to appropriate Kafka topic
@@ -37,7 +37,7 @@ class KafkaEventBus:
     def __init__(
         self,
         bootstrap_servers: str = "kafka-broker-1:9092,kafka-broker-2:9092,kafka-broker-3:9092",
-        consumer_group_id: Optional[str] = None,
+        consumer_group_id: str | None = None,
     ):
         """Initialize Kafka-backed event bus.
 
@@ -52,9 +52,9 @@ class KafkaEventBus:
 
         self.bootstrap_servers = bootstrap_servers
         self.consumer_group_id = consumer_group_id or "triage-events"
-        self._producer: Optional[AIOKafkaProducer] = None
-        self._consumer: Optional[AIOKafkaConsumer] = None
-        self._handlers: Dict[str, Callable] = {}
+        self._producer: AIOKafkaProducer | None = None
+        self._consumer: AIOKafkaConsumer | None = None
+        self._handlers: dict[str, Callable] = {}
 
     async def connect(self) -> None:
         """Connect to Kafka cluster."""
@@ -85,10 +85,10 @@ class KafkaEventBus:
     @staticmethod
     def _serialize_protobuf(data: Any) -> bytes:
         """Serialize Protobuf message to bytes.
-        
+
         Args:
             data: Protobuf message or dict (fallback for MVP transition)
-        
+
         Returns:
             Serialized bytes
         """
@@ -108,8 +108,8 @@ class KafkaEventBus:
         tenant_id: str,
         payload: Any,
         aggregate_type: str = "message",
-        aggregate_id: Optional[str] = None,
-        outbox_event_id: Optional[str] = None,
+        aggregate_id: str | None = None,
+        outbox_event_id: str | None = None,
     ) -> None:
         """Publish event to Kafka topic using Protobuf CloudEvent.
 
@@ -179,9 +179,9 @@ class KafkaEventBus:
         tenant_id: str,
         payload: Any,
         aggregate_type: str,
-        aggregate_id: Optional[str],
-        outbox_event_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        aggregate_id: str | None,
+        outbox_event_id: str | None = None,
+    ) -> dict[str, Any]:
         """Build CloudEvents dictionary (for code gen to Protobuf).
 
         Args:
@@ -233,9 +233,9 @@ class KafkaEventBus:
 
     async def subscribe(
         self,
-        event_types: List[str],
-        handler: Callable[[Dict[str, Any]], None],
-        consumer_group_id: Optional[str] = None,
+        event_types: list[str],
+        handler: Callable[[dict[str, Any]], None],
+        consumer_group_id: str | None = None,
     ) -> None:
         """Subscribe to event types and handle with callback.
 
@@ -290,7 +290,7 @@ class KafkaEventBus:
             await self._consumer.stop()
 
     @staticmethod
-    def _deserialize_protobuf(data: bytes) -> Dict[str, Any]:
+    def _deserialize_protobuf(data: bytes) -> dict[str, Any]:
         """Deserialize bytes to CloudEvent dictionary.
 
         Note: For now, deserialize JSON. After buf code gen,
@@ -322,7 +322,7 @@ class KafkaEventBus:
             await self._producer.send_and_wait(
                 "triage.dlq",
                 value=dlq_event,
-                key="dlq".encode("utf-8"),
+                key=b"dlq",
             )
 
             log.warning(

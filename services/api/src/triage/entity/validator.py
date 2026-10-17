@@ -1,9 +1,9 @@
 """Entity validation for cross-tenant isolation and tool binding."""
 
-import structlog
-from typing import Tuple, Optional
 
-from triage.models.entity import ExtractedEntity, EntityValidationResult
+import structlog
+
+from triage.models.entity import EntityValidationResult, ExtractedEntity
 
 log = structlog.get_logger()
 
@@ -27,7 +27,7 @@ class EntityValidator:
     def validate_for_tool(
         self,
         entity: ExtractedEntity,
-        linked_tenant_id: Optional[str] = None,
+        linked_tenant_id: str | None = None,
     ) -> EntityValidationResult:
         """Validate entity is safe to pass to tool executor.
 
@@ -128,7 +128,7 @@ class EntityValidator:
     def validate_entities_batch(
         self,
         entities: list[ExtractedEntity],
-        linked_tenant_ids: Optional[dict[str, str]] = None,
+        linked_tenant_ids: dict[str, str] | None = None,
     ) -> list[EntityValidationResult]:
         """Validate multiple entities.
 

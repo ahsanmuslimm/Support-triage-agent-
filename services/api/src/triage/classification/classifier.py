@@ -1,7 +1,7 @@
 """Intent classifier using embeddings + k-NN + temperature scaling."""
 
+
 import numpy as np
-from typing import Optional, List, Dict, Any
 import structlog
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sklearn.neighbors import NearestNeighbors  # type: ignore
@@ -11,7 +11,7 @@ try:
 except ImportError:
     from packages.py_core.py_core.errors import TriageBaseError
 
-from triage.models.intent import IntentPrediction, IntentClassifierResult
+from triage.models.intent import IntentClassifierResult, IntentPrediction
 
 log = structlog.get_logger()
 
@@ -52,11 +52,11 @@ class IntentClassifier:
         self.embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
 
         # k-NN will be initialized when intent examples are provided
-        self.knn_model: Optional[NearestNeighbors] = None
-        self.intent_embeddings: Dict[str, np.ndarray] = {}
-        self.intent_examples_per_intent: Dict[str, List[str]] = {}
+        self.knn_model: NearestNeighbors | None = None
+        self.intent_embeddings: dict[str, np.ndarray] = {}
+        self.intent_examples_per_intent: dict[str, list[str]] = {}
 
-    def set_intent_examples(self, examples: Dict[str, List[str]]) -> None:
+    def set_intent_examples(self, examples: dict[str, list[str]]) -> None:
         """Set training examples for each intent.
 
         Args:
@@ -166,8 +166,8 @@ class IntentClassifier:
 
         except Exception as e:
             log.error("intent_classification_failed", error=str(e))
-            raise IntentClassifierError(f"Classification failed: {str(e)}")
+            raise IntentClassifierError(f"Classification failed: {e!s}") from e
 
-    def get_intents(self) -> List[str]:
+    def get_intents(self) -> list[str]:
         """Get list of known intents."""
         return list(self.intent_embeddings.keys())

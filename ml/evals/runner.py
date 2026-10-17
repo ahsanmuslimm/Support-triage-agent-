@@ -1,9 +1,10 @@
 """Evaluation harness for golden datasets."""
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass
@@ -40,9 +41,7 @@ class EvalRunner:
         rows: list[dict[str, Any]] = []
 
         with open(path) as f:
-            for line in f:
-                if line.strip():
-                    rows.append(json.loads(line))
+            rows.extend(json.loads(line) for line in f if line.strip())
 
         return rows
 
@@ -82,12 +81,11 @@ class EvalRunner:
         )
 
         # Check thresholds
-        if metric_name in thresholds:
-            if aggregate_metric < thresholds[metric_name]:
-                report.passed = False
-                report.failures.append(
-                    f"{metric_name}: {aggregate_metric:.4f} < {thresholds[metric_name]:.4f}"
-                )
+        if metric_name in thresholds and aggregate_metric < thresholds[metric_name]:
+            report.passed = False
+            report.failures.append(
+                f"{metric_name}: {aggregate_metric:.4f} < {thresholds[metric_name]:.4f}"
+            )
 
         return report
 
@@ -112,8 +110,7 @@ class EvalRunner:
         if report.failures:
             lines.append("")
             lines.append("Failures:")
-            for failure in report.failures:
-                lines.append(f"  ✗ {failure}")
+            lines.extend(f"  ✗ {failure}" for failure in report.failures)
 
         lines.append("=" * 60)
         return "\n".join(lines)

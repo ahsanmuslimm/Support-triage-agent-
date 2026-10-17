@@ -1,12 +1,11 @@
 """Cost analyzer orchestrator."""
 
-from typing import Dict
 import logging
 
-from .events import CostEventTracker
-from .roi import ROICalculator
-from .profitability import ProfitabilityAnalyzer
 from .anomaly import CostAnomalyDetector
+from .events import CostEventTracker
+from .profitability import ProfitabilityAnalyzer
+from .roi import ROICalculator
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ class CostAnalyzer:
         self.profitability = ProfitabilityAnalyzer()
         self.anomaly_detector = CostAnomalyDetector()
 
-    async def analyze_costs(self, tenant_id: int) -> Dict:
+    async def analyze_costs(self, tenant_id: int) -> dict:
         """Analyze costs for tenant."""
         return {
             "total_costs": 10000,

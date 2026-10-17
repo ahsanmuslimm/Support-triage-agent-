@@ -1,13 +1,13 @@
 """Attachment handling with scanning, extraction, and pseudonymization."""
 
-from triage.attachments.scanner import MalwareScanResult, MalwareScanner
-from triage.attachments.extractor import TextExtractor, ExtractionResult
+from triage.attachments.extractor import ExtractionResult, TextExtractor
 from triage.attachments.pii_pseudonymizer import PIIPseudonymizer
+from triage.attachments.scanner import MalwareScanner, MalwareScanResult
 
 __all__ = [
+    "ExtractionResult",
     "MalwareScanResult",
     "MalwareScanner",
-    "TextExtractor",
-    "ExtractionResult",
     "PIIPseudonymizer",
+    "TextExtractor",
 ]

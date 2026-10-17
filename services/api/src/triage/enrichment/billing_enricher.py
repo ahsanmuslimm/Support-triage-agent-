@@ -3,7 +3,6 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from .base import CacheManager, EnricherBase
 from .exceptions import APITimeoutError, EnrichmentError
@@ -129,7 +128,7 @@ class BillingEnricher(EnricherBase):
                 return await self._fetch_from_db(customer_id, tenant_id)
             raise EnrichmentError(
                 f"Failed to enrich billing for customer {customer_id}: {e}"
-            )
+            ) from e
 
     async def _fetch_payment_methods(
         self, customer_id: int, tenant_id: int
@@ -173,7 +172,7 @@ class BillingEnricher(EnricherBase):
             return result
         except Exception as e:
             logger.error(f"Failed to fetch payment methods from Stripe: {e}")
-            raise APITimeoutError(f"Stripe API error: {e}")
+            raise APITimeoutError(f"Stripe API error: {e}") from e
 
     async def _fetch_invoices_90d(self, customer_id: int, tenant_id: int) -> list[dict]:
         """Fetch invoices from last 90 days."""
@@ -187,22 +186,21 @@ class BillingEnricher(EnricherBase):
             invoices = await self.stripe.invoices.list(
                 customer_id=customer_id, created={"gte": cutoff}
             )
-            result = []
 
-            for inv in invoices:
-                result.append(
-                    {
-                        "id": inv.get("id"),
-                        "status": inv.get("status"),  # 'paid', 'failed', 'draft', etc.
-                        "amount": inv.get("amount_paid", 0),
-                        "created_at": datetime.fromtimestamp(inv.get("created")),
-                    }
-                )
+            result = [
+                {
+                    "id": inv.get("id"),
+                    "status": inv.get("status"),  # 'paid', 'failed', 'draft', etc.
+                    "amount": inv.get("amount_paid", 0),
+                    "created_at": datetime.fromtimestamp(inv.get("created")),
+                }
+                for inv in invoices
+            ]
 
             return result
         except Exception as e:
             logger.error(f"Failed to fetch invoices from Stripe: {e}")
-            raise APITimeoutError(f"Stripe API error: {e}")
+            raise APITimeoutError(f"Stripe API error: {e}") from e
 
     async def _fetch_subscription(self, customer_id: int, tenant_id: int) -> dict:
         """Fetch subscription and dunning info from Stripe."""
@@ -220,8 +218,7 @@ class BillingEnricher(EnricherBase):
                 # Map Stripe dunning status to our stages
                 # Based on subscription status and payment_settings
                 status = sub.get("status")
-                payment_settings = sub.get("payment_settings", {})
-                
+
                 # Determine dunning stage from subscription status
                 if status == "active":
                     dunning_stage = "none"
@@ -274,4 +271,4 @@ class BillingEnricher(EnricherBase):
             raise EnrichmentError(f"No cached billing context for customer {customer_id}")
         except Exception as e:
             logger.error(f"DB fallback failed: {e}")
-            raise EnrichmentError(f"Could not retrieve cached context: {e}")
+            raise EnrichmentError(f"Could not retrieve cached context: {e}") from e

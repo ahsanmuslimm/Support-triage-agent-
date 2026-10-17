@@ -1,9 +1,9 @@
 """Operations dashboard with real-time WebSocket updates."""
 
+import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
-import asyncio
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class DashboardServer:
     def __init__(self, db_session=None, anomaly_detector=None, queue_manager=None, metrics_collector=None):
         """
         Initialize dashboard server.
-        
+
         Args:
             db_session: Database session
             anomaly_detector: Anomaly detector instance
@@ -26,13 +26,13 @@ class DashboardServer:
         self.queue = queue_manager
         self.metrics = metrics_collector
 
-    async def get_dashboard_data(self, tenant_id: int) -> Dict[str, Any]:
+    async def get_dashboard_data(self, tenant_id: int) -> dict[str, Any]:
         """
         Get 4-panel dashboard data.
-        
+
         Args:
             tenant_id: Tenant ID
-        
+
         Returns:
             Dashboard data dictionary
         """
@@ -44,17 +44,17 @@ class DashboardServer:
                 "workload_balancing": await self._get_workload_balancing_panel(tenant_id),
                 "refreshed_at": datetime.utcnow().isoformat(),
             }
-            
+
             logger.debug(f"Generated dashboard for tenant {tenant_id}")
             return data
         except Exception as e:
             logger.error(f"Failed to generate dashboard: {e}")
             return {}
 
-    async def _get_agent_performance_panel(self, tenant_id: int) -> Dict[str, Any]:
+    async def _get_agent_performance_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get agent performance panel data.
-        
+
         Returns:
             Panel data with KPIs
         """
@@ -92,10 +92,10 @@ class DashboardServer:
             },
         }
 
-    async def _get_anomaly_alerts_panel(self, tenant_id: int) -> List[Dict[str, Any]]:
+    async def _get_anomaly_alerts_panel(self, tenant_id: int) -> list[dict[str, Any]]:
         """
         Get anomaly alerts panel data (24h timeline).
-        
+
         Returns:
             List of anomaly events
         """
@@ -119,10 +119,10 @@ class DashboardServer:
             },
         ]
 
-    async def _get_override_queue_panel(self, tenant_id: int) -> Dict[str, Any]:
+    async def _get_override_queue_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get override queue panel data.
-        
+
         Returns:
             Panel data with override reasons
         """
@@ -146,10 +146,10 @@ class DashboardServer:
             ],
         }
 
-    async def _get_workload_balancing_panel(self, tenant_id: int) -> Dict[str, Any]:
+    async def _get_workload_balancing_panel(self, tenant_id: int) -> dict[str, Any]:
         """
         Get workload balancing panel data.
-        
+
         Returns:
             Panel data with queue depth and utilization
         """
@@ -176,7 +176,7 @@ class DashboardServer:
     async def stream_updates(self, tenant_id: int, websocket) -> None:
         """
         Stream dashboard updates via WebSocket every 5 seconds.
-        
+
         Args:
             tenant_id: Tenant ID
             websocket: WebSocket connection
@@ -189,7 +189,7 @@ class DashboardServer:
                     "data": data,
                     "timestamp": datetime.utcnow().isoformat(),
                 }
-                
+
                 await websocket.send_json(message)
                 await asyncio.sleep(5)  # Update every 5 seconds
         except Exception as e:

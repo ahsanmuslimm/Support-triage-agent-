@@ -1,7 +1,6 @@
 """Tests for entity validation (Phase 3)."""
 
 import pytest
-
 from triage.entity.validator import EntityValidator
 from triage.models.entity import EntityType, ExtractedEntity
 

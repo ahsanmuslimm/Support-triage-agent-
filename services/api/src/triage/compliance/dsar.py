@@ -1,12 +1,11 @@
 """Data Subject Access Request & Right-to-Erasure (GDPR, S10.7)."""
 
-import json
 import asyncio
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from enum import Enum
 import secrets
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class DSARStatus(str, Enum):
@@ -38,10 +37,10 @@ class DSARRequest:
     request_type: str  # "export", "erasure"
     status: DSARStatus
     requested_at: datetime
-    completed_at: Optional[datetime] = None
-    export_data: Optional[Dict[str, Any]] = None
-    export_filename: Optional[str] = None
-    error: Optional[str] = None
+    completed_at: datetime | None = None
+    export_data: dict[str, Any] | None = None
+    export_filename: str | None = None
+    error: str | None = None
 
     def __post_init__(self):
         if not self.request_id:
@@ -54,10 +53,10 @@ class CustomerDataExport:
 
     customer_id: str
     tenant_id: str
-    conversations: List[Dict[str, Any]]
-    messages: List[Dict[str, Any]]
-    metadata: List[Dict[str, Any]]
-    audit_logs: List[Dict[str, Any]]
+    conversations: list[dict[str, Any]]
+    messages: list[dict[str, Any]]
+    metadata: list[dict[str, Any]]
+    audit_logs: list[dict[str, Any]]
     exported_at: datetime
 
 
@@ -66,14 +65,14 @@ class DSARManager:
 
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
-        self.requests: Dict[str, DSARRequest] = {}
-        self.erasure_log: List[Dict[str, Any]] = []
+        self.requests: dict[str, DSARRequest] = {}
+        self.erasure_log: list[dict[str, Any]] = []
         # Simulated data stores (would be real DB tables in production)
-        self.conversations_db: List[Dict] = []
-        self.messages_db: List[Dict] = []
-        self.metadata_db: List[Dict] = []
-        self.audit_logs_db: List[Dict] = []
-        self.pii_tokens_vault: Dict[str, str] = {}
+        self.conversations_db: list[dict] = []
+        self.messages_db: list[dict] = []
+        self.metadata_db: list[dict] = []
+        self.audit_logs_db: list[dict] = []
+        self.pii_tokens_vault: dict[str, str] = {}
 
     async def request_export(
         self,
@@ -148,7 +147,7 @@ class DSARManager:
 
         return True
 
-    async def execute_export(self, request_id: str) -> Optional[CustomerDataExport]:
+    async def execute_export(self, request_id: str) -> CustomerDataExport | None:
         """Execute data export (step 3a of workflow).
 
         Args:
@@ -246,7 +245,6 @@ class DSARManager:
     async def _crypto_shred_keys(self, customer_id: str):
         """Shred encryption keys for customer."""
         # In production: delete keys from key management service
-        pass
 
     async def _cascade_delete_data(self, customer_id: str):
         """Delete all customer data from primary tables."""
@@ -273,7 +271,6 @@ class DSARManager:
     async def _tombstone_analytics(self, customer_id: str):
         """Replace analytics records with tombstones."""
         # In production: insert tombstone rows in analytics tables
-        pass
 
     async def _verify_erasure(self, customer_id: str) -> bool:
         """Verify no customer data remains (post-erasure verification).
@@ -288,26 +285,26 @@ class DSARManager:
         )
         return not data_remains
 
-    def _get_customer_conversations(self, customer_id: str) -> List[Dict]:
+    def _get_customer_conversations(self, customer_id: str) -> list[dict]:
         """Get all conversations for customer."""
         return [c for c in self.conversations_db if c.get("customer_id") == customer_id]
 
-    def _get_customer_messages(self, customer_id: str) -> List[Dict]:
+    def _get_customer_messages(self, customer_id: str) -> list[dict]:
         """Get all messages for customer."""
         return [m for m in self.messages_db if m.get("customer_id") == customer_id]
 
-    def _get_customer_metadata(self, customer_id: str) -> List[Dict]:
+    def _get_customer_metadata(self, customer_id: str) -> list[dict]:
         """Get all metadata for customer."""
         return [m for m in self.metadata_db if m.get("customer_id") == customer_id]
 
-    def _get_customer_audit_logs(self, customer_id: str) -> List[Dict]:
+    def _get_customer_audit_logs(self, customer_id: str) -> list[dict]:
         """Get all audit logs for customer."""
         return [a for a in self.audit_logs_db if a.get("customer_id") == customer_id]
 
-    def get_request_status(self, request_id: str) -> Optional[DSARRequest]:
+    def get_request_status(self, request_id: str) -> DSARRequest | None:
         """Get status of DSAR request."""
         return self.requests.get(request_id)
 
-    def get_erasure_log(self, tenant_id: str) -> List[Dict[str, Any]]:
+    def get_erasure_log(self, tenant_id: str) -> list[dict[str, Any]]:
         """Get erasure log entries."""
         return [e for e in self.erasure_log if e["tenant_id"] == tenant_id]

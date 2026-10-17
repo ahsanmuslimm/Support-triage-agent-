@@ -1,9 +1,11 @@
 """Bind extracted entities to tool arguments."""
 
-from typing import Dict, Any, List, Optional
+import contextlib
+from typing import Any, ClassVar
+
 import structlog
 
-from triage.models.entity import ExtractedEntity, EntityType
+from triage.models.entity import EntityType, ExtractedEntity
 from triage.tools.registry import ToolSpec
 
 log = structlog.get_logger()
@@ -13,7 +15,7 @@ class ArgumentBinder:
     """Bind extracted entities to tool argument slots."""
 
     # Mapping from EntityType to tool argument names
-    ENTITY_TO_ARG = {
+    ENTITY_TO_ARG: ClassVar[dict[EntityType, str]] = {
         EntityType.ORDER_ID: "order_id",
         EntityType.AMOUNT: "amount",
         EntityType.EMAIL: "to",
@@ -22,7 +24,7 @@ class ArgumentBinder:
     }
 
     @staticmethod
-    def bind(entities: List[ExtractedEntity], tool_spec: ToolSpec) -> Dict[str, Any]:
+    def bind(entities: list[ExtractedEntity], tool_spec: ToolSpec) -> dict[str, Any]:
         """Bind entities to tool arguments.
 
         Args:
@@ -35,7 +37,7 @@ class ArgumentBinder:
         Raises:
             ValueError: If required args not bound
         """
-        bound_args: Dict[str, Any] = {}
+        bound_args: dict[str, Any] = {}
 
         # Bind each entity to its argument
         for entity in entities:
@@ -47,10 +49,8 @@ class ArgumentBinder:
                 # Type conversion based on required type
                 required_type = tool_spec.required_args[arg_name]
                 if required_type == "float":
-                    try:
+                    with contextlib.suppress(ValueError, AttributeError):
                         value = float(value.replace("$", "").replace(",", ""))
-                    except (ValueError, AttributeError):
-                        pass
 
                 bound_args[arg_name] = value
                 log.debug(

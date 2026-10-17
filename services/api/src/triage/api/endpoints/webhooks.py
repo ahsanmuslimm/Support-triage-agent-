@@ -1,8 +1,8 @@
 """Webhook receivers for external integrations."""
 
-from fastapi import APIRouter, HTTPException, Header, Request
-from typing import Optional
 import os
+
+from fastapi import APIRouter, Header, HTTPException, Request
 
 from ...ingestion.zendesk_webhook import ZendeskWebhookHandler
 
@@ -46,11 +46,11 @@ async def receive_zendesk_webhook(
     if not zendesk_handler.verify_signature(raw_body_str, signature):
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
-    # Parse payload
+    # Parse payload (validates JSON; the result is unused until ingestion is wired up)
     try:
-        payload = zendesk_handler.parse_payload(raw_body_str)
+        zendesk_handler.parse_payload(raw_body_str)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}") from e
 
     # TODO: Extract message and queue for ingestion
     # message = zendesk_handler.extract_message(payload, tenant_id, conversation_id)

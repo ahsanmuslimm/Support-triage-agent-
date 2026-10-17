@@ -1,7 +1,7 @@
 """BM25 keyword search for RAG pipeline."""
 
 from dataclasses import dataclass
-from typing import List, Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -22,7 +22,7 @@ class BM25Search:
 
     def __init__(self):
         """Initialize BM25 search."""
-        self.documents: List[tuple[str, str]] = []  # (doc_id, text)
+        self.documents: list[tuple[str, str]] = []  # (doc_id, text)
         self.bm25_index = None
         self._init_bm25()
 
@@ -36,7 +36,7 @@ class BM25Search:
             log.warning("rank_bm25_not_available; BM25 search disabled")
             self.BM25Okapi = None
 
-    def add_documents(self, documents: List[tuple[str, str]]) -> None:
+    def add_documents(self, documents: list[tuple[str, str]]) -> None:
         """Add documents to BM25 index.
 
         Args:
@@ -54,7 +54,7 @@ class BM25Search:
         except Exception as e:
             log.error("bm25_index_error", error=str(e))
 
-    def search(self, query: str, k: int = 5) -> List[BM25Result]:
+    def search(self, query: str, k: int = 5) -> list[BM25Result]:
         """Search for documents matching query.
 
         Args:
@@ -98,6 +98,6 @@ class BM25Search:
             return []
 
     @staticmethod
-    def _tokenize(text: str) -> List[str]:
+    def _tokenize(text: str) -> list[str]:
         """Simple tokenization."""
         return text.lower().split()

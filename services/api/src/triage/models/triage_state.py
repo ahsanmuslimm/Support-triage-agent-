@@ -1,8 +1,9 @@
 """Triage agent state for LangGraph."""
 
-from typing import List, Optional, Any
-from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Any, ClassVar
+
+from pydantic import BaseModel, Field
 
 
 class TriageState(BaseModel):
@@ -16,49 +17,49 @@ class TriageState(BaseModel):
     conversation_id: str
 
     # Classification
-    intents: List[dict] = Field(default_factory=list)  # [{intent: str, confidence: float}]
-    primary_intent: Optional[str] = None
+    intents: list[dict] = Field(default_factory=list)  # [{intent: str, confidence: float}]
+    primary_intent: str | None = None
     intent_confidence: float = 0.0
 
     # Entity extraction
-    entities: List[dict] = Field(default_factory=list)
-    extracted_amount: Optional[float] = None
+    entities: list[dict] = Field(default_factory=list)
+    extracted_amount: float | None = None
 
     # Decision
-    autonomy_level: Optional[int] = None  # 0-3
-    autonomy_reason: Optional[str] = None
-    decision_rule: Optional[str] = None
+    autonomy_level: int | None = None  # 0-3
+    autonomy_reason: str | None = None
+    decision_rule: str | None = None
 
     # Retrieval
-    retrieved_docs: List[dict] = Field(default_factory=list)
-    retrieval_query: Optional[str] = None
+    retrieved_docs: list[dict] = Field(default_factory=list)
+    retrieval_query: str | None = None
 
     # Response generation
-    response_text: Optional[str] = None
+    response_text: str | None = None
     response_valid: bool = False
-    grounding_score: Optional[float] = None
-    generation_error: Optional[str] = None
+    grounding_score: float | None = None
+    generation_error: str | None = None
 
     # Tool execution
-    tool_name: Optional[str] = None
-    tool_args: Optional[dict] = None
+    tool_name: str | None = None
+    tool_args: dict | None = None
     tool_executed: bool = False
-    tool_result: Optional[dict] = None
-    tool_error: Optional[str] = None
+    tool_result: dict | None = None
+    tool_error: str | None = None
 
     # Escalation
     escalate: bool = False
-    escalation_reason: Optional[str] = None
-    escalation_route: Optional[str] = None
+    escalation_reason: str | None = None
+    escalation_route: str | None = None
 
     # Metadata
-    safety_flags: List[str] = Field(default_factory=list)
+    safety_flags: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     latency_ms: float = 0.0
     phase: str = "START"  # Track current phase
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_id": "msg-123",
                 "message_text": "Where is my order?",

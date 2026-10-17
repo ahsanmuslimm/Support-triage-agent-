@@ -1,19 +1,19 @@
 """Message ingestion and streaming endpoints."""
 
-from fastapi import APIRouter, HTTPException, Header, Response
-from fastapi.responses import StreamingResponse
 import asyncio
 import json
-from typing import Optional
 import uuid
 
-from ...models.message import MessageRequest, MessageResponse, MessageStatus, ChannelType
-from ...ingestion.normalizers import NormalizerFactory
-from ...ingestion.idempotency import IdempotencyManager
+from fastapi import APIRouter, Header, HTTPException
+from fastapi.responses import StreamingResponse
+
 from ...ingestion.encryption import EnvelopeEncryption
-from ...ingestion.pii_handler import PiiHandler
+from ...ingestion.idempotency import IdempotencyManager
 from ...ingestion.identity import IdentityResolver
+from ...ingestion.normalizers import NormalizerFactory
 from ...ingestion.outbox import OutboxWriter
+from ...ingestion.pii_handler import PiiHandler
+from ...models.message import MessageRequest, MessageResponse, MessageStatus
 
 router = APIRouter()
 
@@ -33,12 +33,12 @@ async def ingest_message(
     conversation_id: str,
     request: MessageRequest,
     tenant_id: str = Header(..., alias="X-Tenant-ID"),
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> MessageResponse:
     """Ingest a message into a conversation.
 
     Returns 202 Accepted immediately. Message is processed asynchronously.
-    Implements full pipeline: normalize → validate → check idempotency → encrypt → redact PII → 
+    Implements full pipeline: normalize → validate → check idempotency → encrypt → redact PII →
     resolve identity → store to database → write outbox event → queue for coalescing.
 
     Args:
@@ -91,7 +91,7 @@ async def ingest_message(
     )
 
     # ========== STEP 4: Redact PII (before any downstream processing) ==========
-    redacted_body, pii_entities, pii_vault = _pii_handler.redact(canonical_message.body)
+    redacted_body, pii_entities, _pii_vault = _pii_handler.redact(canonical_message.body)
     canonical_message.body = redacted_body
 
     # ========== STEP 5: Encrypt message body ==========
@@ -111,7 +111,8 @@ async def ingest_message(
 
     # ========== STEP 7: Store message (in real implementation, write to DB) ==========
     message_id = str(uuid.uuid4())
-    message_record = {
+    # Row shape for the future DB write; not persisted yet.
+    _message_record = {
         "id": message_id,
         "tenant_id": tenant_id,
         "conversation_id": conversation_id,
@@ -129,7 +130,7 @@ async def ingest_message(
     }
 
     # ========== STEP 8: Write outbox event (atomically with message insert) ==========
-    outbox_event = await _outbox_writer.write_event(
+    await _outbox_writer.write_event(
         tenant_id=tenant_id,
         aggregate_type="message",
         aggregate_id=message_id,
@@ -182,7 +183,7 @@ async def stream_conversation(
 
     async def event_generator():
         """Generate SSE events for conversation.
-        
+
         Yields:
             SSE-formatted event strings (data: {...}\n\n)
         """
@@ -197,7 +198,7 @@ async def stream_conversation(
             #         .order_by(Message.created_at)
             #     )
             # For now, stub: yield empty initial batch
-            
+
             yield f"data: {json.dumps({{'type': 'init', 'conversation_id': conversation_id}})}\n\n"
 
             # ========== STEP 2: Subscribe to new messages via Redis Pub/Sub or AsyncIO queue ==========
@@ -212,7 +213,7 @@ async def stream_conversation(
 
             while heartbeat_count < max_heartbeats:
                 # Send heartbeat comment (client uses this to detect dead connections)
-                yield f": heartbeat (connection alive)\n\n"
+                yield ": heartbeat (connection alive)\n\n"
                 await asyncio.sleep(30)
                 heartbeat_count += 1
 

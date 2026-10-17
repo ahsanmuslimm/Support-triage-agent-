@@ -1,6 +1,5 @@
 """ROI calculation."""
 
-from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ class ROICalculator:
 
     def __init__(self):
         """Initialize calculator."""
-        self.initiative_costs: Dict[str, float] = {}
+        self.initiative_costs: dict[str, float] = {}
 
     async def calculate_roi(
         self, initiative_id: str, cost_incurred: float, value_delivered: float

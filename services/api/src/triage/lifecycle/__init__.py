@@ -1,21 +1,21 @@
 """Customer Lifecycle Stage Detection module."""
 
+from .clustering import LifecycleClusterer
 from .detector import LifecycleDetector
 from .models import (
-    CustomerRFMScore,
     CustomerLifecycleProfile,
+    CustomerRFMScore,
     LifecycleStage,
     RFMDimensions,
 )
 from .rfm import RFMCalculator
-from .clustering import LifecycleClusterer
 
 __all__ = [
-    "LifecycleDetector",
-    "CustomerRFMScore",
     "CustomerLifecycleProfile",
-    "LifecycleStage",
-    "RFMDimensions",
-    "RFMCalculator",
+    "CustomerRFMScore",
     "LifecycleClusterer",
+    "LifecycleDetector",
+    "LifecycleStage",
+    "RFMCalculator",
+    "RFMDimensions",
 ]

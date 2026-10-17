@@ -1,10 +1,11 @@
 """Incident clustering with embedding similarity and urgency boost."""
 
+import math
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Any
+from typing import Any
+
 import structlog
-import math
 
 log = structlog.get_logger()
 
@@ -16,7 +17,7 @@ class TicketCluster:
     cluster_id: str
     """Cluster identifier."""
 
-    ticket_ids: Set[str] = field(default_factory=set)
+    ticket_ids: set[str] = field(default_factory=set)
     """Ticket IDs in cluster."""
 
     primary_ticket_id: str = ""
@@ -34,7 +35,7 @@ class TicketCluster:
     average_similarity: float = 0.0
     """Average cosine similarity within cluster."""
 
-    runbook_ids: List[str] = field(default_factory=list)
+    runbook_ids: list[str] = field(default_factory=list)
     """Linked runbook IDs for incident response."""
 
     def add_ticket(self, ticket_id: str, similarity: float = 0.0) -> None:
@@ -63,24 +64,24 @@ class IncidentClusterer:
     URGENCY_BOOST_THRESHOLD = 5
     URGENCY_BOOST_WINDOW = timedelta(minutes=10)
 
-    def __init__(self, embedding_model: Optional[Any] = None) -> None:
+    def __init__(self, embedding_model: Any | None = None) -> None:
         """Initialize clusterer.
 
         Args:
             embedding_model: Optional embedding model (use None for mock).
         """
         self.embedding_model = embedding_model
-        self.clusters: Dict[str, TicketCluster] = {}  # cluster_id -> TicketCluster
-        self.ticket_to_cluster: Dict[str, str] = {}  # ticket_id -> cluster_id
-        self.ticket_history: List[tuple[str, str, datetime]] = []  # (ticket_id, summary, timestamp)
-        self.runbook_index: Dict[str, List[str]] = {}  # keyword -> [runbook_ids]
+        self.clusters: dict[str, TicketCluster] = {}  # cluster_id -> TicketCluster
+        self.ticket_to_cluster: dict[str, str] = {}  # ticket_id -> cluster_id
+        self.ticket_history: list[tuple[str, str, datetime]] = []  # (ticket_id, summary, timestamp)
+        self.runbook_index: dict[str, list[str]] = {}  # keyword -> [runbook_ids]
 
     async def cluster_ticket(
         self,
         ticket_id: str,
         summary: str,
         created_at: datetime,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Cluster a new ticket with similar incidents.
 
         Args:
@@ -152,7 +153,7 @@ class IncidentClusterer:
             log.error("clustering_error", error=str(e), ticket_id=ticket_id)
             return None
 
-    def _create_cluster(self, ticket_ids: List[str]) -> str:
+    def _create_cluster(self, ticket_ids: list[str]) -> str:
         """Create a new cluster.
 
         Args:
@@ -218,7 +219,7 @@ class IncidentClusterer:
                 return ts > cutoff_time
         return False
 
-    async def _embed_text(self, text: str) -> List[float]:
+    async def _embed_text(self, text: str) -> list[float]:
         """Generate embedding for text.
 
         Args:
@@ -243,7 +244,7 @@ class IncidentClusterer:
             log.error("embedding_error", error=str(e))
             return [0.0] * 384
 
-    def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+    def _cosine_similarity(self, vec1: list[float], vec2: list[float]) -> float:
         """Compute cosine similarity.
 
         Args:
@@ -256,7 +257,7 @@ class IncidentClusterer:
         if not vec1 or not vec2 or len(vec1) != len(vec2):
             return 0.0
 
-        dot_product = sum(a * b for a, b in zip(vec1, vec2))
+        dot_product = sum(a * b for a, b in zip(vec1, vec2, strict=True))
         norm1 = math.sqrt(sum(a * a for a in vec1))
         norm2 = math.sqrt(sum(b * b for b in vec2))
 
@@ -277,7 +278,7 @@ class IncidentClusterer:
             cluster.runbook_ids.append(runbook_id)
             log.info("runbook_linked", cluster_id=cluster_id, runbook_id=runbook_id)
 
-    def get_cluster(self, cluster_id: str) -> Optional[TicketCluster]:
+    def get_cluster(self, cluster_id: str) -> TicketCluster | None:
         """Get cluster by ID.
 
         Args:
@@ -288,7 +289,7 @@ class IncidentClusterer:
         """
         return self.clusters.get(cluster_id)
 
-    def get_related_tickets(self, ticket_id: str) -> List[str]:
+    def get_related_tickets(self, ticket_id: str) -> list[str]:
         """Get related tickets in same cluster.
 
         Args:
@@ -304,7 +305,7 @@ class IncidentClusterer:
         cluster = self.clusters[cluster_id]
         return list(cluster.ticket_ids - {ticket_id})
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get clustering statistics.
 
         Returns:

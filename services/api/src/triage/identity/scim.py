@@ -1,10 +1,9 @@
 """SCIM 2.0 provisioning (S10.6)."""
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from enum import Enum
 import secrets
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -19,7 +18,7 @@ class SCIMUser:
     email: str
     active: bool = True
     mfa_enabled: bool = False
-    mfa_secret: Optional[str] = None
+    mfa_secret: str | None = None
     created_at: datetime = None
     updated_at: datetime = None
 
@@ -29,7 +28,7 @@ class SCIMUser:
         if self.updated_at is None:
             self.updated_at = datetime.utcnow()
 
-    def to_scim_dict(self) -> Dict[str, Any]:
+    def to_scim_dict(self) -> dict[str, Any]:
         """Convert to SCIM JSON representation."""
         return {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
@@ -55,7 +54,7 @@ class SCIMPatchOp:
 
     op: str  # "add", "replace", "remove"
     path: str
-    value: Optional[Any] = None
+    value: Any | None = None
 
 
 class SCIMProvisioner:
@@ -63,10 +62,10 @@ class SCIMProvisioner:
 
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
-        self.users: Dict[str, SCIMUser] = {}
-        self.api_keys_by_user: Dict[str, List[str]] = {}
-        self.sessions_by_user: Dict[str, List[str]] = {}
-        self.sync_log: List[Dict[str, Any]] = []
+        self.users: dict[str, SCIMUser] = {}
+        self.api_keys_by_user: dict[str, list[str]] = {}
+        self.sessions_by_user: dict[str, list[str]] = {}
+        self.sync_log: list[dict[str, Any]] = []
 
     def create_user(
         self,
@@ -113,11 +112,11 @@ class SCIMProvisioner:
 
         return user
 
-    def get_user(self, user_id: str) -> Optional[SCIMUser]:
+    def get_user(self, user_id: str) -> SCIMUser | None:
         """Get user (GET /Users/{id})."""
         return self.users.get(user_id)
 
-    def update_user(self, user_id: str, operations: List[SCIMPatchOp]) -> Optional[SCIMUser]:
+    def update_user(self, user_id: str, operations: list[SCIMPatchOp]) -> SCIMUser | None:
         """Update user (PATCH /Users/{id}).
 
         Args:
@@ -139,10 +138,9 @@ class SCIMProvisioner:
                 if op.path == "/mfa":
                     user.mfa_enabled = True
                     user.mfa_secret = op.value or secrets.token_hex(20)
-            elif op.op == "remove":
-                if op.path == "/mfa":
-                    user.mfa_enabled = False
-                    user.mfa_secret = None
+            elif op.op == "remove" and op.path == "/mfa":
+                user.mfa_enabled = False
+                user.mfa_secret = None
 
         user.updated_at = datetime.utcnow()
         return user
@@ -187,8 +185,8 @@ class SCIMProvisioner:
     async def sync_with_idp(
         self,
         tenant_id: str,
-        idp_users: List[Dict[str, str]],
-    ) -> Dict[str, Any]:
+        idp_users: list[dict[str, str]],
+    ) -> dict[str, Any]:
         """Sync users from external IDP (Okta, Azure).
 
         Args:
@@ -242,14 +240,14 @@ class SCIMProvisioner:
 
         return result
 
-    def _find_user_by_username(self, tenant_id: str, username: str) -> Optional[SCIMUser]:
+    def _find_user_by_username(self, tenant_id: str, username: str) -> SCIMUser | None:
         """Find user by username."""
         for user in self.users.values():
             if user.tenant_id == tenant_id and user.user_name == username:
                 return user
         return None
 
-    def get_sync_log(self, tenant_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_sync_log(self, tenant_id: str, limit: int = 100) -> list[dict[str, Any]]:
         """Get sync log entries."""
         return [
             entry for entry in self.sync_log

@@ -1,14 +1,14 @@
 """Tests for S10.3 - Outbound Webhooks."""
 
+from datetime import datetime
+
 import pytest
-from datetime import datetime, timedelta
 from triage.api.webhooks_s10 import (
-    WebhookEventType,
-    WebhookEvent,
-    WebhookEndpoint,
-    WebhookSignature,
-    WebhookRetryPolicy,
     WebhookDeliveryQueue,
+    WebhookEvent,
+    WebhookEventType,
+    WebhookRetryPolicy,
+    WebhookSignature,
 )
 
 
@@ -19,9 +19,9 @@ class TestWebhookSignature:
         """Test signing webhook payload."""
         payload = '{"event":"test"}'
         secret = "my_webhook_secret"
-        
+
         signature = WebhookSignature.sign(payload, secret)
-        
+
         assert isinstance(signature, str)
         assert len(signature) > 0
 
@@ -29,10 +29,10 @@ class TestWebhookSignature:
         """Test verifying valid signature."""
         payload = '{"event":"test"}'
         secret = "my_webhook_secret"
-        
+
         signature = WebhookSignature.sign(payload, secret)
         valid = WebhookSignature.verify(payload, signature, secret)
-        
+
         assert valid
 
     def test_verify_invalid_signature(self):
@@ -40,21 +40,21 @@ class TestWebhookSignature:
         payload = '{"event":"test"}'
         secret = "my_webhook_secret"
         wrong_secret = "wrong_secret"
-        
+
         signature = WebhookSignature.sign(payload, secret)
         valid = WebhookSignature.verify(payload, signature, wrong_secret)
-        
+
         assert not valid
 
     def test_signature_tampering_detected(self):
         """Test tampering is detected."""
         payload = '{"event":"test"}'
         secret = "my_webhook_secret"
-        
+
         signature = WebhookSignature.sign(payload, secret)
         tampered_payload = '{"event":"tampered"}'
         valid = WebhookSignature.verify(tampered_payload, signature, secret)
-        
+
         assert not valid
 
 
@@ -69,13 +69,13 @@ class TestRetryPolicy:
     def test_get_next_retry_time(self):
         """Test computing next retry time."""
         base = datetime.utcnow()
-        
+
         # Attempt 0 (after first failed request) -> retry after 1s
         next_time = WebhookRetryPolicy.get_next_retry_time(0, base)
         assert next_time is not None
         delay = (next_time - base).total_seconds()
         assert delay >= 0.9 and delay <= 1.1  # Allow some tolerance
-        
+
         # Attempt 1 (after second failed request) -> retry after 10s
         next_time = WebhookRetryPolicy.get_next_retry_time(1, base)
         delay = (next_time - base).total_seconds()
@@ -113,7 +113,7 @@ class TestWebhookEvent:
             timestamp=datetime.utcnow(),
             data={"body": "test message"},
         )
-        
+
         assert event.event_type == WebhookEventType.MESSAGE_RECEIVED
         assert event.attempt == 1
 
@@ -127,7 +127,7 @@ class TestWebhookEvent:
             timestamp=now,
             data={"reason": "sentiment_spike"},
         )
-        
+
         json_str = event.to_json()
         assert "escalation.triggered" in json_str
         assert "tenant_2" in json_str
@@ -140,7 +140,7 @@ class TestWebhookDeliveryQueue:
     async def test_register_endpoint(self):
         """Test registering webhook endpoint."""
         queue = WebhookDeliveryQueue()
-        
+
         endpoint = await queue.register_endpoint(
             endpoint_id="ep_123",
             tenant_id="tenant_1",
@@ -148,7 +148,7 @@ class TestWebhookDeliveryQueue:
             webhook_secret="secret123",
             events=[WebhookEventType.MESSAGE_RECEIVED],
         )
-        
+
         assert endpoint.endpoint_id == "ep_123"
         assert endpoint.active
 
@@ -156,7 +156,7 @@ class TestWebhookDeliveryQueue:
     async def test_queue_event(self):
         """Test queueing event."""
         queue = WebhookDeliveryQueue()
-        
+
         event = WebhookEvent(
             event_type=WebhookEventType.CONVERSATION_CREATED,
             tenant_id="tenant_1",
@@ -164,16 +164,16 @@ class TestWebhookDeliveryQueue:
             timestamp=datetime.utcnow(),
             data={"customer_id": "cust_1"},
         )
-        
+
         await queue.queue_event(event)
-        
+
         assert len(queue.pending_events) == 1
 
     @pytest.mark.asyncio
     async def test_get_dlq_events(self):
         """Test getting dead-letter queue events."""
         queue = WebhookDeliveryQueue()
-        
+
         # Create endpoint
         await queue.register_endpoint(
             "ep_test",
@@ -182,7 +182,7 @@ class TestWebhookDeliveryQueue:
             "secret",
             [WebhookEventType.MESSAGE_RECEIVED],
         )
-        
+
         # Create event
         event = WebhookEvent(
             event_type=WebhookEventType.MESSAGE_RECEIVED,
@@ -191,11 +191,11 @@ class TestWebhookDeliveryQueue:
             timestamp=datetime.utcnow(),
             data={},
         )
-        
+
         endpoint = queue.endpoints["ep_test"]
-        
+
         # Manually add to DLQ
         queue.dlq.append((event, endpoint))
-        
+
         dlq_events = queue.get_dlq_events("tenant_1")
         assert len(dlq_events) == 1

@@ -2,9 +2,8 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+
 import structlog
-import aiohttp
 
 log = structlog.get_logger()
 
@@ -25,7 +24,7 @@ class MalwareScanResult:
     status: ScanStatus
     """Scan status."""
 
-    threat_name: Optional[str] = None
+    threat_name: str | None = None
     """Name of detected threat (if infected)."""
 
     engine: str = "clamav"
@@ -34,7 +33,7 @@ class MalwareScanResult:
     scanned_at: str = ""
     """Scan timestamp."""
 
-    error: Optional[str] = None
+    error: str | None = None
     """Error message if scan failed."""
 
 

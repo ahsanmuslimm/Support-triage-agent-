@@ -30,13 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-ci.txt
 
-      # Blocking: syntax errors and undefined names (runtime crashes)
-      - name: Ruff (critical errors)
-        run: ruff check packages/ services/ apps/ ml/ --select E9,F63,F7,F82
-
-      # Non-blocking: full style report until the existing backlog is cleaned up
-      - name: Ruff (full report, non-blocking)
-        run: ruff check packages/ services/ apps/ ml/ --statistics --exit-zero
+      # Blocking: full rule set from ruff.toml (includes E9/F63/F7/F82)
+      - name: Ruff
+        run: ruff check packages/ services/ apps/ ml/ --output-format github
 
       - name: Mypy (py_core, strict)
         run: mypy packages/py_core/py_core --strict

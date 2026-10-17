@@ -1,7 +1,6 @@
 """Idempotency management for exactly-once semantics."""
 
 import hashlib
-from typing import Tuple, Optional
 
 
 class IdempotencyManager:
@@ -16,9 +15,9 @@ class IdempotencyManager:
     @staticmethod
     def generate_key(
         tenant_id: str,
-        provider_message_id: Optional[str] = None,
-        sender_id: Optional[str] = None,
-        body_hash: Optional[str] = None,
+        provider_message_id: str | None = None,
+        sender_id: str | None = None,
+        body_hash: str | None = None,
     ) -> str:
         """Generate deterministic idempotency key.
 
@@ -38,7 +37,7 @@ class IdempotencyManager:
 
     @staticmethod
     def is_duplicate(
-        existing_message_id: Optional[str],
+        existing_message_id: str | None,
     ) -> bool:
         """Check if message is a duplicate based on idempotency key lookup."""
         return existing_message_id is not None

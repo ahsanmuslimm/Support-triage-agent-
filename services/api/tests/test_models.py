@@ -1,16 +1,14 @@
 """Tests for Sprint 2 Pydantic models."""
 
-import pytest
-from datetime import datetime
 
-from triage.models.intent import IntentPrediction, IntentClassifierResult
+import pytest
 from triage.models.decision import (
     AutonomyLevel,
-    PolicyInput,
     DecisionResult,
-    SafetyFlag,
+    PolicyInput,
 )
-from triage.models.entity import EntityType, ExtractedEntity, EntityExtractionResult
+from triage.models.entity import EntityExtractionResult, EntityType, ExtractedEntity
+from triage.models.intent import IntentClassifierResult, IntentPrediction
 from triage.models.triage_state import TriageState
 
 

@@ -1,11 +1,10 @@
 """Team efficiency analyzer orchestrator."""
 
-from typing import Dict
 import logging
 
+from .benchmarking import PeerBenchmarker
 from .kpi import KPICalculator
 from .skill_gap import SkillGapDetector
-from .benchmarking import PeerBenchmarker
 from .training import TrainingRecommender
 
 logger = logging.getLogger(__name__)
@@ -23,7 +22,7 @@ class TeamEfficiencyAnalyzer:
 
     async def analyze_team_efficiency(
         self, team_id: int, period: tuple
-    ) -> Dict:
+    ) -> dict:
         """Analyze team efficiency."""
         kpis = await self.kpi_calc.batch_calculate_team_kpis(team_id, period)
         return {"team_kpis": kpis}

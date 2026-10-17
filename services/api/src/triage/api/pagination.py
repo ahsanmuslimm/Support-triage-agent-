@@ -4,9 +4,9 @@ import base64
 import hashlib
 import json
 from datetime import datetime
-from typing import Optional, List, TypeVar, Generic, Any, Dict
-from pydantic import BaseModel, Field
+from typing import Any, Generic, TypeVar
 
+from pydantic import BaseModel, Field
 
 T = TypeVar("T")
 
@@ -14,15 +14,15 @@ T = TypeVar("T")
 class CursorPaginationParams(BaseModel):
     """Cursor pagination parameters."""
 
-    cursor: Optional[str] = Field(None, description="Opaque cursor token")
+    cursor: str | None = Field(None, description="Opaque cursor token")
     limit: int = Field(100, ge=1, le=100, description="Max results (1-100)")
 
 
 class CursorPaginationResponse(BaseModel, Generic[T]):
     """Cursor pagination response."""
 
-    items: List[T]
-    next_cursor: Optional[str] = Field(None, description="Cursor for next page")
+    items: list[T]
+    next_cursor: str | None = Field(None, description="Cursor for next page")
     has_more: bool = Field(False, description="Whether more results available")
 
 
@@ -65,7 +65,7 @@ class CursorCodec:
             created_at = datetime.fromisoformat(created_at_iso)
             return item_id, created_at
         except (ValueError, IndexError, TypeError) as e:
-            raise ValueError(f"Invalid cursor: {e}")
+            raise ValueError(f"Invalid cursor: {e}") from e
 
 
 class ETagManager:
@@ -114,13 +114,13 @@ class IdempotencyManager:
 
     def __init__(self):
         # In production, use database with 24h retention
-        self._store: Dict[str, Dict[str, Any]] = {}
+        self._store: dict[str, dict[str, Any]] = {}
 
     def record_request(
         self,
         idempotency_key: str,
         tenant_id: str,
-        response_data: Dict[str, Any],
+        response_data: dict[str, Any],
     ) -> None:
         """Record request for idempotency.
 
@@ -134,7 +134,7 @@ class IdempotencyManager:
             "timestamp": datetime.utcnow(),
         }
 
-    def get_cached_response(self, idempotency_key: str, tenant_id: str) -> Optional[Dict[str, Any]]:
+    def get_cached_response(self, idempotency_key: str, tenant_id: str) -> dict[str, Any] | None:
         """Get cached response if exists.
 
         Args:

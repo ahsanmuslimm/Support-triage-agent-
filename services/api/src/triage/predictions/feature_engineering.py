@@ -1,11 +1,8 @@
 """Feature engineering for predictive models."""
 
-from typing import Dict, Optional
-from datetime import datetime, timedelta
 import logging
 
 from sklearn.preprocessing import MinMaxScaler
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +32,7 @@ class FeatureEngineer:
         self,
         customer_id: int,
         tenant_id: int,
-        lifecycle_stage: Optional[str] = None,
+        lifecycle_stage: str | None = None,
         days_since_last_issue: int = 999,
         issue_frequency_30d: int = 0,
         avg_resolution_time_hours: float = 0.0,
@@ -48,7 +45,7 @@ class FeatureEngineer:
         account_active: bool = True,
         subscription_plan_value: float = 0.0,
         chargeback_count_90d: int = 0,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Extract features for a customer.
 
@@ -117,8 +114,8 @@ class FeatureEngineer:
     async def batch_extract_features(
         self,
         tenant_id: int,
-        customers_data: Dict[int, Dict],
-    ) -> Dict[int, Dict[str, float]]:
+        customers_data: dict[int, dict],
+    ) -> dict[int, dict[str, float]]:
         """
         Extract features for multiple customers.
 

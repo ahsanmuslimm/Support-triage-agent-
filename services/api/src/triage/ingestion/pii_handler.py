@@ -1,8 +1,7 @@
 """PII detection and pseudonymization."""
 
-import re
 import hashlib
-from typing import Dict, List, Tuple, Optional
+import re
 from dataclasses import dataclass
 
 
@@ -35,7 +34,7 @@ class PiiHandler:
             "SSN": re.compile(self.SSN_PATTERN),
         }
 
-    def detect(self, text: str) -> List[PiiEntity]:
+    def detect(self, text: str) -> list[PiiEntity]:
         """Detect PII entities in text.
 
         Args:
@@ -44,7 +43,7 @@ class PiiHandler:
         Returns:
             List of detected PII entities
         """
-        entities: List[PiiEntity] = []
+        entities: list[PiiEntity] = []
 
         for pii_type, pattern in self.patterns.items():
             for match in pattern.finditer(text):
@@ -62,7 +61,7 @@ class PiiHandler:
         entities.sort(key=lambda e: e.start)
         return entities
 
-    def redact(self, text: str) -> Tuple[str, List[PiiEntity], Dict[str, str]]:
+    def redact(self, text: str) -> tuple[str, list[PiiEntity], dict[str, str]]:
         """Redact PII from text, returning vault tokens.
 
         Args:
@@ -72,7 +71,7 @@ class PiiHandler:
             (redacted_text, entities_list, vault_mapping)
         """
         entities = self.detect(text)
-        vault: Dict[str, str] = {}
+        vault: dict[str, str] = {}
         offset = 0
 
         for entity in entities:
@@ -91,7 +90,7 @@ class PiiHandler:
     def re_hydrate(
         self,
         redacted_text: str,
-        vault: Dict[str, str],
+        vault: dict[str, str],
     ) -> str:
         """Re-hydrate redacted text from vault.
 

@@ -2,7 +2,8 @@
 
 import re
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import ClassVar
+
 import structlog
 
 log = structlog.get_logger()
@@ -13,18 +14,18 @@ class ValidationResult:
     """Result of output validation."""
 
     valid: bool
-    reason: Optional[str] = None
+    reason: str | None = None
     pii_detected: bool = False
     injection_detected: bool = False
     toxicity_score: float = 0.0  # [0, 1]
-    flags: List[str] = None  # Additional flags
+    flags: list[str] = None  # Additional flags
 
 
 class OutputValidator:
     """Validate generated responses for safety and compliance."""
 
     # PII patterns
-    PII_PATTERNS = {
+    PII_PATTERNS: ClassVar[dict[str, str]] = {
         "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
         "credit_card": r"\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}",
         "ssn": r"\d{3}[-\s]?\d{2}[-\s]?\d{4}",
@@ -32,14 +33,14 @@ class OutputValidator:
     }
 
     # Injection patterns (prompt injection, code injection)
-    INJECTION_PATTERNS = [
+    INJECTION_PATTERNS: ClassVar[list[str]] = [
         r"(?i)(ignore.*prompt|forget.*instruction|you are now|system prompt|developer mode)",
         r"(?i)(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|;--)",
         r"(?i)(script.*>|iframe|javascript:|onerror=|onload=)",
     ]
 
     # Toxicity keywords (basic)
-    TOXICITY_KEYWORDS = [
+    TOXICITY_KEYWORDS: ClassVar[list[str]] = [
         "hate", "kill", "suicide", "racist", "sexist", "asshole", "bastard"
     ]
 
@@ -50,7 +51,7 @@ class OutputValidator:
     def validate(
         self,
         response_text: str,
-        grounding_score: Optional[float] = None,
+        grounding_score: float | None = None,
     ) -> ValidationResult:
         """Validate generated response.
 
@@ -112,7 +113,7 @@ class OutputValidator:
         return result
 
     @staticmethod
-    def _check_pii(text: str) -> tuple[bool, List[str]]:
+    def _check_pii(text: str) -> tuple[bool, list[str]]:
         """Check for PII in response.
 
         Args:

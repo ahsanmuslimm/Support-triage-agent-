@@ -1,8 +1,8 @@
 """Customer identity resolution and deduplication."""
 
 import hashlib
-from typing import Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class IdentityAssuranceLevel(str, Enum):
@@ -20,11 +20,11 @@ class CustomerIdentity:
         self,
         tenant_id: str,
         customer_id: str,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        zendesk_id: Optional[str] = None,
-        external_id: Optional[str] = None,
-        display_name: Optional[str] = None,
+        email: str | None = None,
+        phone: str | None = None,
+        zendesk_id: str | None = None,
+        external_id: str | None = None,
+        display_name: str | None = None,
     ):
         """Initialize customer identity."""
         self.tenant_id = tenant_id
@@ -35,9 +35,9 @@ class CustomerIdentity:
         self.external_id = external_id
         self.display_name = display_name
         self.ial = IdentityAssuranceLevel.IAL1
-        self.aliases: Dict[str, str] = {}  # {type: id}
+        self.aliases: dict[str, str] = {}  # {type: id}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for storage."""
         return {
             "tenant_id": self.tenant_id,
@@ -58,20 +58,20 @@ class IdentityResolver:
     def __init__(self):
         """Initialize resolver."""
         # In-memory storage for demo (replace with DB query in real impl)
-        self._customers: Dict[str, CustomerIdentity] = {}
+        self._customers: dict[str, CustomerIdentity] = {}
         # Tenant-scoped indexes
-        self._email_index: Dict[str, Dict[str, str]] = {}  # tenant_id -> {email_hash -> customer_id}
-        self._phone_index: Dict[str, Dict[str, str]] = {}  # tenant_id -> {phone_hash -> customer_id}
-        self._zendesk_index: Dict[str, Dict[str, str]] = {}  # tenant_id -> {zendesk_id -> customer_id}
+        self._email_index: dict[str, dict[str, str]] = {}  # tenant_id -> {email_hash -> customer_id}
+        self._phone_index: dict[str, dict[str, str]] = {}  # tenant_id -> {phone_hash -> customer_id}
+        self._zendesk_index: dict[str, dict[str, str]] = {}  # tenant_id -> {zendesk_id -> customer_id}
 
     def resolve_or_create(
         self,
         tenant_id: str,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        zendesk_id: Optional[str] = None,
-        external_id: Optional[str] = None,
-        display_name: Optional[str] = None,
+        email: str | None = None,
+        phone: str | None = None,
+        zendesk_id: str | None = None,
+        external_id: str | None = None,
+        display_name: str | None = None,
     ) -> CustomerIdentity:
         """Resolve or create customer identity.
 
@@ -115,10 +115,9 @@ class IdentityResolver:
                 candidates.append(self._customers[customer_id])
 
         # Search by Zendesk ID (tenant-scoped)
-        if zendesk_id:
-            if zendesk_id in self._zendesk_index[tenant_id]:
-                customer_id = self._zendesk_index[tenant_id][zendesk_id]
-                candidates.append(self._customers[customer_id])
+        if zendesk_id and zendesk_id in self._zendesk_index[tenant_id]:
+            customer_id = self._zendesk_index[tenant_id][zendesk_id]
+            candidates.append(self._customers[customer_id])
 
         # Deduplicate candidates
         candidates = list({c.customer_id: c for c in candidates}.values())

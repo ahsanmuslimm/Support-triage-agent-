@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List
 
 
 @dataclass
@@ -15,14 +14,14 @@ class CustomerContext:
     # Profile
     name: str
     email: str
-    phone: Optional[str] = None
-    account_created_at: Optional[datetime] = None
+    phone: str | None = None
+    account_created_at: datetime | None = None
     account_age_days: int = 0
 
     # Account stats
     order_count: int = 0
     total_spent: float = 0.0
-    last_order_date: Optional[datetime] = None
+    last_order_date: datetime | None = None
     avg_order_value: float = 0.0
 
     # Subscription
@@ -31,7 +30,7 @@ class CustomerContext:
     plan_value_usd: float = 0.0
 
     # Flags
-    flags: List[str] = field(default_factory=list)
+    flags: list[str] = field(default_factory=list)
 
     # Computed signals
     is_vip: bool = False  # total_spent > $1000
@@ -39,7 +38,7 @@ class CustomerContext:
     is_fraud_flagged: bool = False
 
     # Cache metadata
-    fetched_at: Optional[datetime] = None
+    fetched_at: datetime | None = None
     cache_ttl_seconds: int = 3600
 
 
@@ -67,7 +66,7 @@ class OrderContext:
     risk_score: float = 0.0  # 0.0 - 1.0
 
     # Cache metadata
-    fetched_at: Optional[datetime] = None
+    fetched_at: datetime | None = None
     cache_ttl_seconds: int = 3600
 
 
@@ -84,7 +83,7 @@ class BillingContext:
 
     # Card status
     card_expiring_soon: bool = False  # <30 days
-    card_expiry_days: Optional[int] = None
+    card_expiry_days: int | None = None
 
     # Payment health
     failed_payments_90d: int = 0
@@ -101,7 +100,7 @@ class BillingContext:
     phone_verified: bool = False
 
     # Cache metadata
-    fetched_at: Optional[datetime] = None
+    fetched_at: datetime | None = None
     cache_ttl_seconds: int = 3600
 
 
@@ -118,20 +117,20 @@ class SentimentContext:
     sentiment_trend: str = "stable"  # 'improving', 'declining', 'stable'
 
     # NPS
-    latest_nps: Optional[int] = None
+    latest_nps: int | None = None
     nps_segment: str = "passive"  # 'promoter', 'passive', 'detractor'
     nps_trend: str = "stable"  # 'improving', 'declining', 'stable'
-    nps_history: List[int] = field(default_factory=list)  # last 5 scores
+    nps_history: list[int] = field(default_factory=list)  # last 5 scores
 
     # Interaction sentiment over time
-    sentiment_history: List[float] = field(default_factory=list)  # last 5 scores
+    sentiment_history: list[float] = field(default_factory=list)  # last 5 scores
 
     # Risk segmentation
     is_promoter: bool = False
     is_detractor: bool = False
 
     # Cache metadata
-    fetched_at: Optional[datetime] = None
+    fetched_at: datetime | None = None
     cache_ttl_seconds: int = 3600
 
 

@@ -1,11 +1,10 @@
 """Factory fixtures for generating test data using factory_boy."""
 
 import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 try:
     import factory
-    from factory.fuzzy import FuzzyChoice
 
     FACTORY_BOY_AVAILABLE = True
 except ImportError:
@@ -128,4 +127,4 @@ else:
             return data
 
 
-__all__ = ["TenantFactory", "CustomerFactory", "ConversationFactory", "MessageFactory"]
+__all__ = ["ConversationFactory", "CustomerFactory", "MessageFactory", "TenantFactory"]

@@ -1,8 +1,7 @@
 """Lifecycle detection data models."""
 
-from enum import Enum
 from datetime import datetime
-from typing import List, Optional
+from enum import Enum
 
 from pydantic import BaseModel, Field
 
@@ -47,5 +46,5 @@ class CustomerLifecycleProfile(BaseModel):
     tenant_id: int
     stage: LifecycleStage
     confidence: float = Field(ge=0.0, le=1.0, description="Confidence 0-1")
-    stage_reasons: List[str] = Field(default_factory=list)
+    stage_reasons: list[str] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

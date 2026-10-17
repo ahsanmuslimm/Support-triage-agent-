@@ -1,7 +1,7 @@
 """S6.3: Dead Letter Queue (DLQ) for failed events with retry policy."""
-import json
-from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
+from typing import Any, ClassVar
+
 import structlog
 
 log = structlog.get_logger(__name__)
@@ -18,7 +18,7 @@ class DeadLetterQueue:
     """
 
     MAX_RETRIES = 3
-    RETRY_BACKOFF = [1, 10, 60]  # exponential backoff: 1s, 10s, 60s
+    RETRY_BACKOFF: ClassVar[list[int]] = [1, 10, 60]  # exponential backoff: 1s, 10s, 60s
 
     def __init__(self, event_bus: Any):
         self.event_bus = event_bus
@@ -26,7 +26,7 @@ class DeadLetterQueue:
 
     async def send_to_dlq(
         self,
-        event: Dict[str, Any],
+        event: dict[str, Any],
         error: Exception,
         retry_count: int = 0,
     ) -> None:
@@ -66,7 +66,7 @@ class DeadLetterQueue:
                 error=str(e),
             )
 
-    def _calculate_next_retry(self, retry_count: int) -> Optional[str]:
+    def _calculate_next_retry(self, retry_count: int) -> str | None:
         """Calculate when event should be retried.
 
         Args:

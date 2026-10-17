@@ -1,15 +1,14 @@
 """Outbound webhooks with retry and dead-letter (S10.3)."""
 
-import asyncio
-import json
-import hmac
 import hashlib
+import hmac
+import json
 import time
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, Callable
-from enum import Enum
 from dataclasses import dataclass, field
-from collections import defaultdict
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, ClassVar
+
 import httpx
 
 
@@ -31,9 +30,9 @@ class WebhookEvent:
     tenant_id: str
     resource_id: str
     timestamp: datetime
-    data: Dict[str, Any]
+    data: dict[str, Any]
     attempt: int = 1
-    next_retry: Optional[datetime] = None
+    next_retry: datetime | None = None
 
     def to_json(self) -> str:
         """Serialize event to JSON."""
@@ -54,7 +53,7 @@ class WebhookEndpoint:
     tenant_id: str
     url: str
     webhook_secret: str
-    events: List[WebhookEventType]
+    events: list[WebhookEventType]
     active: bool = True
     created_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -66,9 +65,9 @@ class WebhookDeliveryLog:
     event_id: str
     endpoint_id: str
     attempt: int
-    status_code: Optional[int]
+    status_code: int | None
     success: bool
-    error: Optional[str]
+    error: str | None
     timestamp: datetime
 
 
@@ -113,12 +112,12 @@ class WebhookRetryPolicy:
     """Exponential backoff retry policy."""
 
     # Retry intervals: 1s, 10s, 100s, 1000s (max 4 attempts)
-    RETRY_INTERVALS = [1, 10, 100, 1000]
+    RETRY_INTERVALS: ClassVar[list[int]] = [1, 10, 100, 1000]
     MAX_ATTEMPTS = 4
     RETENTION_WINDOW_HOURS = 24
 
     @staticmethod
-    def get_next_retry_time(attempt: int, base_time: datetime = None) -> Optional[datetime]:
+    def get_next_retry_time(attempt: int, base_time: datetime | None = None) -> datetime | None:
         """Get next retry time for attempt.
 
         Args:
@@ -163,10 +162,10 @@ class WebhookDeliveryQueue:
     """Queue for webhook deliveries with retry logic."""
 
     def __init__(self):
-        self.pending_events: Dict[str, WebhookEvent] = {}
-        self.delivery_log: List[WebhookDeliveryLog] = []
-        self.dlq: List[tuple[WebhookEvent, WebhookEndpoint]] = []  # Dead-letter queue
-        self.endpoints: Dict[str, WebhookEndpoint] = {}
+        self.pending_events: dict[str, WebhookEvent] = {}
+        self.delivery_log: list[WebhookDeliveryLog] = []
+        self.dlq: list[tuple[WebhookEvent, WebhookEndpoint]] = []  # Dead-letter queue
+        self.endpoints: dict[str, WebhookEndpoint] = {}
 
     async def register_endpoint(
         self,
@@ -174,7 +173,7 @@ class WebhookDeliveryQueue:
         tenant_id: str,
         url: str,
         webhook_secret: str,
-        events: List[WebhookEventType],
+        events: list[WebhookEventType],
     ) -> WebhookEndpoint:
         """Register webhook endpoint.
 
@@ -256,7 +255,7 @@ class WebhookDeliveryQueue:
         self,
         event: WebhookEvent,
         endpoint: WebhookEndpoint,
-    ) -> tuple[bool, Optional[int]]:
+    ) -> tuple[bool, int | None]:
         """Deliver webhook to endpoint.
 
         Args:
@@ -281,7 +280,7 @@ class WebhookDeliveryQueue:
                     },
                 )
                 return response.status_code == 200, response.status_code
-        except Exception as e:
+        except Exception:
             return False, None
 
     async def replay_webhook(
@@ -314,7 +313,7 @@ class WebhookDeliveryQueue:
         success, _ = await self._deliver_webhook(event, endpoint)
         return success
 
-    def get_dlq_events(self, tenant_id: str) -> List[tuple[WebhookEvent, WebhookEndpoint]]:
+    def get_dlq_events(self, tenant_id: str) -> list[tuple[WebhookEvent, WebhookEndpoint]]:
         """Get dead-lettered events for inspection.
 
         Args:

@@ -1,8 +1,9 @@
 """S3.7: Prompt Template Engine with Jinja2."""
 
 import logging
-from typing import Dict, Any, Optional
-from jinja2 import Environment, BaseLoader, TemplateError
+from typing import Any
+
+from jinja2 import BaseLoader, Environment, TemplateError
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class PromptTemplateEngine:
         self.jinja_env = Environment(loader=BaseLoader())
         self.templates = self._load_templates()
 
-    def _load_templates(self) -> Dict[str, str]:
+    def _load_templates(self) -> dict[str, str]:
         """Load Jinja2 prompt templates with conditional blocks."""
         return {
             "default": """You are a helpful customer support agent.
@@ -64,7 +65,7 @@ Please provide formal, detailed, and professional support with full documentatio
         """Truncate context while preserving structure."""
         if len(text) <= max_chars:
             return text
-        
+
         logger.warning(f"Prompt exceeds budget ({len(text)} chars > {max_chars}), truncating")
         # Truncate with ellipsis, preserving sentence boundaries where possible
         truncated = text[:max_chars - 3].rsplit('\n', 1)[0]
@@ -73,7 +74,7 @@ Please provide formal, detailed, and professional support with full documentatio
     def render(
         self,
         tone: str,
-        customer_context: Dict[str, Any],
+        customer_context: dict[str, Any],
         reasoning: str = "",
     ) -> str:
         """
@@ -120,7 +121,7 @@ Please provide formal, detailed, and professional support with full documentatio
     def _fallback_render(
         self,
         tone: str,
-        customer_context: Dict[str, Any],
+        customer_context: dict[str, Any],
         reasoning: str,
     ) -> str:
         """Fallback simple rendering if Jinja2 fails."""
@@ -136,7 +137,7 @@ Please provide formal, detailed, and professional support with full documentatio
         """Estimate token count (1 token ≈ 4 characters)."""
         return len(text) // 4
 
-    def get_token_budget_info(self) -> Dict[str, Any]:
+    def get_token_budget_info(self) -> dict[str, Any]:
         """Return token budget configuration."""
         return {
             "max_tokens": self.max_tokens,

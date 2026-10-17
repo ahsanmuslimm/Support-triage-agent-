@@ -1,14 +1,14 @@
 """Prediction orchestrator combining all models."""
 
-from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
 
+from .cache import PredictionCache
+from .churn_xgb import ChurnXGBoostModel
 from .feature_engineering import FeatureEngineer
 from .lstm_model import LSTMNextIssuePredictor
-from .churn_xgb import ChurnXGBoostModel
 from .volume_prophet import VolumeForecaster
-from .cache import PredictionCache
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,9 @@ class PredictionOrchestrator:
         self,
         customer_id: int,
         tenant_id: int,
-        features: Optional[Dict[str, float]] = None,
-        issue_history: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        features: dict[str, float] | None = None,
+        issue_history: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Predict for a single customer.
 
@@ -80,10 +80,10 @@ class PredictionOrchestrator:
 
     async def train_all_models(
         self,
-        lstm_data: Optional[List[Tuple[List[str], str]]] = None,
-        churn_data: Optional[Tuple[List[Dict], List[int]]] = None,
-        volume_data: Optional[List[Tuple[datetime, int]]] = None,
-    ) -> Dict[str, Dict[str, float]]:
+        lstm_data: list[tuple[list[str], str]] | None = None,
+        churn_data: tuple[list[dict], list[int]] | None = None,
+        volume_data: list[tuple[datetime, int]] | None = None,
+    ) -> dict[str, dict[str, float]]:
         """
         Retrain all models (typically daily at 03:00 UTC).
 
@@ -154,7 +154,7 @@ class PredictionOrchestrator:
         await self.cache.invalidate_prediction(customer_id, tenant_id)
         logger.debug(f"Invalidated predictions for customer {customer_id}")
 
-    def get_models_status(self) -> Dict[str, bool]:
+    def get_models_status(self) -> dict[str, bool]:
         """Get training status of all models."""
         return {
             "lstm": self.lstm.is_trained(),

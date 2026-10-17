@@ -5,14 +5,14 @@ proposed → policy → approval → executing → retry → succeeded/failed �
 """
 
 import asyncio
-import json
 import uuid
-from dataclasses import dataclass, field, asdict
+from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 import structlog
-from abc import ABC, abstractmethod
 
 log = structlog.get_logger()
 
@@ -50,15 +50,15 @@ class WriteActionInput:
     action_type: WriteActionType
     intent_name: str
     intent_confidence: float
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
     action_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     autonomy_level: int = 0
     created_at: datetime = field(default_factory=datetime.utcnow)
-    message_id: Optional[str] = None
-    conversation_id: Optional[str] = None
+    message_id: str | None = None
+    conversation_id: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         d = asdict(self)
         d["action_type"] = self.action_type.value
@@ -73,34 +73,34 @@ class WriteActionContext:
     input: WriteActionInput
     state: WriteActionState
     execution_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    
+
     # Policy evaluation
     policy_approved: bool = False
     policy_reason: str = ""
-    policy_guardrails_triggered: List[str] = field(default_factory=list)
-    
+    policy_guardrails_triggered: list[str] = field(default_factory=list)
+
     # Approval
     approval_required: bool = False
-    approval_actor_id: Optional[str] = None
-    approval_decision: Optional[bool] = None
-    approval_timestamp: Optional[datetime] = None
-    approval_expires_at: Optional[datetime] = None
-    
+    approval_actor_id: str | None = None
+    approval_decision: bool | None = None
+    approval_timestamp: datetime | None = None
+    approval_expires_at: datetime | None = None
+
     # Execution
     execution_attempts: int = 0
     max_retries: int = 3
     retry_delay_seconds: int = 5
-    
+
     # Results
-    result_data: Dict[str, Any] = field(default_factory=dict)
-    error_message: Optional[str] = None
-    
+    result_data: dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
+
     # Compensation (saga)
-    compensation_steps: List[Dict[str, Any]] = field(default_factory=list)
-    
+    compensation_steps: list[dict[str, Any]] = field(default_factory=list)
+
     # Audit trail
-    transitions: List[Dict[str, Any]] = field(default_factory=list)
-    
+    transitions: list[dict[str, Any]] = field(default_factory=list)
+
     def transition_to(self, new_state: WriteActionState, reason: str = ""):
         """Record state transition."""
         self.transitions.append({
@@ -118,7 +118,7 @@ class WriteActionContext:
             reason=reason,
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "input": self.input.to_dict(),
@@ -147,38 +147,36 @@ class WriteActionResult:
     action_id: str
     success: bool
     state: WriteActionState
-    result_data: Dict[str, Any]
-    error_message: Optional[str] = None
+    result_data: dict[str, Any]
+    error_message: str | None = None
     compensation_performed: bool = False
-    audit_trail: List[Dict[str, Any]] = field(default_factory=list)
+    audit_trail: list[dict[str, Any]] = field(default_factory=list)
 
 
 class WriteActionActivity(ABC):
     """Base class for write action activities (to be executed by tools)."""
 
     @abstractmethod
-    async def execute(self, context: WriteActionContext) -> Dict[str, Any]:
+    async def execute(self, context: WriteActionContext) -> dict[str, Any]:
         """Execute the activity.
-        
+
         Args:
             context: Write action context
-            
+
         Returns:
             Dictionary with execution result
         """
-        pass
 
     @abstractmethod
-    async def compensate(self, context: WriteActionContext) -> Dict[str, Any]:
+    async def compensate(self, context: WriteActionContext) -> dict[str, Any]:
         """Compensate (rollback) the activity.
-        
+
         Args:
             context: Write action context
-            
+
         Returns:
             Dictionary with compensation result
         """
-        pass
 
 
 class WriteActionWorkflow:
@@ -186,7 +184,7 @@ class WriteActionWorkflow:
 
     def __init__(self, policy_engine, approval_service, tool_executor):
         """Initialize workflow.
-        
+
         Args:
             policy_engine: OPA policy engine
             approval_service: Approval service for L2/L3 decisions
@@ -198,52 +196,52 @@ class WriteActionWorkflow:
 
     async def execute(self, action_input: WriteActionInput) -> WriteActionResult:
         """Execute write action through full state machine.
-        
+
         Args:
             action_input: Write action input
-            
+
         Returns:
             WriteActionResult
         """
         context = WriteActionContext(input=action_input, state=WriteActionState.PROPOSED)
-        
+
         try:
             # State 1: PROPOSED -> POLICY_REVIEW
             await self._transition_to_policy_review(context)
-            
+
             # State 2: POLICY_REVIEW
             await self._execute_policy_review(context)
-            
+
             # State 3: Check if approval needed, transition accordingly
             if context.approval_required:
                 await self._transition_to_approval_pending(context)
                 # State 3: APPROVAL_PENDING
                 await self._wait_for_approval(context)
-            
+
             # State 4: EXECUTING
             if context.policy_approved:
                 await self._transition_to_executing(context)
                 await self._execute_action(context)
-            
+
             # State 5-6: Result handling
             if context.error_message and context.execution_attempts < context.max_retries:
                 await self._transition_to_retrying(context)
                 await self._retry_action(context)
-            
+
             # Final state: SUCCEEDED or FAILED
             if context.error_message:
                 context.transition_to(WriteActionState.FAILED, f"Failed after {context.execution_attempts} attempts")
             else:
                 context.transition_to(WriteActionState.SUCCEEDED, "Action completed successfully")
-                
+
         except Exception as e:
             log.error("write_action_workflow_error", action_id=context.input.action_id, error=str(e))
             context.error_message = str(e)
-            context.transition_to(WriteActionState.FAILED, f"Workflow error: {str(e)}")
-            
+            context.transition_to(WriteActionState.FAILED, f"Workflow error: {e!s}")
+
             # State 7: COMPENSATING (on failure)
             await self._compensate(context)
-        
+
         return WriteActionResult(
             action_id=context.input.action_id,
             success=context.state == WriteActionState.SUCCEEDED,
@@ -261,7 +259,7 @@ class WriteActionWorkflow:
     async def _execute_policy_review(self, context: WriteActionContext) -> None:
         """Execute policy review using OPA."""
         log.info("policy_review_starting", action_id=context.input.action_id, action_type=context.input.action_type)
-        
+
         try:
             policy_result = await self.policy_engine.evaluate(
                 action_type=context.input.action_type,
@@ -270,14 +268,14 @@ class WriteActionWorkflow:
                 arguments=context.input.arguments,
                 context=context.input.context,
             )
-            
+
             context.policy_approved = policy_result.get("approved", False)
             context.policy_reason = policy_result.get("reason", "")
             context.policy_guardrails_triggered = policy_result.get("guardrails_triggered", [])
-            
+
             # Check if approval is required
             context.approval_required = policy_result.get("approval_required", False)
-            
+
             log.info(
                 "policy_review_complete",
                 action_id=context.input.action_id,
@@ -287,7 +285,7 @@ class WriteActionWorkflow:
         except Exception as e:
             log.error("policy_review_error", action_id=context.input.action_id, error=str(e))
             context.policy_approved = False
-            context.policy_reason = f"Policy review error: {str(e)}"
+            context.policy_reason = f"Policy review error: {e!s}"
 
     async def _transition_to_approval_pending(self, context: WriteActionContext) -> None:
         """Transition POLICY_REVIEW -> APPROVAL_PENDING."""
@@ -297,7 +295,7 @@ class WriteActionWorkflow:
     async def _wait_for_approval(self, context: WriteActionContext) -> None:
         """Wait for human approval (max 4 hours, auto-escalate after)."""
         log.info("approval_requested", action_id=context.input.action_id, expires_at=context.approval_expires_at)
-        
+
         try:
             # Create approval request in approval service
             approval_request = await self.approval_service.create_request(
@@ -308,22 +306,22 @@ class WriteActionWorkflow:
                 context=context.input.context,
                 expires_at=context.approval_expires_at,
             )
-            
+
             # Wait for approval (simulated; in real Temporal, this would use signals/conditions)
             approval_decision = await self.approval_service.wait_for_decision(
                 approval_request_id=approval_request["id"],
                 timeout_seconds=14400,  # 4 hours
             )
-            
+
             context.approval_decision = approval_decision.get("approved", False)
             context.approval_actor_id = approval_decision.get("actor_id")
             context.approval_timestamp = datetime.fromisoformat(approval_decision.get("timestamp", datetime.utcnow().isoformat()))
-            
+
             if not context.approval_decision:
                 context.policy_approved = False
                 context.policy_reason = f"Approval denied by {context.approval_actor_id}"
-                
-        except asyncio.TimeoutError:
+
+        except TimeoutError:
             log.warning("approval_timeout", action_id=context.input.action_id)
             # Auto-escalate after 4h
             context.policy_approved = False
@@ -342,14 +340,14 @@ class WriteActionWorkflow:
             action_type=context.input.action_type,
             attempt=context.execution_attempts,
         )
-        
+
         try:
             # Route to appropriate tool based on action_type
             tool_result = await self._route_to_tool(context)
-            
+
             context.result_data = tool_result
             context.error_message = None
-            
+
         except Exception as e:
             log.error("write_action_execution_error", action_id=context.input.action_id, error=str(e))
             context.error_message = str(e)
@@ -359,10 +357,10 @@ class WriteActionWorkflow:
                 "attempted_args": context.input.arguments,
             })
 
-    async def _route_to_tool(self, context: WriteActionContext) -> Dict[str, Any]:
+    async def _route_to_tool(self, context: WriteActionContext) -> dict[str, Any]:
         """Route action to appropriate tool executor."""
         action_type = context.input.action_type
-        
+
         if action_type == WriteActionType.REFUND:
             return await self.tool_executor.execute_refund(
                 tenant_id=context.input.tenant_id,
@@ -418,11 +416,11 @@ class WriteActionWorkflow:
         """Compensate (rollback) the action (Saga compensation)."""
         if context.state not in (WriteActionState.FAILED, WriteActionState.EXECUTING, WriteActionState.RETRYING):
             return  # Nothing to compensate
-        
+
         context.transition_to(WriteActionState.COMPENSATING, "Rolling back failed action")
-        
+
         log.info("saga_compensation_starting", action_id=context.input.action_id, compensation_steps=len(context.compensation_steps))
-        
+
         # Reverse order of compensation
         for step in reversed(context.compensation_steps):
             try:
@@ -430,10 +428,10 @@ class WriteActionWorkflow:
             except Exception as e:
                 log.error("compensation_step_error", action_id=context.input.action_id, step=step, error=str(e))
 
-    async def _execute_compensation_step(self, context: WriteActionContext, step: Dict[str, Any]) -> None:
+    async def _execute_compensation_step(self, context: WriteActionContext, step: dict[str, Any]) -> None:
         """Execute a single compensation step."""
         action_type_str = step.get("action_type")
-        
+
         # Map action types to their compensation logic
         if action_type_str == WriteActionType.REFUND.value:
             # Reverse a refund: re-charge customer (or flag for manual review)

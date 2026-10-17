@@ -1,6 +1,5 @@
 """Training recommendations."""
 
-from typing import List, Dict, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,9 +10,8 @@ class TrainingRecommender:
 
     def __init__(self):
         """Initialize recommender."""
-        pass
 
-    async def recommend_training(self, agent_id: int) -> List[Dict]:
+    async def recommend_training(self, agent_id: int) -> list[dict]:
         """Recommend training modules."""
         return [
             {"category": "billing", "module": "advanced_billing", "priority": "high"},
@@ -27,6 +25,6 @@ class TrainingRecommender:
 
     async def compute_rolling_trend(
         self, agent_id: int, metric: str, days: int = 30
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         """Compute rolling trend for metric."""
         return [(i, 0.8 + i * 0.01) for i in range(days)]

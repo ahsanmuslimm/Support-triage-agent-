@@ -1,16 +1,17 @@
 """Zendesk webhook receiver with HMAC signature verification."""
 
-import hmac
 import hashlib
+import hmac
 import json
-from typing import Dict, Any, Optional
+from typing import Any
+
 from ..models.message import CanonicalMessage
 
 
 class ZendeskWebhookHandler:
     """Handles signed Zendesk webhook payloads."""
 
-    def __init__(self, webhook_secret: Optional[str] = None):
+    def __init__(self, webhook_secret: str | None = None):
         """Initialize handler.
 
         Args:
@@ -49,7 +50,7 @@ class ZendeskWebhookHandler:
     def parse_payload(
         self,
         raw_payload: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Parse JSON payload.
 
         Args:
@@ -62,11 +63,11 @@ class ZendeskWebhookHandler:
 
     def extract_message(
         self,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         tenant_id: str,
         conversation_id: str,
         channel_id: str = "zendesk",
-    ) -> Optional[CanonicalMessage]:
+    ) -> CanonicalMessage | None:
         """Extract CanonicalMessage from Zendesk webhook payload.
 
         Args:
@@ -94,7 +95,7 @@ class ZendeskWebhookHandler:
 
         # Determine sender type
         author_type = payload.get("author_type", "customer")
-        from ..models.message import SenderType, ChannelType
+        from ..models.message import ChannelType, SenderType
 
         sender_type = (
             SenderType.AGENT if author_type == "agent" else SenderType.CUSTOMER

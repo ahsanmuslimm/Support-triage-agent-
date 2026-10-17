@@ -1,7 +1,8 @@
 """Language detection for messages and KB articles."""
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import ClassVar
+
 import structlog
 
 log = structlog.get_logger()
@@ -17,7 +18,7 @@ class LanguageDetectionResult:
     confidence: float
     """Confidence score (0-1)."""
 
-    alternatives: List[tuple[str, float]] = None
+    alternatives: list[tuple[str, float]] = None
     """Alternative languages with scores."""
 
     def __post_init__(self):
@@ -29,7 +30,7 @@ class LanguageDetector:
     """Detect language of text using langdetect or TextBlob."""
 
     # Top 10 languages for per-language eval slices
-    TOP_LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ar"]
+    TOP_LANGUAGES: ClassVar[list[str]] = ["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ko", "ar"]
 
     async def detect_language(self, text: str) -> LanguageDetectionResult:
         """Detect language of text.
@@ -89,7 +90,7 @@ class LanguageDetector:
         """
         return language_code in self.TOP_LANGUAGES
 
-    def get_supported_languages(self) -> List[str]:
+    def get_supported_languages(self) -> list[str]:
         """Get list of supported languages for per-language eval slices.
 
         Returns:

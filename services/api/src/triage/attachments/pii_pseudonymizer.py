@@ -1,11 +1,10 @@
 """PII pseudonymization for extracted text using Presidio."""
 
+import uuid
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, List
+
 import structlog
-import uuid
-import re
 
 log = structlog.get_logger()
 
@@ -50,11 +49,11 @@ class PIIPseudonymizer:
             min_confidence: Minimum confidence threshold for PII detection.
         """
         self.min_confidence = min_confidence
-        self.token_map: Dict[str, str] = {}  # original_value -> token
-        self.reverse_map: Dict[str, str] = {}  # token -> original_value
-        self.entities: List[PIIEntity] = []
+        self.token_map: dict[str, str] = {}  # original_value -> token
+        self.reverse_map: dict[str, str] = {}  # token -> original_value
+        self.entities: list[PIIEntity] = []
 
-    async def pseudonymize(self, text: str) -> tuple[str, List[PIIEntity]]:
+    async def pseudonymize(self, text: str) -> tuple[str, list[PIIEntity]]:
         """Pseudonymize PII in text.
 
         Args:
@@ -167,13 +166,13 @@ class PIIPseudonymizer:
             restored = restored.replace(token, original_value)
         return restored
 
-    def get_entities_summary(self) -> Dict[str, int]:
+    def get_entities_summary(self) -> dict[str, int]:
         """Get summary of detected PII entities by type.
 
         Returns:
             Dict[str, int]: Count of entities by type.
         """
-        summary: Dict[str, int] = {}
+        summary: dict[str, int] = {}
         for entity in self.entities:
             entity_type = entity.entity_type.value
             summary[entity_type] = summary.get(entity_type, 0) + 1

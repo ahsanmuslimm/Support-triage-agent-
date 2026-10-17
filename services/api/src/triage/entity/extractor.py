@@ -1,11 +1,11 @@
 """Rule-based entity extraction using regex patterns."""
 
 import re
-import asyncio
-from typing import List, Optional
+from typing import ClassVar
+
 import structlog
 
-from triage.models.entity import ExtractedEntity, EntityType, EntityExtractionResult
+from triage.models.entity import EntityExtractionResult, EntityType, ExtractedEntity
 
 log = structlog.get_logger()
 
@@ -14,7 +14,7 @@ class RuleBasedEntityExtractor:
     """Extract entities using regex patterns with high confidence."""
 
     # Regex patterns for each entity type
-    PATTERNS = {
+    PATTERNS: ClassVar[dict[EntityType, list[str]]] = {
         EntityType.ORDER_ID: [
             r"#(\d{6,10})",  # #123456
             r"(ORD-[\w]+)",  # ORD-ABC123
@@ -57,11 +57,11 @@ class RuleBasedEntityExtractor:
     }
 
     # PII entity types
-    PII_TYPES = {EntityType.EMAIL, EntityType.PHONE, EntityType.CREDIT_CARD, EntityType.SSN}
+    PII_TYPES: ClassVar[set[EntityType]] = {EntityType.EMAIL, EntityType.PHONE, EntityType.CREDIT_CARD, EntityType.SSN}
 
     def __init__(self, linker=None):
         """Initialize extractor.
-        
+
         Args:
             linker: Optional EntityLinker instance for entity linking
         """
@@ -81,7 +81,7 @@ class RuleBasedEntityExtractor:
             EntityExtractionResult with extracted and linked entities
         """
         result = self.extract(text, message_id)
-        
+
         # Link entities if linker is available
         if self.linker:
             linked_entities = []
@@ -95,7 +95,7 @@ class RuleBasedEntityExtractor:
                     log.warning("entity_linking_failed", entity_type=entity.entity_type, error=str(e))
                 linked_entities.append(entity)
             result.entities = linked_entities
-        
+
         return result
 
     def extract(self, text: str, message_id: str) -> EntityExtractionResult:
@@ -108,8 +108,8 @@ class RuleBasedEntityExtractor:
         Returns:
             EntityExtractionResult with extracted entities
         """
-        entities: List[ExtractedEntity] = []
-        errors: List[str] = []
+        entities: list[ExtractedEntity] = []
+        errors: list[str] = []
         redacted_text = text
 
         for entity_type, patterns in self.PATTERNS.items():
@@ -147,7 +147,7 @@ class RuleBasedEntityExtractor:
                         entities.append(entity)
 
                 except Exception as e:
-                    errors.append(f"Pattern match error for {entity_type}: {str(e)}")
+                    errors.append(f"Pattern match error for {entity_type}: {e!s}")
                     log.error("pattern_match_error", entity_type=entity_type, error=str(e))
 
         return EntityExtractionResult(

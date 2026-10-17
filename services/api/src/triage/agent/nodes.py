@@ -1,20 +1,18 @@
 """LangGraph nodes for triage agent."""
 
-import structlog
-from typing import Any
 
-from triage.models.triage_state import TriageState
-from triage.models.decision import AutonomyLevel
+import contextlib
+
+import structlog
+
 from triage.classification.classifier import IntentClassifier
-from triage.entity.extractor import RuleBasedEntityExtractor
 from triage.decision.matrix import DecisionMatrix
-from triage.retrieval.hybrid import HybridRetriever
+from triage.entity.extractor import RuleBasedEntityExtractor
 from triage.generation.generator import ResponseGenerator
 from triage.generation.groundedness import GroundednessScorer
 from triage.generation.output_validator import OutputValidator
-from triage.tools.registry import ToolRegistry
-from triage.tools.executor import ToolExecutor
-from triage.tools.argument_binder import ArgumentBinder
+from triage.models.decision import AutonomyLevel
+from triage.models.triage_state import TriageState
 
 log = structlog.get_logger()
 
@@ -57,12 +55,10 @@ async def extract_entities_node(state: TriageState) -> TriageState:
     # Extract amount if available
     for entity in result.entities:
         if entity.entity_type.name == "AMOUNT":
-            try:
+            with contextlib.suppress(ValueError, AttributeError):
                 state.extracted_amount = float(
                     entity.normalized_value.replace("$", "").replace(",", "")
                 )
-            except (ValueError, AttributeError):
-                pass
 
     state.phase = "EXTRACT_ENTITIES"
     return state

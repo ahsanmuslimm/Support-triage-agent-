@@ -1,7 +1,5 @@
 """Send time optimization."""
 
-from typing import Dict, Optional
-from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,14 +10,14 @@ class SendTimeOptimizer:
 
     def __init__(self):
         """Initialize optimizer."""
-        self.engagement_schedules: Dict[int, Dict[int, float]] = {}
+        self.engagement_schedules: dict[int, dict[int, float]] = {}
 
     async def build_engagement_schedule(
         self,
         customer_id: int,
         tenant_id: int,
-        hourly_engagement: Optional[Dict[int, float]] = None,
-    ) -> Dict[int, float]:
+        hourly_engagement: dict[int, float] | None = None,
+    ) -> dict[int, float]:
         """Build hourly engagement schedule."""
         if hourly_engagement:
             self.engagement_schedules[customer_id] = hourly_engagement

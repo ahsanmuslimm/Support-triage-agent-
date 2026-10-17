@@ -1,6 +1,5 @@
 """Revenue lift calculation."""
 
-from typing import List, Dict, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,14 +10,13 @@ class RevenueLiftCalculator:
 
     def __init__(self):
         """Initialize calculator."""
-        pass
 
     async def calculate_revenue_lift(
         self,
-        treatment_customers: List[int],
-        control_customers: List[int],
+        treatment_customers: list[int],
+        control_customers: list[int],
         period: tuple,
-    ) -> Dict:
+    ) -> dict:
         """Calculate revenue lift."""
         return {
             "treatment_mean": 1200,
@@ -29,7 +27,7 @@ class RevenueLiftCalculator:
 
     async def ab_test_revenue_comparison(
         self, campaign_id: str, period: tuple
-    ) -> Dict:
+    ) -> dict:
         """Compare revenue per AB variant."""
         return {
             "control": 1000,

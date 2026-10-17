@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class LearningLoop:
 
     async def detect_drift(
         self, tenant_id: int, lookback_days: int = 7
-    ) -> Optional[dict]:
+    ) -> dict | None:
         """
         Detect model drift using EWMA.
 

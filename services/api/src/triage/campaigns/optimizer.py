@@ -1,13 +1,13 @@
 """Campaign optimizer orchestrator."""
 
-from typing import Optional, Dict, Any
 import logging
+from typing import Any
 
-from .incentive import IncentiveMatrixGenerator
 from .budget import BudgetAllocator
-from .send_time import SendTimeOptimizer
 from .channel import ChannelSelector
+from .incentive import IncentiveMatrixGenerator
 from .performance import PerformanceMonitor
+from .send_time import SendTimeOptimizer
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +27,10 @@ class CampaignOptimizer:
         self,
         customer_id: int,
         tenant_id: int,
-        lifecycle_stage: Optional[str] = None,
+        lifecycle_stage: str | None = None,
         ltv: float = 0.0,
         churn_prob: float = 0.0,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Generate campaign for customer."""
         # Select incentive
         offer = await self.incentive.select_offer(ltv=ltv, churn_prob=churn_prob)
@@ -52,6 +52,6 @@ class CampaignOptimizer:
             "lifecycle_stage": lifecycle_stage,
         }
 
-    async def execute_campaign(self, campaign: Dict[str, Any]) -> None:
+    async def execute_campaign(self, campaign: dict[str, Any]) -> None:
         """Execute campaign."""
         logger.info(f"Executing campaign for customer {campaign['customer_id']}")

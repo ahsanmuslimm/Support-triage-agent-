@@ -1,11 +1,10 @@
 """Base enricher classes and abstractions."""
 
-import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
-from .exceptions import CacheError, EntityValidationError
+from .exceptions import CacheError
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class CacheManager:
         self.redis = redis_client
         self.db = db_session
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         """Get value from cache. Try Redis first, then DB fallback."""
         if self.redis:
             try:
@@ -121,4 +120,3 @@ class EnricherBase(ABC):
     @abstractmethod
     async def enrich(self, resource_id: int, tenant_id: int) -> Any:
         """Enrich and return context object."""
-        pass

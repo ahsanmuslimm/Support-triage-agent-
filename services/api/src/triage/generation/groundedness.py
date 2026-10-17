@@ -1,8 +1,9 @@
 """Groundedness scoring: verify response claims are supported by context."""
 
-from dataclasses import dataclass
-from typing import List
 import re
+from dataclasses import dataclass
+from typing import ClassVar
+
 import structlog
 
 log = structlog.get_logger()
@@ -15,14 +16,14 @@ class GroundednessResult:
     grounding_score: float  # [0, 1] fraction of claims grounded
     supported_claims: int
     unsupported_claims: int
-    ungrounded_claims: List[str]  # Claims not supported by context
+    ungrounded_claims: list[str]  # Claims not supported by context
 
 
 class GroundednessScorer:
     """Score groundedness of generated response against context."""
 
     # Simple patterns for factual claims (contain numbers, names, dates)
-    CLAIM_PATTERNS = [
+    CLAIM_PATTERNS: ClassVar[list[str]] = [
         r"\b\d+\b",  # Numbers
         r"[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*",  # Proper nouns
         r"\d{1,4}[-/]\d{1,2}[-/]\d{1,4}",  # Dates
@@ -87,7 +88,7 @@ class GroundednessScorer:
         )
 
     @staticmethod
-    def _extract_claims(text: str) -> List[str]:
+    def _extract_claims(text: str) -> list[str]:
         """Extract factual claims from text.
 
         Simple approach: split into sentences, filter for claims with numbers/names/dates.

@@ -1,13 +1,13 @@
 """K-means clustering for lifecycle stage assignment."""
 
-from typing import Tuple, Dict, List, Optional
 import logging
+from typing import ClassVar
 
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-from .models import RFMDimensions, LifecycleStage
+from .models import LifecycleStage, RFMDimensions
 
 logger = logging.getLogger(__name__)
 
@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 class LifecycleClusterer:
     """K-means clustering (k=5) for lifecycle stage assignment."""
 
-    STAGE_ORDER = [LifecycleStage.NEW, LifecycleStage.GROWTH, LifecycleStage.MATURE, LifecycleStage.CHURNING, LifecycleStage.CHURNED]
+    STAGE_ORDER: ClassVar[list[LifecycleStage]] = [LifecycleStage.NEW, LifecycleStage.GROWTH, LifecycleStage.MATURE, LifecycleStage.CHURNING, LifecycleStage.CHURNED]
 
     def __init__(self):
         """Initialize clusterer."""
-        self.kmeans: Optional[KMeans] = None
-        self.cluster_centers: Optional[np.ndarray] = None
+        self.kmeans: KMeans | None = None
+        self.cluster_centers: np.ndarray | None = None
 
-    async def fit_kmeans(self, rfm_scores: List[RFMDimensions], k: int = 5) -> float:
+    async def fit_kmeans(self, rfm_scores: list[RFMDimensions], k: int = 5) -> float:
         """
         Fit K-means model to RFM scores.
 
@@ -57,7 +57,7 @@ class LifecycleClusterer:
 
     async def predict_stage(
         self, rfm: RFMDimensions
-    ) -> Tuple[LifecycleStage, float]:
+    ) -> tuple[LifecycleStage, float]:
         """
         Predict lifecycle stage for an RFM score.
 
@@ -94,8 +94,8 @@ class LifecycleClusterer:
         return stage, confidence
 
     async def assign_stages_batch(
-        self, rfm_scores: Dict[int, RFMDimensions]
-    ) -> Dict[int, Tuple[LifecycleStage, float]]:
+        self, rfm_scores: dict[int, RFMDimensions]
+    ) -> dict[int, tuple[LifecycleStage, float]]:
         """
         Assign lifecycle stages to multiple customers.
 

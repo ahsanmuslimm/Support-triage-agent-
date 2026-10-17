@@ -1,18 +1,20 @@
 """WhatsApp adapter with Meta Cloud API and 24h window tracking."""
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
+
 from triage.channels.connector import (
     Attachment,
     AttachmentType,
     HelpdeskConnector,
     MessageNormalization,
     ReplyResult,
+    ThreadEntry,
     TicketNormalization,
     TicketPriority,
     TicketStatus,
-    ThreadEntry,
     TicketUpdateRequest,
 )
 
@@ -22,7 +24,7 @@ log = structlog.get_logger()
 class WhatsAppWindow:
     """Tracks 24-hour messaging window for customer contact."""
 
-    def __init__(self, last_customer_message_timestamp: Optional[datetime] = None):
+    def __init__(self, last_customer_message_timestamp: datetime | None = None):
         """Initialize window tracker.
 
         Args:
@@ -79,7 +81,7 @@ class WhatsAppTemplate:
         self.language = language
         self.credit_cost = 0.5  # HSM costs 0.5 credits vs 1 for regular message
 
-    def matches_context(self, context: Dict[str, Any]) -> bool:
+    def matches_context(self, context: dict[str, Any]) -> bool:
         """Check if template matches current message context.
 
         Args:
@@ -104,7 +106,7 @@ class WhatsAppTemplateLibrary:
             WhatsAppTemplate("callback_request_001", "callback_request", "callback_request", "en"),
         ]
 
-    def find_template(self, context: Dict[str, Any]) -> Optional[WhatsAppTemplate]:
+    def find_template(self, context: dict[str, Any]) -> WhatsAppTemplate | None:
         """Find best-matching template for context.
 
         Args:
@@ -118,7 +120,7 @@ class WhatsAppTemplateLibrary:
                 return template
         return None
 
-    def get_all_templates(self) -> List[WhatsAppTemplate]:
+    def get_all_templates(self) -> list[WhatsAppTemplate]:
         """Get all available templates.
 
         Returns:
@@ -141,9 +143,9 @@ class WhatsAppAdapter(HelpdeskConnector):
         super().__init__(tenant_id, api_key, **config)
         self.phone_number_id = config.get("phone_number_id", "")
         self.template_library = WhatsAppTemplateLibrary()
-        self.windows: Dict[str, WhatsAppWindow] = {}  # phone_number -> Window
+        self.windows: dict[str, WhatsAppWindow] = {}  # phone_number -> Window
 
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize WhatsApp message from Meta Cloud API.
 
         Args:
@@ -218,7 +220,7 @@ class WhatsAppAdapter(HelpdeskConnector):
             metadata=metadata,
         )
 
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize WhatsApp conversation to ticket.
 
         Args:
@@ -257,7 +259,7 @@ class WhatsAppAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post reply to WhatsApp conversation.
 
@@ -342,7 +344,7 @@ class WhatsAppAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch WhatsApp conversation history.
 
         Args:
@@ -358,25 +360,24 @@ class WhatsAppAdapter(HelpdeskConnector):
             # In real implementation, GET from Meta Cloud API
             # GET /v18.0/{phone_number_id}/messages
 
-            thread = []
             # Simulate fetching messages
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"msg_{i}",
-                        sender_id=ticket_id if i % 2 == 0 else "agent",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"WhatsApp message {i}",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"type": "text"},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"msg_{i}",
+                    sender_id=ticket_id if i % 2 == 0 else "agent",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"WhatsApp message {i}",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"type": "text"},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e
 
     def _normalize_phone(self, phone_number: str) -> str:
         """Normalize phone number to E.164 format.
@@ -410,7 +411,7 @@ class WhatsAppAdapter(HelpdeskConnector):
             return False
         return window.is_within_window()
 
-    def get_24h_window_info(self, phone_number: str) -> Dict[str, Any]:
+    def get_24h_window_info(self, phone_number: str) -> dict[str, Any]:
         """Get 24h window information for phone number.
 
         Args:

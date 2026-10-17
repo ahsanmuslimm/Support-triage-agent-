@@ -1,11 +1,10 @@
 """Tenant context management for multi-tenant isolation."""
 
 from contextvars import ContextVar
-from typing import Optional
 from uuid import UUID
 
 # Context var for the current tenant ID
-_current_tenant_id: ContextVar[Optional[UUID]] = ContextVar(
+_current_tenant_id: ContextVar[UUID | None] = ContextVar(
     "_current_tenant_id", default=None
 )
 

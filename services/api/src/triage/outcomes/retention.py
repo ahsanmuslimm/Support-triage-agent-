@@ -1,6 +1,5 @@
 """Retention event analysis."""
 
-from typing import Dict, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,11 +10,10 @@ class RetentionAnalyzer:
 
     def __init__(self):
         """Initialize analyzer."""
-        pass
 
     async def analyze_retention_event(
-        self, customer_id: int, intervention: Dict
-    ) -> Dict:
+        self, customer_id: int, intervention: dict
+    ) -> dict:
         """Analyze retention event."""
         return {
             "customer_id": customer_id,

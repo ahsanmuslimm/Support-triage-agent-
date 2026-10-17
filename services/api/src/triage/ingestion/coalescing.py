@@ -1,8 +1,7 @@
 """Message coalescing for conversation batching."""
 
-import time
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import Any, ClassVar
+
 from ..models.message import CanonicalMessage, ChannelType
 
 
@@ -18,7 +17,7 @@ class MessageCoalescer:
     """
 
     # Debounce intervals per channel (in seconds)
-    DEBOUNCE_INTERVALS = {
+    DEBOUNCE_INTERVALS: ClassVar[dict[ChannelType, int]] = {
         ChannelType.EMAIL: 0,
         ChannelType.WEB_CHAT: 4,
         ChannelType.ZENDESK: 0,
@@ -32,7 +31,7 @@ class MessageCoalescer:
             redis_client: Redis client for distributed locking. If None, uses in-memory store.
         """
         self.redis = redis_client
-        self._in_memory_store: Dict[str, Dict[str, Any]] = {}  # Demo mode
+        self._in_memory_store: dict[str, dict[str, Any]] = {}  # Demo mode
 
     def find_or_create_conversation(
         self,
@@ -49,10 +48,9 @@ class MessageCoalescer:
             Conversation ID
         """
         conversation_id = message.conversation_id
-        coalesce_key = f"coalesce:{message.tenant_id}:{conversation_id}"
-        lock_key = f"lock:{message.tenant_id}:{conversation_id}"
 
-        # TODO: Implement Redis-based lock acquisition
+        # TODO: Implement Redis-based lock acquisition on
+        # f"lock:{tenant_id}:{conversation_id}" / f"coalesce:{tenant_id}:{conversation_id}"
         # For now, return conversation_id as-is
         return conversation_id
 
@@ -69,10 +67,8 @@ class MessageCoalescer:
             message.channel_type, 2
         )
 
-        if debounce_interval == 0:
-            return False  # Process immediately (email, Zendesk)
-
-        return True  # Queue for debounce
+        # 0 means process immediately (email, Zendesk); otherwise queue for debounce
+        return debounce_interval != 0
 
     def get_debounce_interval(self, channel_type: ChannelType) -> int:
         """Get debounce interval for channel type (in seconds)."""

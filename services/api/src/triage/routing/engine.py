@@ -1,8 +1,8 @@
 """Routing engine for agent assignment."""
 
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
+from enum import Enum
+
 import structlog
 
 log = structlog.get_logger()
@@ -22,8 +22,8 @@ class RoutingResult:
     """Result of routing decision."""
 
     route: RoutingDecision
-    agent_id: Optional[str] = None
-    reason: Optional[str] = None
+    agent_id: str | None = None
+    reason: str | None = None
     priority: int = 5
 
 

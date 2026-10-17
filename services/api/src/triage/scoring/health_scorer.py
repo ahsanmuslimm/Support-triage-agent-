@@ -1,10 +1,7 @@
 """S3.4: Account Health Scoring with LightGBM and SHAP."""
 
 import logging
-import json
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional, Tuple, List
 
 from .features import HealthFeatures
 
@@ -17,14 +14,14 @@ class HealthScore:
 
     churn_risk_score: float  # 0.0 - 1.0
     health_label: str  # 'healthy', 'at_risk'
-    shap_drivers: List[dict]  # Top 3 drivers: {feature, impact, direction}
+    shap_drivers: list[dict]  # Top 3 drivers: {feature, impact, direction}
     explanation: str
 
 
 class AccountHealthScorer:
     """LightGBM-based churn risk scorer with SHAP explanations."""
 
-    def __init__(self, model=None, model_path: Optional[str] = None):
+    def __init__(self, model=None, model_path: str | None = None):
         """
         Initialize scorer.
 
@@ -42,8 +39,9 @@ class AccountHealthScorer:
     def _load_model(self, model_path: str):
         """Load LightGBM model from disk."""
         try:
-            import lightgbm as lgb
             import pickle
+
+            import lightgbm as lgb
 
             if model_path.endswith(".pkl"):
                 with open(model_path, "rb") as f:
@@ -58,7 +56,7 @@ class AccountHealthScorer:
             logger.error(f"Failed to load model: {e}")
             raise
 
-    def predict(self, features: HealthFeatures) -> Tuple[float, str]:
+    def predict(self, features: HealthFeatures) -> tuple[float, str]:
         """
         Predict churn risk score (0.0 - 1.0) and label.
 
@@ -80,7 +78,7 @@ class AccountHealthScorer:
 
             # Convert features to 2D array for model inference
             X = np.array([features.to_array()])
-            
+
             # Use predict_proba if available (for binary classifiers), otherwise predict
             try:
                 # Try predict_proba first (returns probabilities for each class)
@@ -107,7 +105,7 @@ class AccountHealthScorer:
             logger.error(f"Model prediction failed: {e}")
             raise
 
-    def explain(self, features: HealthFeatures) -> List[dict]:
+    def explain(self, features: HealthFeatures) -> list[dict]:
         """
         Explain prediction using SHAP (top 3 drivers).
 
@@ -118,11 +116,11 @@ class AccountHealthScorer:
             return self._fallback_explain(features)
 
         try:
-            import shap
             import numpy as np
+            import shap
 
             X = np.array([features.to_array()])
-            
+
             try:
                 # Try to create SHAP explainer for tree models
                 explainer = shap.TreeExplainer(self.model)
@@ -139,16 +137,15 @@ class AccountHealthScorer:
                 # Get top 3 drivers by absolute SHAP value
                 feature_names = HealthFeatures.feature_names()
                 top_indices = np.argsort(np.abs(sv))[::-1][:3]
-                
-                drivers = []
-                for idx in top_indices:
-                    drivers.append(
-                        {
-                            "feature": feature_names[idx],
-                            "impact": float(sv[idx]),
-                            "direction": "positive" if sv[idx] > 0 else "negative",
-                        }
-                    )
+
+                drivers = [
+                    {
+                        "feature": feature_names[idx],
+                        "impact": float(sv[idx]),
+                        "direction": "positive" if sv[idx] > 0 else "negative",
+                    }
+                    for idx in top_indices
+                ]
 
                 return drivers
             except Exception as shap_error:
@@ -156,18 +153,18 @@ class AccountHealthScorer:
                 # Fallback to KernelExplainer if TreeExplainer fails
                 explainer = shap.KernelExplainer(self.model.predict, X)
                 shap_values = explainer.shap_values(X)
-                
+
                 if isinstance(shap_values, list):
                     sv = shap_values[1] if len(shap_values) > 1 else shap_values[0]
                 else:
                     sv = shap_values
-                
+
                 if isinstance(sv, np.ndarray) and len(sv.shape) > 1:
                     sv = sv[0]
-                
+
                 feature_names = HealthFeatures.feature_names()
                 top_indices = np.argsort(np.abs(sv))[::-1][:3]
-                
+
                 drivers = []
                 for idx in top_indices:
                     drivers.append(
@@ -178,7 +175,7 @@ class AccountHealthScorer:
                         }
                     )
                 return drivers
-                
+
         except ImportError:
             logger.warning("SHAP not installed, using fallback explanation")
             return self._fallback_explain(features)
@@ -186,7 +183,7 @@ class AccountHealthScorer:
             logger.warning(f"SHAP explanation failed: {e}")
             return self._fallback_explain(features)
 
-    def _fallback_score(self, features: HealthFeatures) -> Tuple[float, str]:
+    def _fallback_score(self, features: HealthFeatures) -> tuple[float, str]:
         """
         Simple rule-based scoring when model unavailable.
 
@@ -229,7 +226,7 @@ class AccountHealthScorer:
         label = "at_risk" if score >= self.threshold else "healthy"
         return score, label
 
-    def _fallback_explain(self, features: HealthFeatures) -> List[dict]:
+    def _fallback_explain(self, features: HealthFeatures) -> list[dict]:
         """Simple explanation when SHAP unavailable."""
         drivers = []
 

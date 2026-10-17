@@ -6,7 +6,6 @@ from typing import Any
 import structlog
 from structlog.types import EventDict
 
-
 # PII field patterns to mask
 _PII_FIELDS = {"email", "phone", "name", "address", "ip", "token", "card", "ssn", "dob"}
 

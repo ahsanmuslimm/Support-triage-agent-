@@ -1,9 +1,10 @@
 """RFC 9457 Problem Details error handling (S10.1)."""
 
-from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from typing import Any, ClassVar
+
 from fastapi import HTTPException, status
+from pydantic import BaseModel, Field
 
 
 class ProblemDetail(BaseModel):
@@ -12,13 +13,13 @@ class ProblemDetail(BaseModel):
     type: str = Field(..., description="Problem type URI")
     title: str = Field(..., description="Short human-readable summary")
     status: int = Field(..., description="HTTP status code")
-    detail: Optional[str] = Field(None, description="Human-readable explanation")
-    instance: Optional[str] = Field(None, description="URI to specific occurrence")
+    detail: str | None = Field(None, description="Human-readable explanation")
+    instance: str | None = Field(None, description="URI to specific occurrence")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    extensions: Dict[str, Any] = Field(default_factory=dict)
+    extensions: dict[str, Any] = Field(default_factory=dict)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "type": "https://api.triage.app/problems/invalid-scope",
                 "title": "Invalid Scope",
@@ -37,9 +38,9 @@ class APIError(HTTPException):
         type: str,
         title: str,
         status_code: int,
-        detail: Optional[str] = None,
-        instance: Optional[str] = None,
-        extensions: Optional[Dict[str, Any]] = None,
+        detail: str | None = None,
+        instance: str | None = None,
+        extensions: dict[str, Any] | None = None,
     ):
         self.type = type
         self.title = title
@@ -68,7 +69,7 @@ class APIError(HTTPException):
 class InvalidScopeError(APIError):
     """API key lacks required scope."""
 
-    def __init__(self, required_scope: str, instance: Optional[str] = None):
+    def __init__(self, required_scope: str, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/invalid-scope",
             title="Invalid Scope",
@@ -81,7 +82,7 @@ class InvalidScopeError(APIError):
 class InvalidAPIKeyError(APIError):
     """Invalid or missing API key."""
 
-    def __init__(self, instance: Optional[str] = None):
+    def __init__(self, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/invalid-api-key",
             title="Invalid API Key",
@@ -94,7 +95,7 @@ class InvalidAPIKeyError(APIError):
 class ConflictError(APIError):
     """Resource conflict (e.g., duplicate idempotency key)."""
 
-    def __init__(self, detail: str, instance: Optional[str] = None):
+    def __init__(self, detail: str, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/conflict",
             title="Conflict",
@@ -107,7 +108,7 @@ class ConflictError(APIError):
 class NotFoundError(APIError):
     """Resource not found."""
 
-    def __init__(self, resource_type: str, resource_id: str, instance: Optional[str] = None):
+    def __init__(self, resource_type: str, resource_id: str, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/not-found",
             title="Not Found",
@@ -120,7 +121,7 @@ class NotFoundError(APIError):
 class PreconditionFailedError(APIError):
     """ETag mismatch or precondition failed."""
 
-    def __init__(self, detail: str, instance: Optional[str] = None):
+    def __init__(self, detail: str, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/precondition-failed",
             title="Precondition Failed",
@@ -133,7 +134,7 @@ class PreconditionFailedError(APIError):
 class RateLimitError(APIError):
     """Rate limit exceeded."""
 
-    def __init__(self, reset_at: int, instance: Optional[str] = None):
+    def __init__(self, reset_at: int, instance: str | None = None):
         super().__init__(
             type="https://api.triage.app/problems/rate-limit-exceeded",
             title="Rate Limit Exceeded",
@@ -144,7 +145,7 @@ class RateLimitError(APIError):
         )
 
 
-def format_error_response(error: APIError) -> Dict[str, Any]:
+def format_error_response(error: APIError) -> dict[str, Any]:
     """Format error as RFC 9457 response."""
     return {
         "type": error.type,

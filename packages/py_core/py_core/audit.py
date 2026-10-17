@@ -37,14 +37,13 @@ async def verify_audit_chain(session: AsyncSession, tenant_id: UUID) -> list[Aud
         {"tenant_id": str(tenant_id)},
     )
 
-    breaks = []
-    for row in result:
-        breaks.append(
-            AuditBreak(
-                broken_at=row[0],
-                expected_hash=row[1],
-                found_hash=row[2],
-            )
+    breaks = [
+        AuditBreak(
+            broken_at=row[0],
+            expected_hash=row[1],
+            found_hash=row[2],
         )
+        for row in result
+    ]
 
     return breaks

@@ -1,18 +1,20 @@
 """Freshdesk adapter implementation."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
+
 from triage.channels.connector import (
     Attachment,
     AttachmentType,
     HelpdeskConnector,
     MessageNormalization,
     ReplyResult,
+    ThreadEntry,
     TicketNormalization,
     TicketPriority,
     TicketStatus,
-    ThreadEntry,
     TicketUpdateRequest,
 )
 
@@ -22,7 +24,7 @@ log = structlog.get_logger()
 class FreshdeskAdapter(HelpdeskConnector):
     """Freshdesk helpdesk adapter."""
 
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize Freshdesk conversation note/reply.
 
         Args:
@@ -43,17 +45,16 @@ class FreshdeskAdapter(HelpdeskConnector):
         sender_email = provider_message.get("user_email", "")
 
         # Parse attachments
-        attachments = []
-        for att in provider_message.get("attachments", []):
-            attachments.append(
-                Attachment(
-                    filename=att.get("name", "attachment"),
-                    content_type=att.get("content_type", "application/octet-stream"),
-                    url=att.get("attachment_url", ""),
-                    size_bytes=att.get("size", 0),
-                    attachment_type=AttachmentType.DOCUMENT,
-                )
+        attachments = [
+            Attachment(
+                filename=att.get("name", "attachment"),
+                content_type=att.get("content_type", "application/octet-stream"),
+                url=att.get("attachment_url", ""),
+                size_bytes=att.get("size", 0),
+                attachment_type=AttachmentType.DOCUMENT,
             )
+            for att in provider_message.get("attachments", [])
+        ]
 
         metadata = {
             "note_type": provider_message.get("note_type", ""),
@@ -76,7 +77,7 @@ class FreshdeskAdapter(HelpdeskConnector):
             metadata=metadata,
         )
 
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize Freshdesk ticket.
 
         Args:
@@ -141,7 +142,7 @@ class FreshdeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post reply to Freshdesk ticket.
 
@@ -229,7 +230,7 @@ class FreshdeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch Freshdesk ticket history.
 
         Args:
@@ -245,22 +246,21 @@ class FreshdeskAdapter(HelpdeskConnector):
             # In real implementation, GET from Freshdesk API
             # GET /tickets/{id}/notes
 
-            thread = []
             # Simulate fetching 5 notes
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"note_{i}",
-                        sender_id=f"user_{i}",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"Note {i} body",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"note_type": "reply"},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"note_{i}",
+                    sender_id=f"user_{i}",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"Note {i} body",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"note_type": "reply"},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e

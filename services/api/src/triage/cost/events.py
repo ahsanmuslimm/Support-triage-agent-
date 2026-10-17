@@ -1,7 +1,7 @@
 """Cost event tracking."""
 
-from typing import Dict
 import logging
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class CostEventTracker:
     """Track cost events."""
 
-    COST_MATRIX = {
+    COST_MATRIX: ClassVar[dict[str, float]] = {
         "escalation": 4.50,
         "automation": 0.08,
         "agent": 0.65,
@@ -29,7 +29,7 @@ class CostEventTracker:
         tenant_id: int,
         customer_id: int,
         cost_amount: float,
-        metadata: Dict,
+        metadata: dict,
     ) -> None:
         """Log cost event."""
         self.events.append({
@@ -49,7 +49,7 @@ class CostEventTracker:
 
     async def get_daily_costs(
         self, tenant_id: int, date: str
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Get daily costs by event type."""
         costs = {}
         for e in self.events:

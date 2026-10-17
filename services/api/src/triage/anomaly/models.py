@@ -3,7 +3,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -28,7 +29,7 @@ class AnomalySignal(BaseModel):
     threshold: float
     deviation_sigma: float  # Standard deviations above baseline
     confidence: float  # 0.0 - 1.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     class Config:
         use_enum_values = False
@@ -40,18 +41,18 @@ class AnomalyMetrics:
 
     tenant_id: int
     signal_type: SignalType
-    
+
     # Current values
     current_value: float
     smoothed_value: float  # EWMA
-    
+
     # Baseline statistics
     baseline_mean: float
     baseline_std: float
-    
+
     # Anomaly indicators
     deviation_sigma: float
     is_anomaly: bool
     anomaly_confidence: float
-    
+
     updated_at: datetime = field(default_factory=datetime.utcnow)

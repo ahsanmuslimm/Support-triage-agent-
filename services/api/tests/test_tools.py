@@ -1,11 +1,11 @@
 """Tests for tool integration (Phase 6)."""
 
 import pytest
-from triage.tools.registry import ToolRegistry, AutonomyLevel, ToolSpec
+from triage.models.decision import AutonomyLevel as DecisionAutonomyLevel
+from triage.models.entity import EntityType, ExtractedEntity
 from triage.tools.argument_binder import ArgumentBinder
 from triage.tools.executor import ToolExecutor
-from triage.models.entity import ExtractedEntity, EntityType
-from triage.models.decision import AutonomyLevel as DecisionAutonomyLevel
+from triage.tools.registry import AutonomyLevel, ToolRegistry
 
 
 class TestToolRegistry:

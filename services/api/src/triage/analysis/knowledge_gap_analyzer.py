@@ -1,7 +1,6 @@
 """S3.5: Knowledge Gap Analysis."""
 
 import logging
-from typing import List, Dict
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ class KnowledgeGapAnalyzer:
 
     async def analyze_gaps(
         self, tenant_id: int, lookback_days: int = 7
-    ) -> List[KnowledgeGap]:
+    ) -> list[KnowledgeGap]:
         """
         Analyze queries from last N days and identify gaps.
 

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+
 import structlog
 
 log = structlog.get_logger()
@@ -33,7 +33,7 @@ class ExtractionResult:
     pages: int = 0
     """Number of pages (for PDFs)."""
 
-    error: Optional[str] = None
+    error: str | None = None
     """Error message if extraction failed."""
 
 
@@ -56,7 +56,7 @@ class TextExtractor:
 
             with pdfplumber.open(file_path) as pdf:
                 text_parts = []
-                for page_num, page in enumerate(pdf.pages):
+                for _page_num, page in enumerate(pdf.pages):
                     text = page.extract_text()
                     if text:
                         text_parts.append(text)
@@ -136,11 +136,8 @@ class TextExtractor:
             log.info("docx_extraction_start", file=file_path)
 
             doc = Document(file_path)
-            text_parts = []
 
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    text_parts.append(para.text)
+            text_parts = [para.text for para in doc.paragraphs if para.text.strip()]
 
             # Extract table text
             for table in doc.tables:

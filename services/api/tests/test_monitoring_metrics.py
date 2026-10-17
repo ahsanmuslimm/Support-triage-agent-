@@ -1,10 +1,9 @@
 """Tests for monitoring and metrics (S4.9, S4.4)."""
 
-import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
 
-from triage.monitoring.metrics import MetricsCollector
+import pytest
 from triage.monitoring.dashboard import DashboardServer
+from triage.monitoring.metrics import MetricsCollector
 
 
 class TestMetricsCollector:
@@ -71,7 +70,7 @@ class TestDashboardServer:
     async def test_get_dashboard_data(self, server):
         """Test getting dashboard data."""
         data = await server.get_dashboard_data(1)
-        
+
         assert "agent_performance" in data
         assert "anomaly_alerts" in data
         assert "override_queue" in data
@@ -82,7 +81,7 @@ class TestDashboardServer:
     async def test_dashboard_agent_performance_panel(self, server):
         """Test agent performance panel."""
         panel = await server._get_agent_performance_panel(1)
-        
+
         assert "kpis" in panel
         assert len(panel["kpis"]) > 0
         assert "current_vs_baseline" in panel
@@ -91,14 +90,14 @@ class TestDashboardServer:
     async def test_dashboard_anomaly_alerts_panel(self, server):
         """Test anomaly alerts panel."""
         panel = await server._get_anomaly_alerts_panel(1)
-        
+
         assert isinstance(panel, list)
 
     @pytest.mark.asyncio
     async def test_dashboard_override_queue_panel(self, server):
         """Test override queue panel."""
         panel = await server._get_override_queue_panel(1)
-        
+
         assert "pending_count" in panel
         assert "recent_overrides" in panel
 
@@ -106,7 +105,7 @@ class TestDashboardServer:
     async def test_dashboard_workload_balancing_panel(self, server):
         """Test workload balancing panel."""
         panel = await server._get_workload_balancing_panel(1)
-        
+
         assert "queue_depth" in panel
         assert "oncall_utilization" in panel
         assert "sla_forecast" in panel

@@ -1,6 +1,8 @@
 """S6.3 + S6.4: Resilient event consumer with retry logic and priority routing."""
-from typing import Callable, Dict, Any
 import asyncio
+from collections.abc import Callable
+from typing import Any
+
 import structlog
 
 log = structlog.get_logger(__name__)
@@ -33,7 +35,7 @@ class ResilientEventConsumer:
 
     async def consume_with_retry(
         self,
-        event: Dict[str, Any],
+        event: dict[str, Any],
         handler_func: Callable,
         use_slow_path: bool = False,
     ) -> None:
@@ -70,7 +72,7 @@ class ResilientEventConsumer:
                     return
 
                 # Execute handler
-                result = await handler_func(event)
+                await handler_func(event)
 
                 log.info(
                     "event_processed",
@@ -105,7 +107,7 @@ class ResilientEventConsumer:
 
     async def consume_with_priority_routing(
         self,
-        event: Dict[str, Any],
+        event: dict[str, Any],
         handler_func: Callable,
     ) -> None:
         """Consume event with priority-based routing to worker lanes.

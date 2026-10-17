@@ -1,8 +1,7 @@
 """Feedback loop extension for Sprint 4 signals."""
 
 import logging
-from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ class FeedbackLoopS4:
     def __init__(self, db_session=None):
         """
         Initialize feedback loop.
-        
+
         Args:
             db_session: Database session
         """
@@ -22,10 +21,10 @@ class FeedbackLoopS4:
     async def ingest_override_reason(self, override_reason) -> bool:
         """
         Ingest human override reason.
-        
+
         Args:
             override_reason: OverrideReason object
-        
+
         Returns:
             Success flag
         """
@@ -35,17 +34,17 @@ class FeedbackLoopS4:
                 f"decision={override_reason.override_decision} "
                 f"reason={override_reason.reason_text}"
             )
-            
+
             # Route to escalation rules engine for model improvement
             await self._route_to_escalation_rules(override_reason)
-            
+
             # Log to feedback_signals table
             await self._log_feedback_signal(
                 tenant_id=override_reason.tenant_id,
                 signal_type="override_reason",
                 metadata=override_reason.dict(),
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to ingest override reason: {e}")
@@ -61,14 +60,14 @@ class FeedbackLoopS4:
     ) -> bool:
         """
         Ingest sentiment shift (CSAT delta).
-        
+
         Args:
             customer_id: Customer ID
             tenant_id: Tenant ID
             previous_sentiment: Previous sentiment score
             current_sentiment: Current sentiment score
             delta: Difference
-        
+
         Returns:
             Success flag
         """
@@ -77,10 +76,10 @@ class FeedbackLoopS4:
                 f"Ingested sentiment shift: customer={customer_id} "
                 f"delta={delta} ({previous_sentiment} -> {current_sentiment})"
             )
-            
+
             # Route to health scorer for customer health recalculation
             await self._route_to_health_scorer(customer_id, tenant_id, delta)
-            
+
             # Log to feedback_signals
             await self._log_feedback_signal(
                 tenant_id=tenant_id,
@@ -92,7 +91,7 @@ class FeedbackLoopS4:
                     "delta": delta,
                 },
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to ingest sentiment shift: {e}")
@@ -108,14 +107,14 @@ class FeedbackLoopS4:
     ) -> bool:
         """
         Ingest model retraining trigger.
-        
+
         Args:
             trigger_type: 'accuracy', 'drift', 'coverage'
             model_name: Model being monitored
             metric_name: Metric that triggered
             threshold: Alert threshold
             current_value: Current metric value
-        
+
         Returns:
             Success flag
         """
@@ -124,10 +123,10 @@ class FeedbackLoopS4:
                 f"Retraining trigger: model={model_name} "
                 f"metric={metric_name} threshold={threshold} current={current_value}"
             )
-            
+
             # Route to learning loop for model retraining
             await self._route_to_learning_loop(trigger_type, model_name, current_value)
-            
+
             # Log to feedback_signals
             await self._log_feedback_signal(
                 tenant_id=0,  # Global signal
@@ -140,7 +139,7 @@ class FeedbackLoopS4:
                     "current": current_value,
                 },
             )
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to ingest retraining trigger: {e}")
@@ -197,16 +196,16 @@ class FeedbackLoopS4:
         self,
         tenant_id: int,
         signal_type: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> bool:
         """
         Log feedback signal to feedback_signals table.
-        
+
         Args:
             tenant_id: Tenant ID
             signal_type: Type of signal
             metadata: Signal metadata
-        
+
         Returns:
             Success flag
         """

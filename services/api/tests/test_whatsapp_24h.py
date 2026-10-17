@@ -1,8 +1,9 @@
 """Tests for WhatsApp 24-hour window tracking."""
 
-import pytest
 from datetime import datetime, timedelta
-from triage.channels.whatsapp import WhatsAppWindow, WhatsAppTemplateLibrary
+
+import pytest
+from triage.channels.whatsapp import WhatsAppTemplateLibrary, WhatsAppWindow
 
 
 class TestWhatsAppWindow:

@@ -1,8 +1,9 @@
 """Decision matrix and autonomy models for Sprint 2."""
 
+from enum import Enum, IntEnum
+from typing import Any, ClassVar
+
 from pydantic import BaseModel, Field
-from enum import IntEnum, Enum
-from typing import Optional, List
 
 
 class AutonomyLevel(IntEnum):
@@ -36,18 +37,18 @@ class PolicyInput(BaseModel):
     """Input to the decision matrix."""
 
     message_text: str
-    intent_name: Optional[str] = Field(default=None)
-    intent_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    intent_name: str | None = Field(default=None)
+    intent_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     customer_tier: str = Field(default="standard")  # standard, premium, enterprise
     customer_ial: int = Field(default=0, ge=0, le=3)  # Identity Assurance Level
-    safety_flags: List[SafetyFlag] = Field(default_factory=list)
-    extracted_amount: Optional[float] = Field(default=None)
+    safety_flags: list[SafetyFlag] = Field(default_factory=list)
+    extracted_amount: float | None = Field(default=None)
     channel: str = Field(default="email")  # email, chat, sms, etc.
     is_repeat_customer: bool = Field(default=False)
     previous_resolution_attempts: int = Field(default=0)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "message_text": "I want to refund order ORDER-123",
                 "intent_name": "refund",
@@ -68,12 +69,12 @@ class DecisionResult(BaseModel):
 
     autonomy_level: AutonomyLevel
     reason: str
-    rule_triggered: Optional[str] = Field(default=None, description="Which rule was matched")
+    rule_triggered: str | None = Field(default=None, description="Which rule was matched")
     recommended_action: str = Field(default="escalate")  # escalate, compose_draft, execute_tools, hold_for_agent
     fallback_required: bool = Field(default=False)
 
     class Config:
-        json_schema_extra = {
+        json_schema_extra: ClassVar[dict[str, dict[str, Any]]] = {
             "example": {
                 "autonomy_level": 2,
                 "reason": "Refund < $500 and customer verified",

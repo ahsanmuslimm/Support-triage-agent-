@@ -1,11 +1,10 @@
 """Tests for conversation handoff (S4.8)."""
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch, AsyncMock
 
+import pytest
 from triage.escalation.handoff import HandoffComposer
-from triage.escalation.models import TriageState, EscalationJob, Priority
+from triage.escalation.models import EscalationJob, Priority, TriageState
 
 
 class TestHandoffComposer:
@@ -81,7 +80,7 @@ class TestHandoffComposer:
             enrichment_context=enrichment_context,
             escalation_job=sample_job,
         )
-        
+
         assert handoff is not None
         assert handoff.escalation_id == 1
         assert len(handoff.summary_text) > 0
@@ -92,12 +91,12 @@ class TestHandoffComposer:
     async def test_summary_extraction(self, composer, base_state, enrichment_context):
         """Test summary text extraction."""
         summary = composer._extract_summary(
-            base_state, enrichment_context, sample_job := EscalationJob(
+            base_state, enrichment_context, EscalationJob(
                 id=1, tenant_id=1, ticket_id="TICKET-001", priority=Priority.P1,
                 deadline=datetime.utcnow(), status="pending", created_at=datetime.utcnow()
             )
         )
-        
+
         assert len(summary) > 0
         assert len(summary) >= 50  # At least 50 chars
         assert "order_status" in summary or "Issue" in summary
@@ -110,7 +109,7 @@ class TestHandoffComposer:
         context = composer._extract_customer_context(
             enrichment_context, base_state
         )
-        
+
         assert "health_score" in context
         assert "churn_risk" in context
         assert "is_vip" in context
@@ -131,7 +130,7 @@ class TestHandoffComposer:
                 "last_3_attempts": [{"intent": "help"}],
             },
         }
-        
+
         score = composer._compute_quality_score(handoff_data)
         assert score >= 0.7  # High quality
 
@@ -142,7 +141,7 @@ class TestHandoffComposer:
             "summary": "Bad",
             "customer_context": {},
         }
-        
+
         score = composer._compute_quality_score(handoff_data)
         assert score < 0.5  # Low quality
 
@@ -166,11 +165,11 @@ class TestHandoffComposer:
             "customer": {"is_vip": True},
             "health_score": 0.7,
         }
-        
+
         handoff = await composer.compose_handoff(
             1, base_state, enrichment, sample_job
         )
-        
+
         assert handoff is not None
         assert handoff.customer_context["is_vip"] is True
 
@@ -184,11 +183,11 @@ class TestHandoffComposer:
             "customer": {},
             "health_score": 0.3,
         }
-        
+
         handoff = await composer.compose_handoff(
             1, base_state, enrichment, sample_job
         )
-        
+
         assert handoff is not None
         assert handoff.customer_context["churn_risk"] == 0.85
 
@@ -198,19 +197,6 @@ class TestHandoffComposer:
         handoff = await composer.compose_handoff(
             1, base_state, {}, sample_job
         )
-        
+
         assert handoff is not None
         # Should still produce valid handoff with defaults
-
-    @pytest.fixture
-    def sample_job(self):
-        """Sample escalation job."""
-        return EscalationJob(
-            id=1,
-            tenant_id=1,
-            ticket_id="TICKET-001",
-            priority=Priority.P1,
-            deadline=datetime.utcnow() + timedelta(hours=1),
-            status="pending",
-            created_at=datetime.utcnow(),
-        )

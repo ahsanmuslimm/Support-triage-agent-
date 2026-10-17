@@ -1,13 +1,12 @@
 """JWT validation for in-app widget SDK."""
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
-import structlog
 import base64
-import hashlib
-import hmac
 import json
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
+
+import structlog
 
 log = structlog.get_logger()
 
@@ -22,31 +21,26 @@ class Algorithm(str, Enum):
 class JWTError(Exception):
     """JWT validation error."""
 
-    pass
 
 
 class TokenExpiredError(JWTError):
     """Token expired."""
 
-    pass
 
 
 class AlgorithmMismatchError(JWTError):
     """Algorithm does not match expected."""
 
-    pass
 
 
 class AudienceMismatchError(JWTError):
     """Audience claim does not match."""
 
-    pass
 
 
 class KeyRotationError(JWTError):
     """Key rotation or retrieval failed."""
 
-    pass
 
 
 class JWTValidator:
@@ -68,7 +62,7 @@ class JWTValidator:
         self.tenant_id = tenant_id
         self.public_key = public_key
 
-    def validate(self, token: str, expected_customer_id: Optional[str] = None) -> Dict[str, Any]:
+    def validate(self, token: str, expected_customer_id: str | None = None) -> dict[str, Any]:
         """Validate JWT token.
 
         Args:
@@ -91,7 +85,7 @@ class JWTValidator:
 
             # Decode header
             header = self._decode_base64(header_b64)
-            
+
             # Check algorithm in header (prevent algorithm confusion)
             alg = header.get("alg", "")
             if alg != self.REQUIRED_ALGORITHM.value:
@@ -150,9 +144,9 @@ class JWTValidator:
             log.error("jwt_validation_failed", error=str(e), tenant_id=self.tenant_id)
             if isinstance(e, JWTError):
                 raise
-            raise JWTError(f"Validation failed: {e}")
+            raise JWTError(f"Validation failed: {e}") from e
 
-    def _decode_base64(self, data: str) -> Dict[str, Any]:
+    def _decode_base64(self, data: str) -> dict[str, Any]:
         """Decode base64url-encoded JSON.
 
         Args:
@@ -173,7 +167,7 @@ class JWTValidator:
             decoded = base64.urlsafe_b64decode(data)
             return json.loads(decoded)
         except Exception as e:
-            raise JWTError(f"Failed to decode base64url: {e}")
+            raise JWTError(f"Failed to decode base64url: {e}") from e
 
     def _verify_es256_signature(
         self,
@@ -193,9 +187,9 @@ class JWTValidator:
         """
         try:
             # Import cryptography for ES256 verification
+            from cryptography.hazmat.backends import default_backend
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import ec
-            from cryptography.hazmat.backends import default_backend
             from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
             # Load public key
@@ -212,7 +206,7 @@ class JWTValidator:
 
             log.debug("es256_signature_verified")
         except Exception as e:
-            raise JWTError(f"ES256 signature verification failed: {e}")
+            raise JWTError(f"ES256 signature verification failed: {e}") from e
 
 
 class KeyRotationManager:
@@ -227,7 +221,7 @@ class KeyRotationManager:
         """
         self.tenant_id = tenant_id
         self.keys_endpoint = keys_endpoint
-        self.keys: Dict[str, str] = {}  # kid -> public_key
+        self.keys: dict[str, str] = {}  # kid -> public_key
         self.last_refresh = datetime.utcnow()
         self.refresh_interval = timedelta(hours=1)
 
@@ -281,7 +275,7 @@ class KeyRotationManager:
 
         except Exception as e:
             log.error("key_refresh_failed", error=str(e))
-            raise KeyRotationError(f"Failed to refresh keys: {e}")
+            raise KeyRotationError(f"Failed to refresh keys: {e}") from e
 
     def add_key(self, kid: str, public_key: str) -> None:
         """Manually add a public key.

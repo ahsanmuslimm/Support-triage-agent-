@@ -1,8 +1,7 @@
 """Health features extraction for ML scoring."""
 
-from dataclasses import dataclass, asdict
-from typing import Optional
 import logging
+from dataclasses import asdict, dataclass
 
 logger = logging.getLogger(__name__)
 

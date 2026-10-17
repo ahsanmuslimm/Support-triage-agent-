@@ -1,18 +1,20 @@
 """Zendesk adapter implementation with advanced routing."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
+
 from triage.channels.connector import (
     Attachment,
     AttachmentType,
     HelpdeskConnector,
     MessageNormalization,
     ReplyResult,
+    ThreadEntry,
     TicketNormalization,
     TicketPriority,
     TicketStatus,
-    ThreadEntry,
     TicketUpdateRequest,
 )
 
@@ -22,7 +24,7 @@ log = structlog.get_logger()
 class ZendeskAdapter(HelpdeskConnector):
     """Zendesk helpdesk adapter with sidebar + advanced routing."""
 
-    async def normalize_message(self, provider_message: Dict[str, Any]) -> MessageNormalization:
+    async def normalize_message(self, provider_message: dict[str, Any]) -> MessageNormalization:
         """Normalize Zendesk comment.
 
         Args:
@@ -48,17 +50,16 @@ class ZendeskAdapter(HelpdeskConnector):
         }
 
         # Parse attachments
-        attachments = []
-        for att in provider_message.get("attachments", []):
-            attachments.append(
-                Attachment(
-                    filename=att.get("filename", "attachment"),
-                    content_type=att.get("content_type", "application/octet-stream"),
-                    url=att.get("content_url", ""),
-                    size_bytes=att.get("size", 0),
-                    attachment_type=AttachmentType.DOCUMENT,
-                )
+        attachments = [
+            Attachment(
+                filename=att.get("filename", "attachment"),
+                content_type=att.get("content_type", "application/octet-stream"),
+                url=att.get("content_url", ""),
+                size_bytes=att.get("size", 0),
+                attachment_type=AttachmentType.DOCUMENT,
             )
+            for att in provider_message.get("attachments", [])
+        ]
 
         return MessageNormalization(
             message_id=str(provider_message.get("id", "")),
@@ -75,7 +76,7 @@ class ZendeskAdapter(HelpdeskConnector):
             metadata=metadata,
         )
 
-    async def normalize_ticket(self, provider_ticket: Dict[str, Any]) -> TicketNormalization:
+    async def normalize_ticket(self, provider_ticket: dict[str, Any]) -> TicketNormalization:
         """Normalize Zendesk ticket.
 
         Args:
@@ -143,7 +144,7 @@ class ZendeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         message_body: str,
-        attachments: Optional[List[Attachment]] = None,
+        attachments: list[Attachment] | None = None,
     ) -> ReplyResult:
         """Post comment to Zendesk ticket.
 
@@ -236,7 +237,7 @@ class ZendeskAdapter(HelpdeskConnector):
         self,
         ticket_id: str,
         limit: int = 100,
-    ) -> List[ThreadEntry]:
+    ) -> list[ThreadEntry]:
         """Fetch Zendesk ticket comments.
 
         Args:
@@ -252,27 +253,26 @@ class ZendeskAdapter(HelpdeskConnector):
             # In real implementation, GET from Zendesk API
             # GET /tickets/{id}/comments
 
-            thread = []
             # Simulate fetching 5 comments
-            for i in range(min(5, limit)):
-                thread.append(
-                    ThreadEntry(
-                        message_id=f"comment_{i}",
-                        sender_id=f"user_{i}",
-                        sender_type="customer" if i % 2 == 0 else "agent",
-                        body=f"Comment {i} body",
-                        timestamp=datetime.utcnow(),
-                        attachments=[],
-                        metadata={"public": True},
-                    )
+            thread = [
+                ThreadEntry(
+                    message_id=f"comment_{i}",
+                    sender_id=f"user_{i}",
+                    sender_type="customer" if i % 2 == 0 else "agent",
+                    body=f"Comment {i} body",
+                    timestamp=datetime.utcnow(),
+                    attachments=[],
+                    metadata={"public": True},
                 )
+                for i in range(min(5, limit))
+            ]
 
             return thread
         except Exception as e:
             log.error("fetch_thread_history_failed", error=str(e))
-            raise ValueError(f"Could not fetch thread history: {e}")
+            raise ValueError(f"Could not fetch thread history: {e}") from e
 
-    def get_routing_sidebar_config(self, ticket: TicketNormalization) -> Dict[str, Any]:
+    def get_routing_sidebar_config(self, ticket: TicketNormalization) -> dict[str, Any]:
         """Build sidebar configuration for advanced routing UI.
 
         Args:
@@ -288,7 +288,7 @@ class ZendeskAdapter(HelpdeskConnector):
             "routing_hints": self._generate_routing_hints(ticket),
         }
 
-    def _suggest_assignees(self, ticket: TicketNormalization) -> List[Dict[str, Any]]:
+    def _suggest_assignees(self, ticket: TicketNormalization) -> list[dict[str, Any]]:
         """Suggest appropriate assignees based on ticket properties."""
         # Placeholder for agent skill matching
         return [
@@ -302,7 +302,7 @@ class ZendeskAdapter(HelpdeskConnector):
             return "pending"
         return ticket.status.value
 
-    def _generate_routing_hints(self, ticket: TicketNormalization) -> Dict[str, str]:
+    def _generate_routing_hints(self, ticket: TicketNormalization) -> dict[str, str]:
         """Generate routing hints for agent context."""
         return {
             "priority_hint": f"Customer is {ticket.priority.value} priority",

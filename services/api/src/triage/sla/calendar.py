@@ -1,8 +1,8 @@
 """Business hours calendar for SLA calculations."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, time
-from typing import Dict, List, Set, Optional
+from datetime import datetime, time, timedelta
+
 import structlog
 
 log = structlog.get_logger()
@@ -18,7 +18,7 @@ class BusinessHours:
     end_time: time = field(default_factory=lambda: time(17, 0))
     """End of business day (e.g., 17:00)."""
 
-    working_days: Set[int] = field(default_factory=lambda: {0, 1, 2, 3, 4})
+    working_days: set[int] = field(default_factory=lambda: {0, 1, 2, 3, 4})
     """Working days: 0=Monday, 6=Sunday."""
 
     timezone: str = "UTC"
@@ -31,7 +31,7 @@ class BusinessCalendar:
     def __init__(
         self,
         business_hours: BusinessHours,
-        holidays: Optional[Set[datetime]] = None,
+        holidays: set[datetime] | None = None,
     ) -> None:
         """Initialize business calendar.
 
@@ -63,10 +63,7 @@ class BusinessCalendar:
         # Check if time is within business hours
         if dt.time() < self.business_hours.start_time:
             return False
-        if dt.time() >= self.business_hours.end_time:
-            return False
-
-        return True
+        return dt.time() < self.business_hours.end_time
 
     def calculate_business_time_elapsed(self, start: datetime, end: datetime) -> timedelta:
         """Calculate elapsed business time between two datetimes.

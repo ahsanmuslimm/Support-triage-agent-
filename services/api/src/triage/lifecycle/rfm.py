@@ -1,12 +1,8 @@
 """RFM (Recency, Frequency, Monetary) scoring."""
 
-from datetime import datetime, timedelta
-from typing import Dict, Optional
 import logging
 
-import numpy as np
-
-from .models import RFMDimensions, CustomerRFMScore
+from .models import RFMDimensions
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +28,15 @@ class RFMCalculator:
         # Normalize value to 0-1, then map to 0-5
         normalized = (value - min_val) / (max_val - min_val)
         normalized = max(0.0, min(1.0, normalized))  # Clamp to [0, 1]
-        score = int(round(normalized * 5))
+        score = round(normalized * 5)
         return max(0, min(5, score))
 
     async def calculate_rfm(
         self,
         tenant_id: int,
         customer_id: int,
-        days_since_last_order: Optional[int] = None,
-        days_since_last_ticket: Optional[int] = None,
+        days_since_last_order: int | None = None,
+        days_since_last_ticket: int | None = None,
         order_count_365d: int = 0,
         ticket_count_365d: int = 0,
         total_spend_365d: float = 0.0,
@@ -92,8 +88,8 @@ class RFMCalculator:
     async def batch_calculate_rfm(
         self,
         tenant_id: int,
-        customers_data: Dict[int, Dict],
-    ) -> Dict[int, RFMDimensions]:
+        customers_data: dict[int, dict],
+    ) -> dict[int, RFMDimensions]:
         """
         Calculate RFM for multiple customers.
 

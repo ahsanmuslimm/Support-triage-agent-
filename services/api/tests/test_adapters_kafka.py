@@ -1,7 +1,7 @@
 """Sprint 6.2: Tests for Kafka EventBus adapter."""
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
 
 
 @pytest.mark.unit
@@ -107,8 +107,7 @@ class TestPriorityQueueRouting:
     @pytest.mark.asyncio
     async def test_priority_queue_channel_selection(self):
         """Test: Messages route to correct queue based on channel."""
-        from triage.adapters.priority_queue import PriorityQueue, Channel
-        from unittest.mock import AsyncMock, MagicMock
+        from triage.adapters.priority_queue import PriorityQueue
 
         # Mock Redis client
         mock_redis = MagicMock()
@@ -139,7 +138,6 @@ class TestPriorityQueueRouting:
     async def test_priority_queue_depth(self):
         """Test: Queue depth tracking."""
         from triage.adapters.priority_queue import PriorityQueue
-        from unittest.mock import AsyncMock, MagicMock
 
         mock_redis = MagicMock()
         mock_redis.zcard = AsyncMock(return_value=5)
@@ -160,7 +158,6 @@ class TestIdempotency:
     async def test_idempotency_fast_path_first_call(self):
         """Test: First call to check_or_record returns is_duplicate=False."""
         from triage.adapters.idempotency import IdempotencyStore
-        from unittest.mock import AsyncMock, MagicMock
 
         mock_redis = MagicMock()
         mock_redis.get = AsyncMock(return_value=None)  # Not in cache
@@ -181,7 +178,6 @@ class TestIdempotency:
     async def test_idempotency_fast_path_duplicate(self):
         """Test: Second call with same event_id returns is_duplicate=True."""
         from triage.adapters.idempotency import IdempotencyStore
-        from unittest.mock import AsyncMock, MagicMock
 
         mock_redis = MagicMock()
         mock_redis.get = AsyncMock(return_value=b"processed_ok")  # In cache
@@ -207,7 +203,6 @@ class TestDLQ:
     async def test_dlq_send_with_retry_count(self):
         """Test: DLQ event includes retry count and error context."""
         from triage.adapters.dlq import DeadLetterQueue
-        from unittest.mock import AsyncMock, MagicMock
 
         mock_event_bus = MagicMock()
         mock_event_bus.publish = AsyncMock()
@@ -252,7 +247,6 @@ class TestEventConsumerIntegration:
     async def test_consumer_with_retry_and_idempotency(self):
         """Test: Consumer retries failed events and checks idempotency."""
         from triage.adapters.event_consumer import ResilientEventConsumer
-        from unittest.mock import AsyncMock, MagicMock
 
         # Mock dependencies
         mock_event_bus = MagicMock()
@@ -291,7 +285,6 @@ class TestEventConsumerIntegration:
         """Test: Consumer sends to DLQ after max retries exceeded."""
         from triage.adapters.event_consumer import ResilientEventConsumer
         from triage.adapters.idempotency import IdempotencyResult
-        from unittest.mock import AsyncMock, MagicMock
 
         mock_event_bus = MagicMock()
         mock_idempotency = MagicMock()

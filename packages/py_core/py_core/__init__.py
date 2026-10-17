@@ -16,17 +16,17 @@ from py_core.tenant import get_tenant, set_tenant
 __version__ = "0.1.0"
 
 __all__ = [
-    "ProblemDetail",
-    "TriageBaseError",
-    "MissingTenantContextError",
     "EntityNotFoundError",
-    "ValidationError",
-    "UnauthorizedError",
+    "MissingTenantContextError",
+    "ProblemDetail",
     "RateLimitError",
-    "get_tenant",
-    "set_tenant",
+    "TriageBaseError",
+    "UnauthorizedError",
+    "ValidationError",
     "configure_logging",
-    "get_logger",
     "configure_otel",
+    "get_logger",
+    "get_tenant",
     "get_tracer",
+    "set_tenant",
 ]

@@ -1,7 +1,8 @@
 """Sprint 5 acceptance tests - E2E scenarios."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 class TestLifecycleDetection:
@@ -96,7 +97,7 @@ class TestPredictions:
         labels = [0, 1] * 50
         await churn_model.train(features, labels)
         # Predict
-        prob, importance = await churn_model.predict_churn_72h(
+        prob, _importance = await churn_model.predict_churn_72h(
             customer_id=1, features={"feat_0": 0.6, "feat_1": 0.2}
         )
         assert 0 <= prob <= 1
@@ -114,7 +115,7 @@ class TestPredictions:
         # Forecast
         forecast = await forecaster.forecast(days_ahead=7)
         assert len(forecast) == 7
-        for date, point, lower, upper in forecast:
+        for _date, point, lower, upper in forecast:
             assert lower <= point <= upper
 
     @pytest.mark.asyncio

@@ -1,8 +1,8 @@
 """Document chunking with overlap for RAG pipeline."""
 
-from dataclasses import dataclass
-from typing import List, Optional
 import re
+from dataclasses import dataclass
+
 import structlog
 
 log = structlog.get_logger()
@@ -17,7 +17,7 @@ class Chunk:
     start_idx: int  # Start position in original document
     end_idx: int  # End position in original document
     chunk_num: int  # Chunk sequence number
-    token_count: Optional[int] = None  # Estimated token count
+    token_count: int | None = None  # Estimated token count
 
 
 class DocumentChunker:
@@ -33,7 +33,7 @@ class DocumentChunker:
         self.chunk_size = chunk_size
         self.overlap = overlap
 
-    def chunk(self, doc_id: str, text: str) -> List[Chunk]:
+    def chunk(self, doc_id: str, text: str) -> list[Chunk]:
         """Chunk a document into overlapping chunks.
 
         Attempts to preserve sentence boundaries.
@@ -51,7 +51,7 @@ class DocumentChunker:
         # Split by sentences (simple approach)
         sentences = self._split_sentences(text)
 
-        chunks: List[Chunk] = []
+        chunks: list[Chunk] = []
         current_chunk_text = ""
         current_chunk_start = 0
         chunk_num = 0
@@ -101,7 +101,7 @@ class DocumentChunker:
         return chunks
 
     @staticmethod
-    def _split_sentences(text: str) -> List[str]:
+    def _split_sentences(text: str) -> list[str]:
         """Split text into sentences.
 
         Args:

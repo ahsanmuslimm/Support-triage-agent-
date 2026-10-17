@@ -1,9 +1,9 @@
 """J1: WISMO auto-resolve scenario (Phase 10)."""
 
-import pytest
 import time
+
+import pytest
 from triage.agent.graph import TriageAgentGraph
-from triage.models.triage_state import TriageState
 
 
 class TestJ1WISMOAutoResolve:

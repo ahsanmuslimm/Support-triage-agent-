@@ -1,7 +1,7 @@
 """Churn reason analysis."""
 
-from typing import List, Dict
 import logging
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 class ChurnReasonAnalyzer:
     """Analyze churn reasons."""
 
-    CATEGORIES = ["price", "competitor", "product_gap", "support_quality", "other"]
+    CATEGORIES: ClassVar[list[str]] = ["price", "competitor", "product_gap", "support_quality", "other"]
 
     def __init__(self):
         """Initialize analyzer."""
-        self.reasons: List[Dict] = []
+        self.reasons: list[dict] = []
 
-    async def extract_churn_reasons(self, exit_survey: str) -> List[str]:
+    async def extract_churn_reasons(self, exit_survey: str) -> list[str]:
         """Extract churn reasons from survey."""
         for category in self.CATEGORIES:
             if category in exit_survey.lower():
@@ -24,7 +24,7 @@ class ChurnReasonAnalyzer:
 
     async def analyze_churn_patterns(
         self, tenant_id: int, days: int = 90
-    ) -> Dict[str, Dict]:
+    ) -> dict[str, dict]:
         """Analyze churn patterns."""
         return {
             "price": {"count": 150, "severity": "high", "examples": []},
@@ -34,7 +34,7 @@ class ChurnReasonAnalyzer:
 
     async def flag_critical_reasons(
         self, threshold_count: int = 10
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Flag critical churn reasons."""
         return [
             {"reason": "price", "count": 150, "severity": "critical"},

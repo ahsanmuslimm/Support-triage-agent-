@@ -1,9 +1,7 @@
 """FastAPI application factory and main entry point."""
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import logging
 
 
 def create_app() -> FastAPI:
@@ -28,7 +26,7 @@ def create_app() -> FastAPI:
     )
 
     # Import routers here to avoid circular imports
-    from .endpoints import messages, webhooks, conversations
+    from .endpoints import conversations, messages, webhooks
 
     # Register routers
     app.include_router(messages.router, prefix="/api/v1", tags=["messages"])

@@ -1,6 +1,5 @@
 """Cohort analysis."""
 
-from typing import Dict, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,9 +10,9 @@ class CohortAnalyzer:
 
     def __init__(self):
         """Initialize analyzer."""
-        self.cohorts: Dict = {}
+        self.cohorts: dict = {}
 
-    async def create_cohort(self, name: str, filters: Dict) -> str:
+    async def create_cohort(self, name: str, filters: dict) -> str:
         """Create cohort."""
         cohort_id = f"cohort_{len(self.cohorts)}"
         self.cohorts[cohort_id] = {"name": name, "filters": filters}
@@ -21,7 +20,7 @@ class CohortAnalyzer:
 
     async def analyze_cohort_outcome(
         self, cohort_id: str, metric: str, period: tuple
-    ) -> Dict:
+    ) -> dict:
         """Analyze cohort outcome."""
         return {
             "metric": metric,

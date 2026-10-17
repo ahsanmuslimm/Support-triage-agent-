@@ -1,12 +1,12 @@
 """OpenTelemetry instrumentation and tracing setup."""
 
 import os
-from typing import Any, Optional
+from typing import Any
 
 from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
 
 def configure_otel(service_name: str) -> None:
@@ -41,7 +41,7 @@ def get_tracer(name: str) -> trace.Tracer:
 
 
 def record_exception(
-    span: trace.Span, exc: Exception, attributes: Optional[dict[str, Any]] = None
+    span: trace.Span, exc: Exception, attributes: dict[str, Any] | None = None
 ) -> None:
     """Record an exception on a span, filtering PII.
 

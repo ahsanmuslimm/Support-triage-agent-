@@ -1,10 +1,11 @@
 """Conversation model."""
 
-from datetime import datetime
-from typing import Optional, Dict, Any
-from enum import Enum
-from pydantic import BaseModel, Field
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class ConversationStatus(str, Enum):
@@ -29,26 +30,26 @@ class ConversationModel(BaseModel):
     # Status tracking
     status: ConversationStatus = ConversationStatus.OPEN
     priority: int = 0  # 0 = normal, 1 = high, -1 = low
-    subject: Optional[str] = None
+    subject: str | None = None
 
     # Counts
     message_count: int = 0
     unread_count: int = 0
 
     # Classification (populated by triage)
-    intent_primary: Optional[str] = None
-    intent_secondary: Optional[str] = None
-    confidence_score: Optional[float] = None
+    intent_primary: str | None = None
+    intent_secondary: str | None = None
+    confidence_score: float | None = None
 
     # Resolution
     is_auto_resolved: bool = False
-    resolution_category: Optional[str] = None
+    resolution_category: str | None = None
 
     # Metadata
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    last_message_at: Optional[datetime] = None
-    resolved_at: Optional[datetime] = None
+    last_message_at: datetime | None = None
+    resolved_at: datetime | None = None

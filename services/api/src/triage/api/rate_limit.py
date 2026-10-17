@@ -1,9 +1,8 @@
 """Rate limiting for API (S10.1, S10.2)."""
 
 import time
-from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 
 class RateLimiter:
@@ -18,12 +17,12 @@ class RateLimiter:
         self.requests_per_minute = requests_per_minute
         self.requests_per_second = requests_per_minute / 60.0
         # Store: key_id -> {"tokens": float, "last_update": float}
-        self._buckets: Dict[str, Dict] = defaultdict(lambda: {
+        self._buckets: dict[str, dict] = defaultdict(lambda: {
             "tokens": self.requests_per_second * 60,
             "last_update": time.time(),
         })
 
-    def check_limit(self, key_id: str) -> Tuple[bool, Dict[str, int]]:
+    def check_limit(self, key_id: str) -> tuple[bool, dict[str, int]]:
         """Check if request allowed under rate limit.
 
         Args:
@@ -64,7 +63,7 @@ class RateLimiter:
             limit_headers["RateLimit-Remaining"] = 0
             return False, limit_headers
 
-    def get_status(self, key_id: str) -> Dict[str, int]:
+    def get_status(self, key_id: str) -> dict[str, int]:
         """Get current rate limit status.
 
         Args:
@@ -83,7 +82,7 @@ class RateLimiter:
             "RateLimit-Reset": reset_timestamp,
         }
 
-    def reset(self, key_id: Optional[str] = None):
+    def reset(self, key_id: str | None = None):
         """Reset rate limit for key(s).
 
         Args:

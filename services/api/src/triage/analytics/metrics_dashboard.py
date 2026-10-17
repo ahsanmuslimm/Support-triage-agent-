@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ class MetricsDashboard:
     def __init__(self, db_session=None):
         self.db = db_session
 
-    async def get_summary_metrics(self, tenant_id: int) -> Optional[Dict]:
+    async def get_summary_metrics(self, tenant_id: int) -> dict | None:
         """
         Get summary metrics for dashboard.
 
@@ -52,7 +51,7 @@ class MetricsDashboard:
 
     async def get_agent_performance(
         self, tenant_id: int, days: int = 7
-    ) -> Optional[List[Dict]]:
+    ) -> list[dict] | None:
         """
         Get agent performance metrics.
 
@@ -89,7 +88,7 @@ class MetricsDashboard:
 
     async def get_customer_outcomes(
         self, tenant_id: int, days: int = 7
-    ) -> Optional[List[Dict]]:
+    ) -> list[dict] | None:
         """
         Get customer outcome metrics by segment.
 
@@ -124,7 +123,7 @@ class MetricsDashboard:
             logger.error(f"Failed to fetch customer outcomes: {e}")
             return None
 
-    async def detect_anomalies(self, tenant_id: int) -> Optional[List[Dict]]:
+    async def detect_anomalies(self, tenant_id: int) -> list[dict] | None:
         """
         Detect metric anomalies using EWMA.
 

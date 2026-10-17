@@ -1,11 +1,12 @@
 """SLA management engine with temporal timers and breach prediction."""
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import structlog
-import uuid
 
 from triage.sla.calendar import BusinessCalendar
 
@@ -42,7 +43,7 @@ class SLAEvent:
     timestamp: datetime = field(default_factory=datetime.utcnow)
     """Event timestamp."""
 
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional metadata."""
 
 
@@ -56,10 +57,10 @@ class SLAPolicy:
     priority: str
     """Ticket priority this policy applies to."""
 
-    category: Optional[str] = None
+    category: str | None = None
     """Ticket category (optional filter)."""
 
-    segment: Optional[str] = None
+    segment: str | None = None
     """Customer segment (optional filter)."""
 
     response_time_minutes: int = 60
@@ -94,7 +95,7 @@ class SLATimer:
     created_at: datetime = field(default_factory=datetime.utcnow)
     """Timer creation time."""
 
-    paused_at: Optional[datetime] = None
+    paused_at: datetime | None = None
     """Time when timer was paused (None if running)."""
 
     total_paused_duration: timedelta = field(default_factory=lambda: timedelta(0))
@@ -162,9 +163,9 @@ class SLAEngine:
             business_calendar: Business hours calendar.
         """
         self.business_calendar = business_calendar
-        self.policies: Dict[str, SLAPolicy] = {}  # policy_name -> SLAPolicy
-        self.timers: Dict[str, SLATimer] = {}  # timer_id -> SLATimer
-        self.events: List[SLAEvent] = []  # Event log
+        self.policies: dict[str, SLAPolicy] = {}  # policy_name -> SLAPolicy
+        self.timers: dict[str, SLATimer] = {}  # timer_id -> SLATimer
+        self.events: list[SLAEvent] = []  # Event log
         self._setup_default_policies()
 
     def _setup_default_policies(self) -> None:
@@ -208,7 +209,7 @@ class SLAEngine:
         self.policies[policy.name] = policy
         log.info("policy_added", name=policy.name, priority=policy.priority)
 
-    def match_policy(self, ticket_properties: Dict[str, Any]) -> Optional[SLAPolicy]:
+    def match_policy(self, ticket_properties: dict[str, Any]) -> SLAPolicy | None:
         """Find matching SLA policy for ticket.
 
         Args:
@@ -240,8 +241,8 @@ class SLAEngine:
     def create_timer(
         self,
         ticket_id: str,
-        ticket_properties: Dict[str, Any],
-    ) -> Optional[SLATimer]:
+        ticket_properties: dict[str, Any],
+    ) -> SLATimer | None:
         """Create SLA timer for ticket.
 
         Args:
@@ -297,7 +298,7 @@ class SLAEngine:
 
         return timer
 
-    def get_timer(self, timer_id: str) -> Optional[SLATimer]:
+    def get_timer(self, timer_id: str) -> SLATimer | None:
         """Get timer by ID.
 
         Args:
@@ -354,7 +355,7 @@ class SLAEngine:
             return True
         return False
 
-    def check_timers(self) -> List[SLAEvent]:
+    def check_timers(self) -> list[SLAEvent]:
         """Check all active timers for warnings and breaches.
 
         Returns:
@@ -407,7 +408,7 @@ class SLAEngine:
 
         return new_events
 
-    def get_events(self, ticket_id: Optional[str] = None) -> List[SLAEvent]:
+    def get_events(self, ticket_id: str | None = None) -> list[SLAEvent]:
         """Get SLA events.
 
         Args:

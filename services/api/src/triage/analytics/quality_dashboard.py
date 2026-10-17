@@ -1,10 +1,8 @@
 """AI Quality Dashboard & ROI tracking (S10.5)."""
 
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from enum import Enum
-import json
+from typing import Any
 
 
 @dataclass
@@ -30,23 +28,23 @@ class ROIReport:
     faster_resolution_count: int  # Human-resolved faster due to AI help
     total_value: float  # USD (deflection*50 + faster_resolution*10)
     net_roi: float  # USD (total_value - total_cost)
-    payback_period_days: Optional[float]  # Days to break even
+    payback_period_days: float | None  # Days to break even
 
 
 class QualityDashboard:
     """Track AI quality metrics and ROI."""
 
     def __init__(self):
-        self.metrics_history: List[Dict[str, Any]] = []
-        self.roi_reports: List[ROIReport] = []
+        self.metrics_history: list[dict[str, Any]] = []
+        self.roi_reports: list[ROIReport] = []
 
     def compute_quality_metrics(
         self,
-        intent_predictions: List[Dict[str, float]],
-        entity_extractions: List[Dict[str, float]],
-        escalations: List[bool],
-        false_resolutions: List[bool],
-        costs: List[float],
+        intent_predictions: list[dict[str, float]],
+        entity_extractions: list[dict[str, float]],
+        escalations: list[bool],
+        false_resolutions: list[bool],
+        costs: list[float],
     ) -> QualityMetrics:
         """Compute quality metrics from sample data.
 
@@ -185,15 +183,15 @@ class QualityDashboard:
         # Stub: would use reportlab or similar
         pdf_content = f"""
         ROI Report: {report.period_start} to {report.period_end}
-        
+
         Costs:
         - Total Cost: ${report.total_cost:.2f}
-        
+
         Value:
         - Deflections: {report.deflection_count} x $50 = ${report.deflection_count * 50:.2f}
         - Faster Resolutions: {report.faster_resolution_count} x $10 = ${report.faster_resolution_count * 10:.2f}
         - Total Value: ${report.total_value:.2f}
-        
+
         ROI:
         - Net ROI: ${report.net_roi:.2f}
         - Payback Period: {report.payback_period_days:.1f} days if applicable
@@ -204,7 +202,7 @@ class QualityDashboard:
         self,
         tenant_id: str,
         days: int = 30,
-    ) -> Dict[str, List[float]]:
+    ) -> dict[str, list[float]]:
         """Get trending metrics over time.
 
         Args:

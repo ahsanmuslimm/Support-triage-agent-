@@ -1,6 +1,5 @@
 """XGBoost model for 72-hour churn prediction."""
 
-from typing import List, Tuple, Dict, Optional
 import logging
 from datetime import datetime
 
@@ -16,18 +15,18 @@ class ChurnXGBoostModel:
         """Initialize churn predictor."""
         self.model = None
         self.feature_importance = {}
-        self.trained_at: Optional[datetime] = None
+        self.trained_at: datetime | None = None
         self.precision = 0.0
         self.recall = 0.0
         self.auc_roc = 0.0
 
     async def train(
         self,
-        training_features: List[Dict[str, float]],
-        training_labels: List[int],
-        test_features: Optional[List[Dict[str, float]]] = None,
-        test_labels: Optional[List[int]] = None,
-    ) -> Dict[str, float]:
+        training_features: list[dict[str, float]],
+        training_labels: list[int],
+        test_features: list[dict[str, float]] | None = None,
+        test_labels: list[int] | None = None,
+    ) -> dict[str, float]:
         """
         Train XGBoost model (mocked for testing).
 
@@ -46,7 +45,6 @@ class ChurnXGBoostModel:
 
         # Convert to numpy arrays
         X_train = np.array([list(f.values()) for f in training_features])
-        y_train = np.array(training_labels)
 
         # Mock training: simulate reasonable metrics
         n_samples = len(training_features)
@@ -81,8 +79,8 @@ class ChurnXGBoostModel:
     async def predict_churn_72h(
         self,
         customer_id: int,
-        features: Dict[str, float],
-    ) -> Tuple[float, Dict[str, float]]:
+        features: dict[str, float],
+    ) -> tuple[float, dict[str, float]]:
         """
         Predict 72-hour churn probability.
 
@@ -115,9 +113,9 @@ class ChurnXGBoostModel:
 
     async def evaluate_model(
         self,
-        test_features: List[Dict[str, float]],
-        test_labels: List[int],
-    ) -> Dict[str, float]:
+        test_features: list[dict[str, float]],
+        test_labels: list[int],
+    ) -> dict[str, float]:
         """
         Evaluate model on test data.
 

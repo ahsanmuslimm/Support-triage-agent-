@@ -1,9 +1,11 @@
 """Widget session management and SSE streaming."""
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, AsyncIterator
-import structlog
 import uuid
+from collections.abc import AsyncIterator
+from datetime import datetime, timedelta
+from typing import Any
+
+import structlog
 
 log = structlog.get_logger()
 
@@ -33,7 +35,7 @@ class WidgetSession:
         self.created_at = datetime.utcnow()
         self.last_activity = datetime.utcnow()
         self.is_active = True
-        self.event_queue: list[Dict[str, Any]] = []
+        self.event_queue: list[dict[str, Any]] = []
 
     def record_activity(self) -> None:
         """Record user activity to track session lifetime."""
@@ -60,7 +62,7 @@ class WidgetSession:
             duration_seconds=(datetime.utcnow() - self.created_at).total_seconds(),
         )
 
-    def add_event(self, event_type: str, data: Dict[str, Any]) -> None:
+    def add_event(self, event_type: str, data: dict[str, Any]) -> None:
         """Add event to stream queue.
 
         Args:
@@ -81,7 +83,7 @@ class WidgetSession:
             event_type=event_type,
         )
 
-    async def stream_events(self) -> AsyncIterator[Dict[str, Any]]:
+    async def stream_events(self) -> AsyncIterator[dict[str, Any]]:
         """Stream events as Server-Sent Events.
 
         Yields:
@@ -118,7 +120,7 @@ class WidgetSession:
             log.error("stream_error", error=str(e), session_id=self.session_id)
             raise
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize session to dictionary.
 
         Returns:
@@ -146,8 +148,8 @@ class SessionManager:
             session_ttl: Time-to-live for inactive sessions.
         """
         self.session_ttl = session_ttl
-        self.sessions: Dict[str, WidgetSession] = {}  # session_id -> WidgetSession
-        self.customer_sessions: Dict[str, list[str]] = {}  # customer_id -> [session_ids]
+        self.sessions: dict[str, WidgetSession] = {}  # session_id -> WidgetSession
+        self.customer_sessions: dict[str, list[str]] = {}  # customer_id -> [session_ids]
 
     def create_session(
         self,
@@ -183,7 +185,7 @@ class SessionManager:
 
         return session
 
-    def get_session(self, session_id: str) -> Optional[WidgetSession]:
+    def get_session(self, session_id: str) -> WidgetSession | None:
         """Get session by ID.
 
         Args:
@@ -278,7 +280,7 @@ class SessionManager:
                 if not self.customer_sessions[customer_id]:
                     del self.customer_sessions[customer_id]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get session manager statistics.
 
         Returns:

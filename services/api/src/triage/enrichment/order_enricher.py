@@ -4,7 +4,6 @@ import json
 import logging
 from datetime import datetime, timedelta
 from statistics import median
-from typing import Optional
 
 from .base import CacheManager, EnricherBase
 from .exceptions import APITimeoutError, EnrichmentError
@@ -113,7 +112,7 @@ class OrderEnricher(EnricherBase):
             logger.error(f"Order enrichment fetch failed: {e}")
             if self.db:
                 return await self._fetch_from_db(customer_id, tenant_id)
-            raise EnrichmentError(f"Failed to enrich orders for customer {customer_id}: {e}")
+            raise EnrichmentError(f"Failed to enrich orders for customer {customer_id}: {e}") from e
 
     async def _fetch_orders_90d(self, customer_id: int, tenant_id: int) -> list[dict]:
         """Fetch orders from last 90 days."""
@@ -148,7 +147,7 @@ class OrderEnricher(EnricherBase):
             return result
         except Exception as e:
             logger.error(f"Failed to fetch orders from Shopify: {e}")
-            raise APITimeoutError(f"Shopify API error: {e}")
+            raise APITimeoutError(f"Shopify API error: {e}") from e
 
     async def _fetch_refunds_90d(self, customer_id: int, tenant_id: int) -> list[dict]:
         """Fetch refunds from last 90 days."""
@@ -293,4 +292,4 @@ class OrderEnricher(EnricherBase):
             raise EnrichmentError(f"No cached order context for customer {customer_id}")
         except Exception as e:
             logger.error(f"DB fallback failed: {e}")
-            raise EnrichmentError(f"Could not retrieve cached context: {e}")
+            raise EnrichmentError(f"Could not retrieve cached context: {e}") from e
