@@ -1,5 +1,6 @@
 """FastAPI application factory and main entry point."""
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,6 +9,22 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from ..db import close_db, init_db
+
+
+def _cors_config() -> tuple[list[str], bool]:
+    """Allowed origins + whether credentials are allowed, from CORS_ORIGINS env.
+
+    ``CORS_ORIGINS=*`` enables a credential-less wildcard (dev only). A
+    comma-separated list enables credentialed CORS for those origins. When
+    unset, localhost dev ports are allowed so the console/widget work locally.
+    """
+    raw = os.getenv("CORS_ORIGINS", "").strip()
+    if raw == "*":
+        return ["*"], False
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    if origins:
+        return origins, True
+    return ["http://localhost:3000", "http://localhost:5173"], True
 
 
 @asynccontextmanager
@@ -32,10 +49,11 @@ def create_app() -> FastAPI:
     )
 
     # Configure CORS
+    allow_origins, allow_credentials = _cors_config()
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
+        allow_origins=allow_origins,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )

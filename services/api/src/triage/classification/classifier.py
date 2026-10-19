@@ -3,7 +3,6 @@
 
 import numpy as np
 import structlog
-from sentence_transformers import SentenceTransformer  # type: ignore
 from sklearn.neighbors import NearestNeighbors  # type: ignore
 
 try:
@@ -47,7 +46,10 @@ class IntentClassifier:
         self.k = k
         self.confidence_threshold = confidence_threshold
 
-        # Load embedding model
+        # Loaded lazily: pulling torch/sentence-transformers at import time
+        # would make every process (CI, workers) pay for the ML stack.
+        from sentence_transformers import SentenceTransformer  # type: ignore
+
         self.embedding_model = SentenceTransformer(model_name)
         self.embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
 

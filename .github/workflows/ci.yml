@@ -55,9 +55,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-ci.txt
+          pip install -e packages/py_core
 
-      - name: Run unit tests
+      - name: Run unit tests (py_core)
         run: pytest packages/py_core/tests -m unit -v --cov=packages/py_core --cov-report=term-missing --cov-fail-under=50
+
+      - name: Run unit tests (services)
+        run: pytest services/api/tests services/triage_worker/tests services/knowledge_worker/tests -q
 
   gitleaks:
     name: Secret Scanning (Gitleaks)

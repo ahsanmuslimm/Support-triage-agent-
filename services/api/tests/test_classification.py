@@ -12,7 +12,8 @@ class TestIntentClassifier:
 
     @pytest.fixture
     def classifier(self):
-        """Create classifier instance."""
+        """Create classifier instance (requires the sentence-transformers model)."""
+        pytest.importorskip("sentence_transformers")
         return IntentClassifier(temperature=1.2, k=3)
 
     @pytest.fixture
