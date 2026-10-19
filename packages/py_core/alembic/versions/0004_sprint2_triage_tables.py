@@ -33,18 +33,9 @@ def upgrade() -> None:
         schema="triage",
     )
 
-    # Intent training examples (golden set for k-NN classifier)
-    op.create_table(
-        "intent_examples",
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("intent_name", sa.String(100), nullable=False),
-        sa.Column("example_text", sa.Text(), nullable=False),
-        sa.Column("is_golden", sa.Boolean(), nullable=False, server_default=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
-        schema="triage",
-    )
+    # ========== INTENT TRAINING EXAMPLES ==========
+    # (intent_examples table is created in 0001 with the canonical definition;
+    # the classifier index is created here)
 
     op.create_index(
         "idx_intent_examples_tenant_intent",
@@ -54,29 +45,10 @@ def upgrade() -> None:
     )
 
     # ========== TRIAGE RUN RESULTS ==========
+    # (triage_runs table is created in 0001 with the canonical definition;
+    # its indexes are created here)
 
-    # Triage runs (output of agent graph execution)
-    op.create_table(
-        "triage_runs",
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("conversation_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("top_intent", sa.String(100), nullable=True),
-        sa.Column("intent_confidence", sa.Numeric(precision=3, scale=2), nullable=True),
-        sa.Column("autonomy_level", sa.Integer(), nullable=True),  # 0-3
-        sa.Column("action", sa.String(50), nullable=True),  # auto_resolve, escalate, tool_execute, human_review
-        sa.Column("tool_executed", sa.String(100), nullable=True),
-        sa.Column("tool_result", postgresql.JSONB(), nullable=True),
-        sa.Column("latency_ms", sa.Float(), nullable=True),
-        sa.Column("reasoning", postgresql.JSONB(), nullable=False, server_default="[]"),  # Array of reasoning steps
-        sa.Column("status", sa.String(50), nullable=False, server_default="pending"),  # pending, completed, failed
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
-        sa.ForeignKeyConstraint(["tenant_id", "message_id"], ["triage.messages.tenant_id", "triage.messages.id"]),
-        sa.ForeignKeyConstraint(["tenant_id", "conversation_id"], ["triage.conversations.tenant_id", "triage.conversations.id"]),
-        schema="triage",
-    )
+    # Triage runs (output of agent graph execution; table created in 0001)
 
     op.create_index(
         "idx_triage_runs_tenant_message",
@@ -105,7 +77,7 @@ def upgrade() -> None:
         sa.Column("normalized_value", sa.String(255), nullable=True),
         sa.Column("confidence", sa.Numeric(precision=3, scale=2), nullable=False),  # 0-1
         sa.Column("linked_id", sa.BigInteger(), nullable=True),  # Foreign key to customer/order record
-        sa.Column("is_pii", sa.Boolean(), nullable=False, server_default=False),
+        sa.Column("is_pii", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("pseudonym", sa.String(255), nullable=True),  # VAULT_xyz... for PII
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
@@ -160,6 +132,7 @@ def upgrade() -> None:
     )
 
     # ========== RLS POLICIES ==========
+    # (intent_examples and triage_runs are covered by rls_tenant_policy in 0001)
 
     # RLS for intent_embeddings
     op.execute(
@@ -171,28 +144,6 @@ def upgrade() -> None:
         """
     )
     op.execute("ALTER TABLE triage.intent_embeddings ENABLE ROW LEVEL SECURITY")
-
-    # RLS for intent_examples
-    op.execute(
-        """
-        CREATE POLICY intent_examples_tenant_isolation ON triage.intent_examples
-        FOR ALL
-        USING (tenant_id = CURRENT_SETTING('app.tenant_id')::UUID)
-        WITH CHECK (tenant_id = CURRENT_SETTING('app.tenant_id')::UUID)
-        """
-    )
-    op.execute("ALTER TABLE triage.intent_examples ENABLE ROW LEVEL SECURITY")
-
-    # RLS for triage_runs
-    op.execute(
-        """
-        CREATE POLICY triage_runs_tenant_isolation ON triage.triage_runs
-        FOR ALL
-        USING (tenant_id = CURRENT_SETTING('app.tenant_id')::UUID)
-        WITH CHECK (tenant_id = CURRENT_SETTING('app.tenant_id')::UUID)
-        """
-    )
-    op.execute("ALTER TABLE triage.triage_runs ENABLE ROW LEVEL SECURITY")
 
     # RLS for extracted_entities
     op.execute(
@@ -229,10 +180,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Drop Sprint 2 tables."""
+    """Drop Sprint 2 tables (tables created in 0001 are dropped there)."""
     op.execute("DROP POLICY IF EXISTS intent_embeddings_tenant_isolation ON triage.intent_embeddings")
-    op.execute("DROP POLICY IF EXISTS intent_examples_tenant_isolation ON triage.intent_examples")
-    op.execute("DROP POLICY IF EXISTS triage_runs_tenant_isolation ON triage.triage_runs")
     op.execute("DROP POLICY IF EXISTS extracted_entities_tenant_isolation ON triage.extracted_entities")
     op.execute("DROP POLICY IF EXISTS autonomy_policies_tenant_isolation ON triage.autonomy_policies")
     op.execute("DROP POLICY IF EXISTS autonomy_promotions_tenant_isolation ON triage.autonomy_promotions")
@@ -240,6 +189,4 @@ def downgrade() -> None:
     op.drop_table("autonomy_promotions", schema="triage")
     op.drop_table("autonomy_policies", schema="triage")
     op.drop_table("extracted_entities", schema="triage")
-    op.drop_table("triage_runs", schema="triage")
-    op.drop_table("intent_examples", schema="triage")
     op.drop_table("intent_embeddings", schema="triage")

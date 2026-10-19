@@ -9,7 +9,7 @@ description = "LangGraph worker for triage logic"
 requires-python = ">=3.12"
 authors = [{ name = "Support Triage Team" }]
 dependencies = [
-    "py-core @ file:///../py_core",
+    "py-core",
 ]
 
 [tool.pytest.ini_options]
@@ -19,3 +19,9 @@ markers = [
     "unit: unit tests",
     "integration: integration tests",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/triage_worker"]

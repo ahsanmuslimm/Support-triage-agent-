@@ -11,7 +11,9 @@ class TestWhatsAppWindow:
 
     def test_window_creation(self):
         """Test creating a new window."""
-        now = datetime.utcnow()
+        # Anchor 1s in the past: consecutive utcnow() calls on a coarse
+        # Windows clock can return identical values, making remaining == 24h.
+        now = datetime.utcnow() - timedelta(seconds=1)
         window = WhatsAppWindow(now)
 
         assert window.is_within_window()

@@ -194,15 +194,15 @@ class TestRebalancing:
         load_balancer.register_agent("agent_1", max_capacity=20)
         load_balancer.register_agent("agent_2", max_capacity=20)
 
-        # Give agent_1 high load (simulated)
-        load_balancer.agents["agent_1"].current_load = 15.0
-        load_balancer.agents["agent_1"].open_tickets = 5
-
-        # Assign tickets to agent_1
+        # Route all tickets to agent_1 by keeping agent_2 offline during assignment
+        load_balancer.mark_agent_offline("agent_2")
         for i in range(5):
             load_balancer.assign_ticket(f"ticket_{i}")
+        load_balancer.mark_agent_online("agent_2")
 
-        # Give agent_2 low load
+        # Simulate agent_1 becoming overloaded
+        load_balancer.agents["agent_1"].current_load = 15.0
+        load_balancer.agents["agent_1"].open_tickets = 5
         load_balancer.agents["agent_2"].current_load = 1.0
         load_balancer.agents["agent_2"].open_tickets = 0
 

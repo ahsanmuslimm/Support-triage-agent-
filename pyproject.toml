@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 authors = [{ name = "Support Triage Team" }]
 
 [tool.uv]
+package = false
 workspace = { members = [
     "packages/py_core",
     "services/api",
@@ -18,8 +19,26 @@ workspace = { members = [
     "ml/evals",
 ] }
 
+[tool.pytest.ini_options]
+testpaths = ["services/api/tests", "packages/py_core/tests", "tests", "ml/evals/tests"]
+python_files = "test_*.py"
+addopts = "--import-mode=importlib -m 'not integration'"
+asyncio_mode = "auto"
+markers = [
+    "unit: fast isolated unit tests",
+    "integration: tests requiring external services (docker/testcontainers)",
+    "acceptance: end-to-end acceptance scenarios",
+    "eval: ML evaluation tests",
+    "slow: long-running tests",
+    "bdd: Gherkin BDD scenarios",
+]
+
 [tool.uv.sources]
-# Add any git dependencies here if needed
+py-core = { workspace = true }
+api = { workspace = true }
+triage-worker = { workspace = true }
+knowledge-worker = { workspace = true }
+evals = { workspace = true }
 
 [dependency-groups]
 dev = [

@@ -21,57 +21,58 @@ def upgrade() -> None:
     # ========== S3.9: MATERIALIZED VIEWS FOR ANALYTICS ==========
 
     # Daily triage summary: count of triages, escalations, autonomy decisions
+    # (decisions live on triage_runs.action: auto_resolve | escalate | tool_execute | human_review)
     op.execute("""
         CREATE MATERIALIZED VIEW triage.v_triage_daily_summary AS
         SELECT
-            DATE(c.created_at) as triage_date,
-            c.tenant_id,
+            DATE(r.created_at) as triage_date,
+            r.tenant_id,
             COUNT(*) as total_triages,
-            SUM(CASE WHEN c.autonomy_decision = 'escalate' THEN 1 ELSE 0 END) as escalated_count,
-            SUM(CASE WHEN c.autonomy_decision = 'handle' THEN 1 ELSE 0 END) as handled_count,
-            SUM(CASE WHEN c.autonomy_decision = 'proactive_outreach' THEN 1 ELSE 0 END) as proactive_count,
-            ROUND(100.0 * SUM(CASE WHEN c.autonomy_decision = 'escalate' THEN 1 ELSE 0 END) / COUNT(*), 2) as escalation_pct,
-            ROUND(100.0 * SUM(CASE WHEN c.autonomy_decision = 'handle' THEN 1 ELSE 0 END) / COUNT(*), 2) as autonomy_pct
-        FROM triage.conversations c
-        WHERE c.created_at >= NOW() - INTERVAL '90 days'
-        GROUP BY DATE(c.created_at), c.tenant_id
+            SUM(CASE WHEN r.action = 'escalate' THEN 1 ELSE 0 END) as escalated_count,
+            SUM(CASE WHEN r.action = 'auto_resolve' THEN 1 ELSE 0 END) as handled_count,
+            SUM(CASE WHEN r.action = 'human_review' THEN 1 ELSE 0 END) as review_count,
+            ROUND(100.0 * SUM(CASE WHEN r.action = 'escalate' THEN 1 ELSE 0 END) / COUNT(*), 2) as escalation_pct,
+            ROUND(100.0 * SUM(CASE WHEN r.action = 'auto_resolve' THEN 1 ELSE 0 END) / COUNT(*), 2) as autonomy_pct
+        FROM triage.triage_runs r
+        WHERE r.created_at >= NOW() - INTERVAL '90 days'
+        GROUP BY DATE(r.created_at), r.tenant_id
         WITH DATA;
     """)
 
-    # Intent accuracy daily: intent classification accuracy per intent per day
+    # Intent accuracy daily: intent classification confidence per intent per day
     op.execute("""
         CREATE MATERIALIZED VIEW triage.v_intent_accuracy_daily AS
         SELECT
             DATE(c.created_at) as analysis_date,
             c.tenant_id,
-            c.intent,
+            c.intent_primary as intent,
             COUNT(*) as total_predictions,
-            SUM(CASE WHEN c.intent_confidence >= 0.8 THEN 1 ELSE 0 END) as high_confidence_count,
-            ROUND(100.0 * SUM(CASE WHEN c.intent_confidence >= 0.8 THEN 1 ELSE 0 END) / COUNT(*), 2) as accuracy_pct
+            SUM(CASE WHEN c.confidence_score >= 0.8 THEN 1 ELSE 0 END) as high_confidence_count,
+            ROUND(100.0 * SUM(CASE WHEN c.confidence_score >= 0.8 THEN 1 ELSE 0 END) / COUNT(*), 2) as accuracy_pct
         FROM triage.conversations c
-        WHERE c.created_at >= NOW() - INTERVAL '30 days' AND c.intent IS NOT NULL
-        GROUP BY DATE(c.created_at), c.tenant_id, c.intent
+        WHERE c.created_at >= NOW() - INTERVAL '30 days' AND c.intent_primary IS NOT NULL
+        GROUP BY DATE(c.created_at), c.tenant_id, c.intent_primary
         WITH DATA;
     """)
 
-    # Agent/autonomy performance: decision rate, resolution metrics per autonomy level
+    # Agent/autonomy performance: decision rate, resolution metrics per action
     op.execute("""
         CREATE MATERIALIZED VIEW triage.v_agent_performance_daily AS
         SELECT
-            DATE(c.created_at) as performance_date,
-            c.tenant_id,
-            c.autonomy_decision,
+            DATE(r.created_at) as performance_date,
+            r.tenant_id,
+            r.action,
             COUNT(*) as decision_count,
-            ROUND(AVG(EXTRACT(EPOCH FROM (c.updated_at - c.created_at))), 2) as avg_resolution_time_sec,
-            ROUND(AVG(c.confidence_score), 3) as avg_confidence,
-            SUM(CASE WHEN c.escalation_reason IS NOT NULL THEN 1 ELSE 0 END) as escalation_count
-        FROM triage.conversations c
-        WHERE c.created_at >= NOW() - INTERVAL '30 days'
-        GROUP BY DATE(c.created_at), c.tenant_id, c.autonomy_decision
+            ROUND((AVG(r.latency_ms) / 1000.0)::NUMERIC, 2) as avg_latency_sec,
+            ROUND(AVG(r.intent_confidence), 3) as avg_confidence,
+            SUM(CASE WHEN r.status = 'failed' THEN 1 ELSE 0 END) as failure_count
+        FROM triage.triage_runs r
+        WHERE r.created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY DATE(r.created_at), r.tenant_id, r.action
         WITH DATA;
     """)
 
-    # Customer outcomes: resolution success, CSAT, cost metrics by customer segment
+    # Customer outcomes: resolution success by customer segment
     op.execute("""
         CREATE MATERIALIZED VIEW triage.v_customer_outcomes_daily AS
         SELECT
@@ -79,27 +80,28 @@ def upgrade() -> None:
             c.tenant_id,
             CASE
                 WHEN hsa.health_label = 'at_risk' THEN 'at_risk'
-                WHEN ce.account_age_days > 730 THEN 'loyal'
-                WHEN ce.total_spent > 5000 THEN 'high_value'
+                WHEN cu.ltv_cents > 500000 THEN 'high_value'
+                WHEN cu.tier = 'premium' OR cu.tier = 'enterprise' THEN 'loyal'
                 ELSE 'standard'
             END as customer_segment,
             COUNT(DISTINCT c.id) as conversation_count,
             COUNT(DISTINCT c.customer_id) as unique_customers,
             ROUND(AVG(EXTRACT(EPOCH FROM (c.updated_at - c.created_at))), 2) as avg_resolution_time_sec,
-            ROUND(100.0 * SUM(CASE WHEN c.autonomy_decision != 'escalate' THEN 1 ELSE 0 END) / COUNT(*), 2) as handled_pct,
-            ROUND(AVG(COALESCE(hs.avg_resolution_days::NUMERIC, 0)), 1) as avg_support_contact_days
+            ROUND(100.0 * SUM(CASE WHEN c.status = 'resolved' THEN 1 ELSE 0 END) / COUNT(*), 2) as resolved_pct,
+            ROUND(100.0 * SUM(CASE WHEN c.is_auto_resolved THEN 1 ELSE 0 END) / COUNT(*), 2) as auto_resolved_pct
         FROM triage.conversations c
-        LEFT JOIN triage.health_score_audits hsa ON c.tenant_id = hsa.tenant_id AND c.customer_id = hsa.customer_id
-        LEFT JOIN triage.customer_enrichment_cache ce ON c.tenant_id = ce.tenant_id AND c.customer_id = ce.customer_id
-        LEFT JOIN triage.customers hs ON c.tenant_id = hs.tenant_id AND c.customer_id::TEXT = hs.customer_id::TEXT
+        LEFT JOIN triage.health_score_audits hsa
+            ON c.tenant_id = hsa.tenant_id AND c.customer_id::TEXT = hsa.customer_id
+        LEFT JOIN triage.customers cu
+            ON c.tenant_id = cu.tenant_id AND c.customer_id = cu.id
         WHERE c.created_at >= NOW() - INTERVAL '30 days'
         GROUP BY
             DATE(c.created_at),
             c.tenant_id,
             CASE
                 WHEN hsa.health_label = 'at_risk' THEN 'at_risk'
-                WHEN ce.account_age_days > 730 THEN 'loyal'
-                WHEN ce.total_spent > 5000 THEN 'high_value'
+                WHEN cu.ltv_cents > 500000 THEN 'high_value'
+                WHEN cu.tier = 'premium' OR cu.tier = 'enterprise' THEN 'loyal'
                 ELSE 'standard'
             END
         WITH DATA;
@@ -131,9 +133,9 @@ def upgrade() -> None:
             m.tenant_id,
             m.metric_name,
             DATE(m.recorded_at) as metric_date,
-            ROUND(AVG(m.metric_value), 4) as avg_metric_value,
-            ROUND(MIN(m.metric_value), 4) as min_metric_value,
-            ROUND(MAX(m.metric_value), 4) as max_metric_value,
+            ROUND(AVG(m.metric_value)::NUMERIC, 4) as avg_metric_value,
+            ROUND(MIN(m.metric_value)::NUMERIC, 4) as min_metric_value,
+            ROUND(MAX(m.metric_value)::NUMERIC, 4) as max_metric_value,
             COUNT(*) as measurement_count
         FROM triage.metric_history m
         WHERE m.recorded_at >= NOW() - INTERVAL '90 days'

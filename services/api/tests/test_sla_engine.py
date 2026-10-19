@@ -66,17 +66,23 @@ class TestSLATimerCreation:
         time_to_deadline = (timer.deadline - datetime.utcnow()).total_seconds() / 3600
         assert time_to_deadline > 3  # At least 3 hours (accounting for business hours)
 
-    def test_warning_threshold(self, sla_engine):
-        """Test warning threshold is at 75% of deadline."""
+    def test_warning_threshold(self, sla_engine, business_calendar):
+        """Test warning threshold is at 75% of deadline (in business time)."""
+        # Anchor inside business hours; for long policies the 75% point may fall
+        # in a later business day, so wall-clock ratios are distorted — the
+        # invariant holds in business minutes, which is what the calendar computes.
+        start = datetime(2024, 1, 15, 9, 0)
         ticket_props = {"priority": "p2"}
-        timer = sla_engine.create_timer("ticket_789", ticket_props)
+        timer = sla_engine.create_timer("ticket_789", ticket_props, now=start)
 
-        # Warning should be at 75% of resolution time
-        warning_offset = (timer.warning_threshold - timer.created_at).total_seconds() / 60
-        deadline_offset = (timer.deadline - timer.created_at).total_seconds() / 60
+        warning_business = business_calendar.calculate_business_time_elapsed(
+            timer.created_at, timer.warning_threshold
+        ).total_seconds() / 60
+        deadline_business = business_calendar.calculate_business_time_elapsed(
+            timer.created_at, timer.deadline
+        ).total_seconds() / 60
 
-        # Warning should be roughly 75% of deadline
-        ratio = warning_offset / deadline_offset
+        ratio = warning_business / deadline_business
         assert 0.7 < ratio < 0.8
 
 
@@ -124,18 +130,20 @@ class TestSLATimerState:
 
     def test_timer_pause_resume(self, sla_engine):
         """Test pausing and resuming timer."""
-        timer = sla_engine.create_timer("ticket_pause", {"priority": "p1"})
+        start = datetime(2024, 1, 15, 9, 0)
+        timer = sla_engine.create_timer("ticket_pause", {"priority": "p1"}, now=start)
         original_deadline = timer.deadline
 
-        # Pause timer
-        sla_engine.pause_timer(timer.timer_id)
-        assert timer.paused_at is not None
+        # Pause timer at 10:00, resume at 10:30 -> deadline extends 30 minutes
+        pause_at = start + timedelta(hours=1)
+        resume_at = start + timedelta(hours=1, minutes=30)
+        sla_engine.pause_timer(timer.timer_id, now=pause_at)
+        assert timer.paused_at == pause_at
 
-        # Resume timer
-        sla_engine.resume_timer(timer.timer_id)
+        sla_engine.resume_timer(timer.timer_id, now=resume_at)
         assert timer.paused_at is None
         # Deadline should have extended
-        assert timer.deadline > original_deadline
+        assert timer.deadline == original_deadline + timedelta(minutes=30)
 
     def test_timer_is_breached(self, sla_engine):
         """Test checking if timer is breached."""

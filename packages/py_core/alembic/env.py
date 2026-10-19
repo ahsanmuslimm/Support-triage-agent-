@@ -1,5 +1,6 @@
 """Alembic environment configuration."""
 
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -13,9 +14,24 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 
+def _database_url() -> str | None:
+    """DATABASE_URL env var wins; fall back to alembic.ini / dev default."""
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
+    ini_url = config.get_main_option("sqlalchemy.url")
+    if ini_url and not ini_url.startswith("driver://"):
+        return ini_url
+    return None
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
-    url = config.get_main_option("sqlalchemy.url")
+    url = _database_url() or "postgresql+psycopg://postgres@localhost/triage"
     context.configure(
         url=url,
         target_metadata=None,
@@ -34,8 +50,7 @@ def run_migrations_online() -> None:
         raise ValueError("Config section not found")
 
     configuration["sqlalchemy.url"] = (
-        config.get_main_option("sqlalchemy.url")
-        or "postgresql+asyncpg://postgres:postgres_dev@localhost/triage"
+        _database_url() or "postgresql+psycopg://postgres@localhost/triage"
     )
 
     connectable = engine_from_config(

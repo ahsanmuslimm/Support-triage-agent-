@@ -17,10 +17,20 @@ branch_labels = None
 depends_on = None
 
 
+def _has_pgvector() -> bool:
+    """True when the pgvector extension is available (native Windows dev often lacks it)."""
+    bind = op.get_bind()
+    row = bind.execute(
+        sa.text("SELECT 1 FROM pg_available_extensions WHERE name = 'pgvector'")
+    ).fetchone()
+    return row is not None
+
+
 def upgrade() -> None:
     """Create baseline MVP schema."""
-    # Create pgvector extension
-    op.execute("CREATE EXTENSION IF NOT EXISTS pgvector")
+    # Create pgvector extension (optional: skipped when unavailable, e.g. native Windows dev)
+    if _has_pgvector():
+        op.execute("CREATE EXTENSION IF NOT EXISTS pgvector")
     op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
     # Create triage schema
@@ -141,7 +151,7 @@ def upgrade() -> None:
         sa.Column("phone_hash", sa.String(255), nullable=True),
         sa.Column("name_pseudonym", sa.String(255), nullable=True),
         sa.Column("ltv_cents", sa.BigInteger(), nullable=False, server_default="0"),
-        sa.Column("tier", sa.Enum("free", "standard", "premium", "enterprise", name="customer_tier", schema="triage"), nullable=False, server_default="standard"),
+        sa.Column("tier", postgresql.ENUM("free", "standard", "premium", "enterprise", name="customer_tier", schema="triage", create_type=False), nullable=False, server_default="standard"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
@@ -153,7 +163,7 @@ def upgrade() -> None:
         "channels",
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("type", sa.Enum("email", "chat", "sms", "voice", "social", "api", name="channel_type", schema="triage"), nullable=False),
+        sa.Column("type", postgresql.ENUM("email", "chat", "sms", "voice", "social", "api", name="channel_type", schema="triage", create_type=False), nullable=False),
         sa.Column("config", postgresql.JSONB(), nullable=False, server_default="{}"),
         sa.Column("enabled", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
@@ -177,17 +187,16 @@ def upgrade() -> None:
         schema="triage",
     )
 
-    # Intent examples table (multi-tenant)
+    # Intent examples table (multi-tenant, golden set for k-NN classifier)
     op.create_table(
         "intent_examples",
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("intent_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("embedding", sa.text(), nullable=True),  # pgvector halfvec type
+        sa.Column("intent_name", sa.String(100), nullable=False),
+        sa.Column("example_text", sa.Text(), nullable=False),
+        sa.Column("is_golden", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
-        sa.ForeignKeyConstraint(["tenant_id", "intent_id"], ["triage.intents.tenant_id", "triage.intents.id"]),
         schema="triage",
     )
 
@@ -215,16 +224,23 @@ def upgrade() -> None:
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
         sa.Column("customer_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("channel_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("status", sa.Enum("open", "resolved", "escalated", "pending_customer_response", "reopened", name="conversation_status", schema="triage"), nullable=False, server_default="open"),
-        sa.Column("resolution_type", sa.String(50), nullable=True),
-        sa.Column("reopened_72h", sa.Boolean(), nullable=False, server_default="false"),
-        sa.Column("csat_score", sa.Integer(), nullable=True),
+        sa.Column("channel_id", sa.String(50), nullable=True),
+        sa.Column("status", sa.String(50), nullable=False, server_default="open"),
+        sa.Column("priority", sa.String(50), nullable=True, server_default="normal"),
+        sa.Column("subject", sa.Text(), nullable=True),
+        sa.Column("message_count", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("unread_count", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("intent_primary", sa.String(255), nullable=True),
+        sa.Column("intent_secondary", sa.String(255), nullable=True),
+        sa.Column("confidence_score", sa.Float(), nullable=True),
+        sa.Column("is_auto_resolved", sa.Boolean(), nullable=False, server_default="false"),
+        sa.Column("metadata", postgresql.JSONB(), nullable=False, server_default="{}"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("last_message_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("resolved_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
         sa.ForeignKeyConstraint(["tenant_id", "customer_id"], ["triage.customers.tenant_id", "triage.customers.id"]),
-        sa.ForeignKeyConstraint(["tenant_id", "channel_id"], ["triage.channels.tenant_id", "triage.channels.id"]),
         schema="triage",
     )
 
@@ -234,38 +250,44 @@ def upgrade() -> None:
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
         sa.Column("conversation_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("direction", sa.String(50), nullable=False),  # inbound, outbound
-        sa.Column("role", sa.String(50), nullable=False),  # customer, agent, system
-        sa.Column("body_ciphertext", sa.Text(), nullable=False),
-        sa.Column("body_iv", sa.String(255), nullable=False),
-        sa.Column("dek_version", sa.Integer(), nullable=False),
-        sa.Column("pseudonymized_body", sa.Text(), nullable=True),
-        sa.Column("provider_msg_id", sa.String(255), nullable=True, unique=True),
-        sa.Column("idempotency_key", sa.String(255), nullable=True, unique=True),
-        sa.Column("coalesced_into", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
-        sa.ForeignKeyConstraint(["tenant_id", "conversation_id"], ["triage.conversations.tenant_id", "triage.conversations.id"]),
-        schema="triage",
-    )
-
-    # Triage runs table (multi-tenant)
-    op.create_table(
-        "triage_runs",
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("conversation_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("status", sa.String(50), nullable=False, server_default="pending"),
-        sa.Column("decision", sa.String(50), nullable=True),
-        sa.Column("autonomy_level", sa.String(50), nullable=False),
-        sa.Column("guard_scores", postgresql.JSONB(), nullable=False, server_default="{}"),
-        sa.Column("llm_cost_usd", sa.Numeric(10, 6), nullable=False, server_default="0"),
+        sa.Column("customer_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("channel_type", sa.String(50), nullable=False),
+        sa.Column("source", sa.String(50), nullable=False),
+        sa.Column("body", sa.Text(), nullable=False),
+        sa.Column("body_encrypted", postgresql.JSONB(), nullable=True),
+        sa.Column("language", sa.String(10), nullable=True),
+        sa.Column("provider_message_id", sa.String(255), nullable=True),
+        sa.Column("sender_id", sa.String(255), nullable=True),
+        sa.Column("idempotency_key", sa.String(255), nullable=False),
+        sa.Column("metadata", postgresql.JSONB(), nullable=False, server_default="{}"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
         sa.ForeignKeyConstraint(["tenant_id", "conversation_id"], ["triage.conversations.tenant_id", "triage.conversations.id"]),
+        sa.ForeignKeyConstraint(["tenant_id", "customer_id"], ["triage.customers.tenant_id", "triage.customers.id"]),
+        schema="triage",
+    )
+
+    # Triage runs table (output of agent graph execution)
+    op.create_table(
+        "triage_runs",
+        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("conversation_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("top_intent", sa.String(100), nullable=True),
+        sa.Column("intent_confidence", sa.Numeric(precision=3, scale=2), nullable=True),
+        sa.Column("autonomy_level", sa.Integer(), nullable=True),
+        sa.Column("action", sa.String(50), nullable=True),
+        sa.Column("tool_executed", sa.String(100), nullable=True),
+        sa.Column("tool_result", postgresql.JSONB(), nullable=True),
+        sa.Column("latency_ms", sa.Float(), nullable=True),
+        sa.Column("reasoning", postgresql.JSONB(), nullable=False, server_default="[]"),
+        sa.Column("status", sa.String(50), nullable=False, server_default="pending"),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
         sa.ForeignKeyConstraint(["tenant_id", "message_id"], ["triage.messages.tenant_id", "triage.messages.id"]),
+        sa.ForeignKeyConstraint(["tenant_id", "conversation_id"], ["triage.conversations.tenant_id", "triage.conversations.id"]),
         schema="triage",
     )
 
@@ -365,7 +387,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
         sa.Column("document_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("embedding", sa.text(), nullable=True),  # pgvector halfvec type
+        sa.Column("embedding", sa.Text(), nullable=True),  # pgvector halfvec type
         sa.Column("audience", sa.String(50), nullable=False, server_default="public"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
@@ -430,12 +452,12 @@ def upgrade() -> None:
         schema="triage",
     )
 
-    # Outbox events (for event sourcing)
+    # Outbox events (transactional outbox; composite PK tenant_id+id)
     op.create_table(
         "outbox_events",
+        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("aggregate_type", sa.String(100), nullable=False),
+        sa.Column("aggregate_type", sa.String(50), nullable=False),
         sa.Column("aggregate_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("event_type", sa.String(100), nullable=False),
         sa.Column("payload", postgresql.JSONB(), nullable=False),
@@ -463,16 +485,16 @@ def upgrade() -> None:
         schema="triage",
     )
 
-    # PII tokens vault
+    # PII tokens vault (redacted PII: hash -> token mapping; plaintext never stored)
     op.create_table(
         "pii_tokens",
         sa.Column("tenant_id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
-        sa.Column("token", sa.String(255), nullable=False, unique=True),
-        sa.Column("entity_type", sa.String(50), nullable=False),
-        sa.Column("ciphertext", sa.Text(), nullable=False),
-        sa.Column("iv", sa.String(255), nullable=False),
-        sa.Column("dek_version", sa.Integer(), nullable=False),
+        sa.Column("pii_type", sa.String(50), nullable=False),
+        sa.Column("pii_hash", sa.String(64), nullable=False),
+        sa.Column("token", sa.String(64), nullable=False),
+        sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column("encrypted_value", sa.String(1024), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["tenant_id"], ["triage.tenants.id"]),
         schema="triage",
@@ -487,23 +509,10 @@ def upgrade() -> None:
     op.create_index("idx_kb_chunks_document", "kb_chunks", ["tenant_id", "document_id"], schema="triage")
     op.create_index("idx_audit_log_tenant_created", "audit_log", ["tenant_id", "created_at"], schema="triage")
 
-    # HNSW indexes for vector similarity search
-    op.execute(
-        """
-        CREATE INDEX idx_intent_examples_embedding
-        ON triage.intent_examples
-        USING hnsw (embedding vector_ip_ops)
-        WHERE embedding IS NOT NULL
-        """
-    )
-    op.execute(
-        """
-        CREATE INDEX idx_kb_chunks_embedding
-        ON triage.kb_chunks
-        USING hnsw (embedding vector_ip_ops)
-        WHERE embedding IS NOT NULL
-        """
-    )
+    # NOTE: HNSW vector indexes are intentionally not created here. Embeddings are
+    # stored as JSON (intent_embeddings) / Text (kb_chunks) for portability; a
+    # dedicated pgvector migration will ALTER columns to vector type and add
+    # HNSW indexes once pgvector is provisioned (production).
 
     # Enable RLS on multi-tenant tables
     multi_tenant_tables = [

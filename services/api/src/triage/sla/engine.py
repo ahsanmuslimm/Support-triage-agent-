@@ -138,15 +138,23 @@ class SLATimer:
             return self.deadline - self.paused_at
         return self.deadline - datetime.utcnow()
 
-    def pause(self) -> None:
-        """Pause the timer."""
-        if not self.paused_at:
-            self.paused_at = datetime.utcnow()
+    def pause(self, now: datetime | None = None) -> None:
+        """Pause the timer.
 
-    def resume(self) -> None:
-        """Resume the timer, adjusting deadline."""
+        Args:
+            now: Pause timestamp (defaults to current UTC time).
+        """
+        if not self.paused_at:
+            self.paused_at = now or datetime.utcnow()
+
+    def resume(self, now: datetime | None = None) -> None:
+        """Resume the timer, adjusting deadline.
+
+        Args:
+            now: Resume timestamp (defaults to current UTC time).
+        """
         if self.paused_at:
-            pause_duration = datetime.utcnow() - self.paused_at
+            pause_duration = (now or datetime.utcnow()) - self.paused_at
             self.total_paused_duration += pause_duration
             self.deadline += pause_duration
             self.warning_threshold += pause_duration
@@ -222,14 +230,27 @@ class SLAEngine:
         category = ticket_properties.get("category")
         segment = ticket_properties.get("segment")
 
-        # Find best match: exact match preferred over partial
+        # Find best match: prefer specific category/segment over wildcards,
+        # regardless of registration order (defaults use None wildcards).
+        best: SLAPolicy | None = None
+        best_specificity = -1
         for policy in self.policies.values():
-            if (
-                policy.priority == priority
-                and (policy.category is None or policy.category == category)
-                and (policy.segment is None or policy.segment == segment)
-            ):
-                return policy
+            if policy.priority != priority:
+                continue
+            if policy.category is not None and policy.category != category:
+                continue
+            if policy.segment is not None and policy.segment != segment:
+                continue
+            specificity = (
+                int(policy.category is not None and policy.category == category)
+                + int(policy.segment is not None and policy.segment == segment)
+            )
+            if specificity > best_specificity:
+                best = policy
+                best_specificity = specificity
+
+        if best is not None:
+            return best
 
         # Fallback: match by priority only
         for policy in self.policies.values():
@@ -242,12 +263,14 @@ class SLAEngine:
         self,
         ticket_id: str,
         ticket_properties: dict[str, Any],
+        now: datetime | None = None,
     ) -> SLATimer | None:
         """Create SLA timer for ticket.
 
         Args:
             ticket_id: Ticket ID.
             ticket_properties: Ticket properties.
+            now: Creation timestamp (defaults to current UTC time).
 
         Returns:
             Optional[SLATimer]: Timer or None if policy not found.
@@ -257,7 +280,7 @@ class SLAEngine:
             log.warning("policy_not_found", ticket_id=ticket_id)
             return None
 
-        now = datetime.utcnow()
+        now = now or datetime.utcnow()
         deadline = self.business_calendar.calculate_deadline(
             now,
             policy.resolution_time_minutes,
@@ -272,6 +295,7 @@ class SLAEngine:
             policy=policy,
             deadline=deadline,
             warning_threshold=warning_threshold,
+            created_at=now or datetime.utcnow(),
         )
 
         self.timers[timer.timer_id] = timer
@@ -309,18 +333,19 @@ class SLAEngine:
         """
         return self.timers.get(timer_id)
 
-    def pause_timer(self, timer_id: str) -> bool:
+    def pause_timer(self, timer_id: str, now: datetime | None = None) -> bool:
         """Pause a timer.
 
         Args:
             timer_id: Timer ID.
+            now: Pause timestamp (defaults to current UTC time).
 
         Returns:
             bool: True if paused successfully.
         """
         timer = self.get_timer(timer_id)
         if timer:
-            timer.pause()
+            timer.pause(now)
             self.events.append(
                 SLAEvent(
                     event_type=SLAEventType.TIMER_PAUSED,
@@ -332,18 +357,19 @@ class SLAEngine:
             return True
         return False
 
-    def resume_timer(self, timer_id: str) -> bool:
+    def resume_timer(self, timer_id: str, now: datetime | None = None) -> bool:
         """Resume a paused timer.
 
         Args:
             timer_id: Timer ID.
+            now: Resume timestamp (defaults to current UTC time).
 
         Returns:
             bool: True if resumed successfully.
         """
         timer = self.get_timer(timer_id)
         if timer:
-            timer.resume()
+            timer.resume(now)
             self.events.append(
                 SLAEvent(
                     event_type=SLAEventType.TIMER_RESUMED,

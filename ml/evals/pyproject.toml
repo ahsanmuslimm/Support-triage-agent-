@@ -9,7 +9,7 @@ description = "Evaluation harness and golden datasets"
 requires-python = ">=3.12"
 authors = [{ name = "Support Triage Team" }]
 dependencies = [
-    "py-core @ file:///../packages/py_core",
+    "py-core",
 ]
 
 [tool.pytest.ini_options]
@@ -19,3 +19,9 @@ markers = [
     "unit: unit tests",
     "eval: evaluation tests",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

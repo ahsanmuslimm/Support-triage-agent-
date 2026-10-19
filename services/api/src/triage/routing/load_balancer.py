@@ -16,7 +16,7 @@ class AgentLoad:
     agent_id: str
     """Agent identifier."""
 
-    current_load: float
+    current_load: float = 0.0
     """Current load: open_tickets + estimated_handling_time/60."""
 
     open_tickets: int = 0
@@ -302,8 +302,8 @@ class LoadBalancer:
                         assignment.priority,
                     )
                     if new_agent_id:
-                        # Remove from old agent
-                        self.assignments.pop(assignment.ticket_id, None)
+                        # assign_ticket already rewrote self.assignments[ticket_id]
+                        # to the new agent; update the old agent's counters.
                         agent.open_tickets -= 1
                         agent.current_load = self._calculate_load(agent)
 
