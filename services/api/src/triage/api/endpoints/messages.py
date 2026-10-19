@@ -1,27 +1,94 @@
-"""Message ingestion and streaming endpoints."""
+"""Message ingestion and streaming endpoints (DB-backed)."""
 
 import asyncio
+import hashlib
 import json
+import os
 import uuid
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
+from ...db import SessionDep, TenantDep, stable_uuid
 from ...ingestion.encryption import EnvelopeEncryption
 from ...ingestion.idempotency import IdempotencyManager
-from ...ingestion.identity import IdentityResolver
 from ...ingestion.normalizers import NormalizerFactory
-from ...ingestion.outbox import OutboxWriter
 from ...ingestion.pii_handler import PiiHandler
 from ...models.message import MessageRequest, MessageResponse, MessageStatus
+from ...models.orm import (
+    Conversation,
+    Customer,
+    OutboxEventORM,
+    PiiToken,
+    Tenant,
+)
+from ...models.orm import Message as MessageORM
 
 router = APIRouter()
 
-# Global instances (should be injected from DI container in real app)
-_encryption = EnvelopeEncryption() if __import__("os").environ.get("ENCRYPTION_KEY") else None
+_encryption = EnvelopeEncryption() if os.environ.get("ENCRYPTION_KEY") else None
 _pii_handler = PiiHandler()
-_identity_resolver = IdentityResolver()
-_outbox_writer = OutboxWriter()
+
+
+def _sha256(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+async def _resolve_customer(
+    session,
+    tenant_id: uuid.UUID,
+    sender_id: str,
+    sender_email: str | None,
+) -> Customer:
+    """Find or create the customer identity (deduped by email hash)."""
+    email = sender_email or (sender_id if "@" in (sender_id or "") else None)
+    email_hash = _sha256(email or sender_id)
+    phone_hash = _sha256(sender_id) if sender_id and sender_id.replace("-", "").isdigit() else None
+
+    result = await session.execute(
+        select(Customer).where(Customer.tenant_id == tenant_id, Customer.email_hash == email_hash)
+    )
+    customer = result.scalar_one_or_none()
+    if customer is None:
+        customer = Customer(
+            tenant_id=tenant_id,
+            email_hash=email_hash,
+            phone_hash=phone_hash,
+            external_id=sender_id if email is None else None,
+        )
+        session.add(customer)
+        await session.flush()
+    return customer
+
+
+async def _resolve_conversation(
+    session,
+    tenant_id: uuid.UUID,
+    conversation_id: str,
+    customer_id: uuid.UUID,
+    channel_id: str,
+) -> Conversation:
+    """Find or create the conversation; bumps message_count on existing rows."""
+    conv_uuid = stable_uuid(conversation_id)
+    conversation = await session.get(Conversation, (tenant_id, conv_uuid))
+    if conversation is None:
+        conversation = Conversation(
+            tenant_id=tenant_id,
+            id=conv_uuid,
+            customer_id=customer_id,
+            channel_id=channel_id,
+            last_message_at=datetime.now(UTC),
+        )
+        session.add(conversation)
+        await session.flush()
+    else:
+        conversation.message_count += 1
+        conversation.last_message_at = datetime.now(UTC)
+    return conversation
 
 
 @router.post(
@@ -32,130 +99,145 @@ _outbox_writer = OutboxWriter()
 async def ingest_message(
     conversation_id: str,
     request: MessageRequest,
-    tenant_id: str = Header(..., alias="X-Tenant-ID"),
+    session: SessionDep,
+    tenant_id: TenantDep,
     idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> MessageResponse:
     """Ingest a message into a conversation.
 
     Returns 202 Accepted immediately. Message is processed asynchronously.
-    Implements full pipeline: normalize → validate → check idempotency → encrypt → redact PII →
-    resolve identity → store to database → write outbox event → queue for coalescing.
-
-    Args:
-        conversation_id: Conversation ID
-        request: MessageRequest payload
-        tenant_id: Tenant ID from header
-        idempotency_key: Optional idempotency key
-
-    Returns:
-        MessageResponse with stream URL for real-time updates
+    Pipeline: normalize -> check idempotency -> resolve customer/conversation ->
+    redact PII -> encrypt -> persist message + outbox event in one transaction.
 
     Response codes:
         202: Message ingested successfully (processing async)
         409: Duplicate message (same idempotency_key already ingested)
-        400: Missing required header or invalid payload
+        400: Missing/invalid headers
         422: Validation error
+        503: Database not initialized or unavailable
     """
-    if not tenant_id:
-        raise HTTPException(status_code=400, detail="X-Tenant-ID header required")
+    # ========== STEP 1: Ensure tenant exists (auto-provision on first use) ==========
+    tenant = await session.get(Tenant, tenant_id)
+    if tenant is None:
+        session.add(Tenant(id=tenant_id, slug=f"tenant-{str(tenant_id)[:8]}", name=str(tenant_id)))
+        await session.flush()
 
-    # ========== STEP 1: Compute idempotency key ==========
+    # ========== STEP 2: Compute idempotency key ==========
     if not idempotency_key:
         body_hash = IdempotencyManager.compute_body_hash(request.body)
         idempotency_key = IdempotencyManager.generate_key(
-            tenant_id=tenant_id,
+            tenant_id=str(tenant_id),
             provider_message_id=request.provider_message_id,
             sender_id=request.sender_id,
             body_hash=body_hash,
         )
 
-    # ========== STEP 2: Check for duplicate (409 Conflict) ==========
-    # In real implementation, query database: SELECT id FROM messages WHERE tenant_id=? AND idempotency_key=?
-    # For now, stub: would check against actual message store
-    is_duplicate = IdempotencyManager.is_duplicate(idempotency_key)
-    if is_duplicate:
-        # Return 409 with Location header pointing to original message
+    # ========== STEP 3: Check for duplicate (409 Conflict) ==========
+    existing = (
+        await session.execute(
+            select(MessageORM.id).where(
+                MessageORM.tenant_id == tenant_id,
+                MessageORM.idempotency_key == idempotency_key,
+            )
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
         raise HTTPException(
             status_code=409,
             detail="Duplicate message (same idempotency_key already ingested)",
-            headers={"Location": f"/api/v1/conversations/{conversation_id}/messages/{idempotency_key}"},
+            headers={"Location": f"/api/v1/conversations/{conversation_id}/messages/{existing}"},
         )
 
-    # ========== STEP 3: Normalize message ==========
+    # ========== STEP 4: Resolve customer identity ==========
+    customer = await _resolve_customer(session, tenant_id, request.sender_id, request.sender_email)
+
+    # ========== STEP 5: Resolve conversation ==========
+    conversation = await _resolve_conversation(
+        session, tenant_id, conversation_id, customer.id, request.channel_type.value
+    )
+
+    # ========== STEP 6: Normalize message ==========
     normalizer = NormalizerFactory.get_normalizer(request.channel_type)
     canonical_message = normalizer.normalize(
-        tenant_id=tenant_id,
-        conversation_id=conversation_id,
+        tenant_id=str(tenant_id),
+        conversation_id=str(conversation.id),
         channel_id=request.channel_type.value,
         payload=request.model_dump(),
     )
 
-    # ========== STEP 4: Redact PII (before any downstream processing) ==========
-    redacted_body, pii_entities, _pii_vault = _pii_handler.redact(canonical_message.body)
+    # ========== STEP 7: Redact PII (before any downstream processing) ==========
+    redacted_body, pii_entities, pii_vault = _pii_handler.redact(canonical_message.body)
     canonical_message.body = redacted_body
 
-    # ========== STEP 5: Encrypt message body ==========
-    body_encrypted = None
+    # ========== STEP 8: Encrypt message body ==========
+    body_encrypted: dict[str, Any] | None = None
     if _encryption:
         body_encrypted = _encryption.encrypt(redacted_body)
 
-    # ========== STEP 6: Resolve customer identity ==========
-    customer = _identity_resolver.resolve_or_create(
-        tenant_id=tenant_id,
-        email=request.sender_id if "@" in (request.sender_id or "") else None,
-        phone=request.sender_id if request.sender_id and request.sender_id.replace("-", "").isdigit() else None,
-        external_id=request.provider_message_id,
-        display_name=getattr(request, "sender_name", None),
+    # ========== STEP 9: Persist message + outbox event in one transaction ==========
+    message_id = uuid.uuid4()
+    session.add(
+        MessageORM(
+            tenant_id=tenant_id,
+            id=message_id,
+            conversation_id=conversation.id,
+            customer_id=customer.id,
+            channel_type=request.channel_type.value,
+            source=request.channel_type.value,
+            body=redacted_body,
+            body_encrypted=body_encrypted,
+            language=getattr(canonical_message, "language", None),
+            provider_message_id=request.provider_message_id,
+            sender_id=request.sender_id,
+            idempotency_key=idempotency_key,
+            metadata_json=request.metadata or {},
+        )
     )
-    customer_id = customer.customer_id
-
-    # ========== STEP 7: Store message (in real implementation, write to DB) ==========
-    message_id = str(uuid.uuid4())
-    # Row shape for the future DB write; not persisted yet.
-    _message_record = {
-        "id": message_id,
-        "tenant_id": tenant_id,
-        "conversation_id": conversation_id,
-        "customer_id": customer_id,
-        "channel_type": request.channel_type.value,
-        "source": request.channel_type.value,
-        "body": canonical_message.body,  # Redacted, plaintext
-        "body_encrypted": body_encrypted,  # Encrypted JSON blob
-        "language": getattr(canonical_message, "language", None),
-        "provider_message_id": request.provider_message_id,
-        "sender_id": request.sender_id,
-        "idempotency_key": idempotency_key,
-        "metadata": request.metadata or {},
-        "created_at": canonical_message.created_at,
-    }
-
-    # ========== STEP 8: Write outbox event (atomically with message insert) ==========
-    await _outbox_writer.write_event(
-        tenant_id=tenant_id,
-        aggregate_type="message",
-        aggregate_id=message_id,
-        event_type="message.ingested",
-        payload={
-            "message_id": message_id,
-            "conversation_id": conversation_id,
-            "customer_id": customer_id,
-            "channel_type": request.channel_type.value,
-            "pii_entities": [{"type": e.entity_type, "count": 1} for e in pii_entities],
-        },
+    for entity in pii_entities:
+        value = pii_vault[entity.token]
+        encrypted_value = _encryption.encrypt(value)["ciphertext"] if _encryption else None
+        session.add(
+            PiiToken(
+                tenant_id=tenant_id,
+                pii_type=entity.entity_type,
+                pii_hash=_sha256(value),
+                token=entity.token,
+                message_id=message_id,
+                encrypted_value=encrypted_value,
+            )
+        )
+    session.add(
+        OutboxEventORM(
+            tenant_id=tenant_id,
+            aggregate_type="message",
+            aggregate_id=message_id,
+            event_type="message.ingested",
+            payload={
+                "message_id": str(message_id),
+                "conversation_id": str(conversation.id),
+                "customer_id": str(customer.id),
+                "channel_type": request.channel_type.value,
+                "pii_entities": [{"type": e.entity_type, "count": 1} for e in pii_entities],
+            },
+        )
     )
 
-    # ========== STEP 9: Queue for coalescing (background task) ==========
-    # In real implementation: MessageCoalescer.queue_message(conversation_id, message_id)
-    # This would start a debounce timer and eventually trigger a triage run
-
-    stream_url = f"/api/v1/streams/conversations/{conversation_id}"
+    try:
+        await session.commit()
+    except IntegrityError as e:
+        await session.rollback()
+        # Raced with a concurrent ingest of the same idempotency key
+        raise HTTPException(
+            status_code=409,
+            detail="Duplicate message (same idempotency_key already ingested)",
+        ) from e
 
     return MessageResponse(
-        id=message_id,
-        conversation_id=conversation_id,
+        id=str(message_id),
+        conversation_id=str(conversation.id),
         status=MessageStatus.INGESTED,
         idempotency_key=idempotency_key,
-        stream_url=stream_url,
+        stream_url=f"/api/v1/streams/conversations/{conversation.id}",
         created_at=canonical_message.created_at,
     )
 
@@ -163,56 +245,36 @@ async def ingest_message(
 @router.get("/streams/conversations/{conversation_id}")
 async def stream_conversation(
     conversation_id: str,
-    tenant_id: str = Header(..., alias="X-Tenant-ID"),
+    session: SessionDep,
+    tenant_id: TenantDep,
 ) -> StreamingResponse:
     """Stream real-time updates for a conversation via Server-Sent Events.
 
-    Returns existing messages immediately, then subscribes to new messages via Redis Pub/Sub
-    or AsyncIO queue. Implements proper SSE line format: `data: {...}\n\n` and heartbeats.
-
-    Args:
-        conversation_id: Conversation ID
-        tenant_id: Tenant ID from header
-
-    Returns:
-        SSE stream with messages and status updates
+    Replays existing messages from the database, then keeps the connection
+    alive with heartbeats (Redis Pub/Sub fan-in arrives with the workers).
     """
+    conv_uuid = stable_uuid(conversation_id)
+    messages: list[MessageORM] = []
 
-    if not tenant_id:
-        raise HTTPException(status_code=400, detail="X-Tenant-ID header required")
+    result = await session.execute(
+        select(MessageORM)
+        .where(MessageORM.tenant_id == tenant_id, MessageORM.conversation_id == conv_uuid)
+        .order_by(MessageORM.created_at)
+    )
+    messages = list(result.scalars().all())
+    # Release the read transaction before the long-lived stream loop
+    await session.rollback()
 
     async def event_generator():
-        """Generate SSE events for conversation.
-
-        Yields:
-            SSE-formatted event strings (data: {...}\n\n)
-        """
+        """Yield SSE events: init + replayed messages, then heartbeats."""
         try:
-            # ========== STEP 1: Fetch existing messages from database ==========
-            # In real implementation:
-            # async with db_session() as session:
-            #     messages = await session.execute(
-            #         select(Message)
-            #         .where(Message.tenant_id == tenant_id)
-            #         .where(Message.conversation_id == conversation_id)
-            #         .order_by(Message.created_at)
-            #     )
-            # For now, stub: yield empty initial batch
+            yield f"data: {json.dumps({'type': 'init', 'conversation_id': str(conv_uuid)})}\n\n"
+            for m in messages:
+                yield f"data: {json.dumps({'type': 'message', 'id': str(m.id), 'body': m.body, 'sender_id': m.sender_id, 'channel_type': m.channel_type, 'created_at': m.created_at.isoformat() if m.created_at else None})}\n\n"
 
-            yield f"data: {json.dumps({{'type': 'init', 'conversation_id': conversation_id}})}\n\n"
-
-            # ========== STEP 2: Subscribe to new messages via Redis Pub/Sub or AsyncIO queue ==========
-            # In real implementation:
-            # async with redis_client.subscribe(f"conv:{conversation_id}") as channels:
-            #     async for message in channels[0].iter():
-            #         yield f"data: {message.decode()}\n\n"
-            #
-            # For now, demo: send heartbeats every 30s for 5 minutes, then close
             heartbeat_count = 0
             max_heartbeats = 10  # 5 minutes of 30s heartbeats
-
             while heartbeat_count < max_heartbeats:
-                # Send heartbeat comment (client uses this to detect dead connections)
                 yield ": heartbeat (connection alive)\n\n"
                 await asyncio.sleep(30)
                 heartbeat_count += 1
@@ -221,8 +283,7 @@ async def stream_conversation(
             # Client closed connection gracefully
             pass
         except Exception as e:
-            # Error in streaming loop
-            yield f"data: {json.dumps({{'type': 'error', 'error': str(e)}})}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
 
     return StreamingResponse(
         event_generator(),
