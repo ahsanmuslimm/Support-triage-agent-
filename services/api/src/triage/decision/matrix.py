@@ -25,7 +25,7 @@ class DecisionMatrix:
 
     # Injection patterns (OWASP LLM Top 10)
     INJECTION_PATTERNS: ClassVar[list[str]] = [
-        r"(?i)(ignore.*prompt|forget.*instruction|you are now|system prompt|developer mode)",
+        r"(?i)(ignore.{0,40}instruction|ignore.{0,40}prompt|forget.{0,20}instruction|you are now|system prompt|developer mode)",
         r"(?i)(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|;--)",
         r"(?i)(\.\.\/|\.\.\\|/etc/|c:\\windows|cmd\.exe|bash -i)",
         r"(?i)(script.*>|iframe|javascript:|onerror=|onload=)",
@@ -93,7 +93,10 @@ class DecisionMatrix:
     @staticmethod
     def _check_ial_mismatch(policy: PolicyInput) -> tuple[bool, str]:
         """Rule 4: IAL too low for sensitive intents → escalate."""
-        sensitive_intents = {"password_reset", "account_delete", "billing_change", "refund"}
+        # refund is intentionally excluded: its risk is governed by the
+        # amount/confidence rules (5, 6, 9); rule 9's IAL>=1 check would be
+        # unreachable if rule 4 escalated every refund below IAL 2.
+        sensitive_intents = {"password_reset", "account_delete", "billing_change"}
         if (
             policy.intent_name in sensitive_intents
             and policy.customer_ial < 2
@@ -280,33 +283,15 @@ class DecisionMatrix:
                 recommended_action="escalate",
             )
 
-        # Rule 7: Standard order status → L1
-        triggered, reason = DecisionMatrix._check_standard_order_status(policy)
-        if triggered:
-            return DecisionResult(
-                autonomy_level=AutonomyLevel.L1_SUGGEST,
-                reason=reason,
-                rule_triggered="rule_7_order_status",
-                recommended_action="compose_draft",
-            )
-
         # Rule 8: Premium, low-risk, high confidence → L2
+        # (tier upgrades are evaluated before the standard rule so premium
+        # customers are not capped at the standard L1 path)
         triggered, reason = DecisionMatrix._check_premium_low_risk(policy)
         if triggered:
             return DecisionResult(
                 autonomy_level=AutonomyLevel.L2_CONFIRM,
                 reason=reason,
                 rule_triggered="rule_8_premium_low_risk",
-                recommended_action="propose_tools",
-            )
-
-        # Rule 9: Low-risk refund → L2
-        triggered, reason = DecisionMatrix._check_low_risk_refund(policy)
-        if triggered:
-            return DecisionResult(
-                autonomy_level=AutonomyLevel.L2_CONFIRM,
-                reason=reason,
-                rule_triggered="rule_9_low_risk_refund",
                 recommended_action="propose_tools",
             )
 
@@ -320,10 +305,40 @@ class DecisionMatrix:
                 recommended_action="execute_tools",
             )
 
-        # Default: escalate
+        # Rule 7: Standard order status → L1
+        triggered, reason = DecisionMatrix._check_standard_order_status(policy)
+        if triggered:
+            return DecisionResult(
+                autonomy_level=AutonomyLevel.L1_SUGGEST,
+                reason=reason,
+                rule_triggered="rule_7_order_status",
+                recommended_action="compose_draft",
+            )
+
+        # Rule 9: Low-risk refund → L2
+        triggered, reason = DecisionMatrix._check_low_risk_refund(policy)
+        if triggered:
+            return DecisionResult(
+                autonomy_level=AutonomyLevel.L2_CONFIRM,
+                reason=reason,
+                rule_triggered="rule_9_low_risk_refund",
+                recommended_action="propose_tools",
+            )
+
+        # Default: unrecognized intents and low confidence escalate to a human;
+        # recognized intents with reasonable confidence get a suggested draft
+        # (L1) rather than full escalation.
+        intent_unknown = policy.intent_name is None or policy.intent_name.lower().startswith("unknown")
+        if intent_unknown or not policy.intent_confidence or policy.intent_confidence < 0.5:
+            return DecisionResult(
+                autonomy_level=AutonomyLevel.L0_READ_ONLY,
+                reason="No rule matched; defaulting to escalation",
+                rule_triggered="default_escalate",
+                recommended_action="escalate",
+            )
         return DecisionResult(
-            autonomy_level=AutonomyLevel.L0_READ_ONLY,
-            reason="No rule matched; defaulting to escalation",
-            rule_triggered="default_escalate",
-            recommended_action="escalate",
+            autonomy_level=AutonomyLevel.L1_SUGGEST,
+            reason="No specific rule matched; suggesting draft for review",
+            rule_triggered="default_suggest_draft",
+            recommended_action="compose_draft",
         )

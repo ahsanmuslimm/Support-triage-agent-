@@ -98,6 +98,10 @@ class IncidentClusterer:
             # Get embedding for new ticket
             new_embedding = await self._embed_text(summary)
 
+            # Record the ticket up front so urgency counting sees every ticket
+            # (clustered or standalone); the scan below excludes it by id.
+            self.ticket_history.append((ticket_id, summary, created_at))
+
             # Find similar tickets in lookback window
             cutoff_time = datetime.utcnow() - self.LOOKBACK_WINDOW
             recent_tickets = [
@@ -142,9 +146,6 @@ class IncidentClusterer:
                 await self._check_urgency_boost(best_cluster_id)
 
                 return best_cluster_id
-
-            # Add to history for future clustering
-            self.ticket_history.append((ticket_id, summary, created_at))
 
             log.info("ticket_not_clustered", ticket_id=ticket_id)
             return None

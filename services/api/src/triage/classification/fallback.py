@@ -47,6 +47,8 @@ class FallbackIntentClassifier:
         if not message_text.strip():
             return IntentClassifierResult(
                 message_id="",
+                top_intent="other",
+                top_confidence=0.5,
                 all_intents=[
                     IntentPrediction(intent_name="other", confidence=0.5, temperature_scaled=False)
                 ],

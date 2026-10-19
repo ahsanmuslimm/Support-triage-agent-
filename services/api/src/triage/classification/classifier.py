@@ -120,17 +120,25 @@ class IntentClassifier:
             indices = indices[0]  # Shape: (k,)
 
             # Convert distances to similarities (1 - distance for cosine)
-            similarities = 1.0 - distances
+            similarities = np.clip(1.0 - distances, 0.0, 1.0)
 
-            # Temperature scale: apply softmax with temperature
-            similarities_normalized = np.exp(similarities / self.temperature)
-            confidences = similarities_normalized / np.sum(similarities_normalized)
+            # Aggregate neighbor votes per intent, weighted by similarity.
+            # A per-neighbor softmax over near-identical similarities would cap
+            # confidence around 1/k even for exact training matches, which is
+            # useless for the 0.75-0.95 autonomy thresholds downstream.
+            intent_scores: dict[str, float] = {}
+            total_score = 0.0
+            for idx, intent_idx in enumerate(indices):
+                intent_name = self.intent_names_list[intent_idx]
+                # Temperature sharpens (<1) or softens (>1) the vote weights
+                weight = float(similarities[idx]) ** (1.0 / self.temperature)
+                intent_scores[intent_name] = intent_scores.get(intent_name, 0.0) + weight
+                total_score += weight
 
             # Build predictions
             all_intents = []
-            for idx, intent_idx in enumerate(indices):
-                intent_name = self.intent_names_list[intent_idx]
-                confidence = float(confidences[idx])
+            for intent_name, score in intent_scores.items():
+                confidence = score / total_score if total_score > 0 else 0.0
 
                 if confidence >= self.confidence_threshold:
                     all_intents.append(

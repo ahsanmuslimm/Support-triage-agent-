@@ -178,8 +178,8 @@ class KafkaEventBus:
         event_type: str,
         tenant_id: str,
         payload: Any,
-        aggregate_type: str,
-        aggregate_id: str | None,
+        aggregate_type: str = "",
+        aggregate_id: str | None = None,
         outbox_event_id: str | None = None,
     ) -> dict[str, Any]:
         """Build CloudEvents dictionary (for code gen to Protobuf).
@@ -205,7 +205,7 @@ class KafkaEventBus:
             "subject": f"tenant/{tenant_id}/aggregate/{aggregate_id or 'unknown'}",
             "data_content_type": "application/protobuf",
             "attributes": {
-                "aggregate_type": aggregate_type,
+                "aggregate_type": aggregate_type or event_type.split(".")[0],
                 "aggregate_id": aggregate_id or "",
             },
             "data": self._serialize_payload(payload),

@@ -20,21 +20,26 @@ class TestTicketClustering:
         """Test clustering similar tickets."""
         now = datetime.utcnow()
 
-        # Create similar tickets
+        # First similar ticket: standalone (nothing to cluster with yet)
         cluster_id_1 = await clusterer.cluster_ticket(
             "ticket_1",
             "Database connection timeout",
             now,
         )
+        assert cluster_id_1 is None
 
+        # Second similar ticket clusters with the first
         cluster_id_2 = await clusterer.cluster_ticket(
             "ticket_2",
             "Database connection timeout error",
             now + timedelta(seconds=30),
         )
 
-        # Should be in same cluster
-        assert cluster_id_1 == cluster_id_2
+        # The cluster exists and contains both tickets
+        assert cluster_id_2 is not None
+        cluster = clusterer.clusters[cluster_id_2]
+        assert "ticket_1" in cluster.ticket_ids
+        assert "ticket_2" in cluster.ticket_ids
 
     @pytest.mark.asyncio
     async def test_dissimilar_tickets_not_clustered(self, clusterer):
