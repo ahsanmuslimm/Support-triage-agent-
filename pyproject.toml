@@ -20,7 +20,7 @@ workspace = { members = [
 ] }
 
 [tool.pytest.ini_options]
-testpaths = ["services/api/tests", "packages/py_core/tests", "tests", "ml/evals/tests"]
+testpaths = ["services/api/tests", "packages/py_core/tests", "services/triage_worker/tests", "services/knowledge_worker/tests", "tests", "ml/evals/tests"]
 python_files = "test_*.py"
 addopts = "--import-mode=importlib -m 'not integration'"
 asyncio_mode = "auto"
