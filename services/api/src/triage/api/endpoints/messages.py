@@ -255,14 +255,24 @@ async def stream_conversation(
     alive with heartbeats (Redis Pub/Sub fan-in arrives with the workers).
     """
     conv_uuid = stable_uuid(conversation_id)
-    messages: list[MessageORM] = []
 
     result = await session.execute(
         select(MessageORM)
         .where(MessageORM.tenant_id == tenant_id, MessageORM.conversation_id == conv_uuid)
         .order_by(MessageORM.created_at)
     )
-    messages = list(result.scalars().all())
+    # Serialize before rolling back: rollback expires ORM attributes, and the
+    # generator below runs outside the session's greenlet context.
+    messages = [
+        {
+            "id": str(m.id),
+            "body": m.body,
+            "sender_id": m.sender_id,
+            "channel_type": m.channel_type,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        }
+        for m in result.scalars().all()
+    ]
     # Release the read transaction before the long-lived stream loop
     await session.rollback()
 
@@ -271,7 +281,7 @@ async def stream_conversation(
         try:
             yield f"data: {json.dumps({'type': 'init', 'conversation_id': str(conv_uuid)})}\n\n"
             for m in messages:
-                yield f"data: {json.dumps({'type': 'message', 'id': str(m.id), 'body': m.body, 'sender_id': m.sender_id, 'channel_type': m.channel_type, 'created_at': m.created_at.isoformat() if m.created_at else None})}\n\n"
+                yield f"data: {json.dumps({'type': 'message', **m})}\n\n"
 
             heartbeat_count = 0
             max_heartbeats = 10  # 5 minutes of 30s heartbeats
