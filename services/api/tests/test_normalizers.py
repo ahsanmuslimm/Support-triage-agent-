@@ -1,6 +1,5 @@
 """Tests for message normalizers."""
 
-
 import pytest
 from triage.ingestion.normalizers import (
     EmailNormalizer,
@@ -146,3 +145,28 @@ def test_text_normalization():
     )
 
     assert message.body == "Hello & goodbye"
+
+
+def test_email_normalizer_none_subject():
+    """Regression: MessageRequest.model_dump() passes explicit None for unset
+    optional fields; the email normalizer must not crash on subject=None."""
+    normalizer = EmailNormalizer()
+
+    payload = {
+        "from": "bob@example.com",
+        "sender_id": "user-2",
+        "body": "Where is my order?",
+        "subject": None,
+        "sender_name": None,
+        "sender_email": None,
+    }
+
+    message = normalizer.normalize(
+        tenant_id="tenant-1",
+        conversation_id="conv-1",
+        channel_id="email",
+        payload=payload,
+    )
+
+    assert message.subject == ""
+    assert message.body == "Where is my order?"

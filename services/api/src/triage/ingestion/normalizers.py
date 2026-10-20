@@ -51,7 +51,8 @@ class EmailNormalizer(MessageNormalizer):
     ) -> CanonicalMessage:
         """Normalize email payload."""
         body = self._normalize_text(payload.get("body", ""))
-        subject = payload.get("subject", "").strip()
+        # MessageRequest.model_dump() passes explicit None for unset fields
+        subject = (payload.get("subject") or "").strip()
         sender_email = payload.get("from", "")
         provider_message_id = payload.get("message_id")  # RFC 2822 Message-ID
         in_reply_to = payload.get("in_reply_to")
@@ -136,9 +137,7 @@ class ZendeskNormalizer(MessageNormalizer):
         # Determine if comment is from customer or agent
         is_public = comment.get("public", True)
         author_type = payload.get("author_type", "customer")  # "customer" or "agent"
-        sender_type = (
-            SenderType.AGENT if author_type == "agent" else SenderType.CUSTOMER
-        )
+        sender_type = SenderType.AGENT if author_type == "agent" else SenderType.CUSTOMER
 
         return CanonicalMessage(
             tenant_id=tenant_id,
