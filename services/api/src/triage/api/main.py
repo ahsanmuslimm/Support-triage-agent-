@@ -1,7 +1,8 @@
 """FastAPI application factory and main entry point."""
 
+import asyncio
 import os
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,10 +30,29 @@ def _cors_config() -> tuple[list[str], bool]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Create the DB engine on startup and dispose it on shutdown."""
+    """Create the DB engine on startup and dispose it on shutdown.
+
+    With WORKER_INPROCESS=1 the outbox-polling triage worker runs as a task
+    in this process, so a single-container deployment triages messages
+    without a second Railway service (free plan allows only one resource).
+    """
     await init_db(app)
-    yield
-    await close_db(app)
+    worker_task: asyncio.Task[None] | None = None
+    if os.getenv("WORKER_INPROCESS", "").lower() in ("1", "true", "yes"):
+        try:
+            from triage_worker import run_forever
+        except ImportError:
+            pass
+        else:
+            worker_task = asyncio.create_task(run_forever())
+    try:
+        yield
+    finally:
+        if worker_task is not None:
+            worker_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await worker_task
+        await close_db(app)
 
 
 def create_app() -> FastAPI:
