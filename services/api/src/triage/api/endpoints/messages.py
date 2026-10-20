@@ -81,6 +81,7 @@ async def _resolve_conversation(
             id=conv_uuid,
             customer_id=customer_id,
             channel_id=channel_id,
+            message_count=1,
             last_message_at=datetime.now(UTC),
         )
         session.add(conversation)
