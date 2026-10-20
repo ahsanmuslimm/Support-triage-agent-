@@ -1,5 +1,8 @@
 # Support Triage Agent - Production Dockerfile for Railway
-# Lightweight build focused on FastAPI API server (no ML packages)
+# One image for two services:
+#   - api:    default CMD (uvicorn triage.api.main:create_app)
+#   - worker: custom start command `python -m triage_worker`
+# No ML packages: the classifier stack is lazy-imported and not used here.
 
 FROM python:3.12-slim as builder
 
@@ -36,6 +39,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application source code
 COPY services/api/src/triage /app/triage
+COPY services/triage_worker/src/triage_worker /app/triage_worker
 COPY packages/py_core/py_core /app/py_core
 
 # Set environment
@@ -45,9 +49,7 @@ ENV PYTHONPATH=/app:$PYTHONPATH \
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f "http://localhost:${PORT:-8000}/health" || exit 1
-
-# main.py exposes an app factory (create_app), not a module-level app
-# Shell form so Railway's injected $PORT is expanded; exec keeps uvicorn as PID 1
+# No Docker HEALTHCHECK: it would run in the worker container too, where no
+# HTTP server exists, and fail it. Deploy health is verified via /health and
+# /ready on the api service instead.
 CMD ["sh", "-c", "exec uvicorn triage.api.main:create_app --factory --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
