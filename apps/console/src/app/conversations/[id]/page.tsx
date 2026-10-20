@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getConversation,
   streamConversation,
@@ -19,12 +20,10 @@ interface ChatMessage {
   createdAt: string | null;
 }
 
-export default function ConversationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function ConversationDetailPage() {
+  // useParams (not use(params)): Next 14 passes a plain object, and React's
+  // use() only accepts thenables/context — it crashed with error #438.
+  const { id } = useParams<{ id: string }>();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
