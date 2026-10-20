@@ -13,6 +13,7 @@ import secrets
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Annotated
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from sqlalchemy import text
@@ -88,7 +89,9 @@ def stable_uuid(value: str) -> uuid.UUID:
 def normalize_database_url(url: str) -> str:
     """Normalize a DATABASE_URL to the asyncpg SQLAlchemy driver.
 
-    Accepts postgres://, postgresql://, and +psycopg/+asyncpg forms.
+    Accepts postgres://, postgresql://, and +psycopg/+asyncpg forms. Hosted
+    providers (Neon, Railway, Heroku) hand out libpq-style ``sslmode=``
+    query params; asyncpg's connect() only understands ``ssl=``.
     """
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
@@ -97,6 +100,13 @@ def normalize_database_url(url: str) -> str:
     # psycopg (sync or async) variant: rewrite to asyncpg for uniformity
     if url.startswith("postgresql+psycopg://"):
         url = url.replace("postgresql+psycopg://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql+asyncpg://") and "sslmode=" in url:
+        parsed = urlsplit(url)
+        query = [
+            (("ssl" if k == "sslmode" else k), v)
+            for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+        ]
+        url = urlunsplit(parsed._replace(query=urlencode(query)))
     return url
 
 
