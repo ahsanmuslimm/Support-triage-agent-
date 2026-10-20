@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build && cp demo.html dist/demo.html",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/", "destination": "/demo.html" }]
+}

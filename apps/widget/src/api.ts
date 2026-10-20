@@ -12,8 +12,11 @@ export interface ChatEntry {
 }
 
 export function readConfig(): WidgetConfig {
-  // Script tag is guaranteed present when embed.tsx runs
-  const script = document.currentScript as HTMLScriptElement | null;
+  // bootstrap() runs on DOMContentLoaded, where document.currentScript is
+  // already null — fall back to the conventional embed script id.
+  const script =
+    (document.currentScript as HTMLScriptElement | null) ??
+    (document.getElementById("triage-widget") as HTMLScriptElement | null);
   const dataset = script?.dataset ?? {};
   return {
     apiUrl: dataset.apiUrl ?? "http://localhost:8000",

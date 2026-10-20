@@ -31,9 +31,15 @@ export function ChatWidget({ config }: { config: WidgetConfig }) {
     (async () => {
       try {
         for await (const entry of streamMessages(config, conversationId, controller.signal)) {
-          setMessages((prev) =>
-            prev.some((m) => m.id === entry.id) ? prev : [...prev, entry],
-          );
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === entry.id)) return prev;
+            // The SSE replay echoes the customer's own message back with a
+            // server id; drop the optimistic local copy so it renders once.
+            const withoutLocal = entry.fromCustomer
+              ? prev.filter((m) => !(m.id.startsWith("local-") && m.body === entry.body))
+              : prev;
+            return [...withoutLocal, entry];
+          });
         }
       } catch (e) {
         if (!controller.signal.aborted) {
