@@ -1,0 +1,7 @@
+# Extends the default gitleaks rule set (without this, .gitleaks.toml replaces it).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Widget embed key is public by design: the support widget ships its tenant API key inside the JS bundle that every customer site loads, so appearing in apps/widget/demo.html is expected, not a leak."
+paths = ['''apps/widget/demo\.html''']
